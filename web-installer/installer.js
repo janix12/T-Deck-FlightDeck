@@ -6,7 +6,8 @@ const en = {
   mode: "Installation mode", update: "Update FlightDeck", updateHelp: "Keep the settings on a T-Deck already running FlightDeck.",
   full: "First installation", fullHelp: "The full firmware replaces the previous system and its saved settings.",
   button: "Connect and install", support: "Use desktop Chrome or Edge. After clicking, select the T-Deck’s USB port.",
-  caption: "Airspace · The API limit notice shows when FlightDeck will retry.", alt: "T-Deck airspace view with the USB indicator, 10 NM scale and API limit notice",
+  trafficCaption: "18 aircraft around Budapest · v1.0.1", trafficAlt: "Aircraft icons around Budapest with the selected flight’s callsign",
+  caption: "API limit · Next retry at 16:37 · v1.0.4", alt: "T-Deck airspace view with the USB indicator, 10 NM scale and API limit notice",
   help: "T-Deck won’t connect?", boot: "Hold down the centre of the trackball, press and release RST, then release the trackball. Try connecting again. If the port is missing, check the data cable and close other apps using the port.",
   manual: "Download firmware and manual instructions ↗",
   unsupported: "This browser cannot access the USB serial port. Open this page in desktop Chrome or Edge, or use the manual instructions.",
@@ -23,7 +24,7 @@ const en = {
   loadError: "Could not load the USB installer. Reload the page and try again."
 };
 const hu = {
-  title: "USB-telepítő", alt: "T-Deck légtérnézet USB-jelzéssel, 10 NM léptékkel és API-korláttal",
+  title: "USB-telepítő",
   unsupported: "Ebben a böngészőben a soros USB-port nem érhető el. Nyisd meg az oldalt asztali Chrome-ban vagy Edge-ben, vagy válaszd a kézi telepítést.",
   picker: "Válaszd ki a T-Deck USB-portját a böngészőben.", load: "Az USB-telepítő betöltése…", download: "Firmware letöltése és ellenőrzése…",
   connect: "Csatlakozás és az eszköz ellenőrzése…", write: "Firmware írása. Hagyd csatlakoztatva az USB-kábelt.", verify: "A felírt firmware ellenőrzése…",
@@ -45,8 +46,8 @@ document.title = "FlightDeck · " + t.title;
 document.querySelector('a[hreflang="' + lang + '"]').setAttribute("aria-current", "page");
 if (lang === "en") {
   for (const element of document.querySelectorAll("[data-t]")) element.textContent = en[element.dataset.t];
+  for (const image of document.querySelectorAll("[data-alt]")) image.alt = en[image.dataset.alt];
 }
-document.querySelector("[data-alt]").alt = t.alt;
 const button = document.querySelector("#install");
 const modes = document.querySelector("#modes");
 const feedback = document.querySelector("#feedback");

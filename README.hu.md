@@ -8,15 +8,15 @@ Nyisd meg a telepítőt számítógépen Chrome-ban vagy Edge-ben, és csatlakoz
 
 Nézd meg, melyik település fölött jár egy repülő. A FlightDeck a LilyGO T-Deck 320 × 240 pixeles kijelzőjén repülőtérképet, gépadatlapot, mozgó esőradart és hőmérsékleti térképet jelenít meg. A repülők ADS-B helyzetjelentései Wi-Fi-n érkeznek. Opcionális GPS-szel a térkép utazás közben követi a helyzetedet.
 
-| Légtér az API-korlát idején | Géplista ugyanebben a szünetben |
+| 18 repülő Budapest körül | Légtér az API-korlát idején |
 |:---:|:---:|
-| ![Budapest térképe USB-jelzéssel, félkövér 10 NM léptékkel és az API-korlát buborékjával](https://janix12.github.io/T-Deck-FlightDeck/docs/images/airspace.png?v=1.0.4) | ![Görgethető géplista a térkép mellett](https://janix12.github.io/T-Deck-FlightDeck/docs/images/flights.png?v=1.0.4) |
+| ![Repülőikonok Budapest körül, a kiválasztott gép mellett a hívójelével](https://janix12.github.io/T-Deck-FlightDeck/docs/images/airspace-traffic.png) | ![Budapest térképe USB-jelzéssel, félkövér 10 NM léptékkel és az API-korlát buborékjával](https://janix12.github.io/T-Deck-FlightDeck/docs/images/airspace.png?v=1.0.4) |
 | **Közép-európai esőradar** | **Felszínközeli léghőmérséklet** |
 | ![RainViewer csapadékréteg Közép-Európa felett](https://janix12.github.io/T-Deck-FlightDeck/docs/images/rain.png?v=1.0.4) | ![Budapest környéki hőmérsékleti térkép](https://janix12.github.io/T-Deck-FlightDeck/docs/images/temperature.png?v=1.0.4) |
 | **Főmenü** | **Időzóna beállítása** |
 | ![A főmenü a légtértérkép fölött](https://janix12.github.io/T-Deck-FlightDeck/docs/images/menu.png?v=1.0.4) | ![Időzóna szerkesztése a Mentés és Mégse gombokkal](https://janix12.github.io/T-Deck-FlightDeck/docs/images/time-zone.png?v=1.0.4) |
 
-A képek a FlightDeck v1.0.4-et futtató T-Deck kijelzőjéről származnak. A térképek középpontja Budapest. Az első képpáron a repülőadat-szolgáltató korlátozza a lekérdezést. Az API-korlát mellett a következő próbálkozás időpontja látható. A felület nyelve a **Beállítások → Nyelv** sorban váltható.
+A képek a T-Deck kijelzőjéről származnak. A repülős felvétel a v1.0.1-en készült, a többi a v1.0.4-en. Az API-korlát mellett a következő próbálkozás helyi ideje látható. A felület nyelve a **Beállítások → Nyelv** sorban váltható.
 
 ## Mire van szükséged?
 
