@@ -198,7 +198,7 @@ static void radar(){
   int ox=v.x(center.lon),oy=v.y(center.lat);
   screen.drawCircle(ox,oy,4,mint);screen.drawPixel(ox,oy,mint);
   const time_t now=time(nullptr);
-  bool stale=traffic.stamp && now-traffic.stamp>90;
+  bool stale=traffic.stamp && now-traffic.stamp>cfg[PERIOD].toInt()+30;
   for(int i=traffic.count-1;i>=-1;i--){
     if(!p || i==selected) continue;
     const Plane &q=i<0?*p:traffic.planes[i];
@@ -218,7 +218,8 @@ static void radar(){
     int x=v.x(p->lon),y=v.y(p->lat);
     if(x>=0 && x<268 && y>34 && y<196){int w=screen.textWidth(p->name,1)+8;pill(x+13,y-9,w,16);mapLabel(x+17,y-5,p->name,amber,1);}
   }
-  if(!traffic.stamp || stale || apiCode!=200){
+  if(!traffic.stamp || stale || apiCode!=200 || WiFi.status()!=WL_CONNECTED ||
+     budget.usedToday(now)>=trafficDailyLimit || budget.retryAt>uint32_t(now)){
     String msg=feedStatus();int w=min(mapWidth-8,labelWidth(msg,1)+10);
     pill(4,185,w,17);screen.setViewport(6,187,w-4,13,false);label(8,190,msg,muted,1);screen.resetViewport();
   }

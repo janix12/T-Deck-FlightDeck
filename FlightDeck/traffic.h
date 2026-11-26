@@ -7,6 +7,8 @@
 #include <esp_heap_caps.h>
 #include <algorithm>
 #include "roots.h"
+#include "traffic_budget.h"
+#include <Preferences.h>
 
 struct Area {
   double lat, lon;
@@ -26,7 +28,19 @@ struct Traffic {
   int count, total, code;
   time_t stamp;
   Area area;
+  TrafficBudget budget;
+  uint32_t retryAt;
 };
+struct TrafficRequest {Area area; unsigned period;};
+static TrafficBudget budget;
+static Preferences budgetPrefs;
+static bool budgetReady;
+static void loadBudget(){
+  budgetReady=budgetPrefs.begin("fd-adsb",false);
+  if(budgetReady && budgetPrefs.isKey("budget"))
+    budgetReady=budgetPrefs.getBytesLength("budget")==sizeof(budget) &&
+      budgetPrefs.getBytes("budget",&budget,sizeof(budget))==sizeof(budget);
+}
 static SemaphoreHandle_t networkGate;
 static QueueHandle_t requests, results;
 
@@ -83,9 +97,13 @@ static void fetchArea(const Area &area, Traffic &out) {
   http.setConnectTimeout(7000);
   http.setTimeout(8000);
   if (!http.begin(tls, url)) { out.code = -1; return; }
-  const char *headers[]={"Transfer-Encoding"};
-  http.collectHeaders(headers,1);
+  const char *headers[]={"Transfer-Encoding","Retry-After"};
+  http.collectHeaders(headers,2);
   out.code = http.GET();
+  if(out.code==429 || out.code==503){
+    String retry=http.header("Retry-After");retry.trim();
+    out.retryAt=trafficRetryTime(retry.c_str(),time(nullptr));
+  }
   if (out.code == 200) {
     JsonDocument filter;
     filter["now"] = true;
@@ -108,12 +126,27 @@ static void fetchArea(const Area &area, Traffic &out) {
 }
 
 static void trafficWorker(void *) {
-  Area area;
+  TrafficRequest request;
+  TrafficBudget ledger=budget;
   static Traffic reply;
   for (;;) {
-    if (xQueueReceive(requests, &area, portMAX_DELAY) == pdTRUE) {
+    if (xQueueReceive(requests, &request, portMAX_DELAY) == pdTRUE) {
       xSemaphoreTake(networkGate,portMAX_DELAY);
-      fetchArea(area, reply);
+      reply={};
+      TrafficBudget reserved=ledger;
+      if(WiFi.status()!=WL_CONNECTED)reply.code=-1;
+      else if(!reserved.reserve(time(nullptr),request.period))reply.code=-103;
+      else if(!budgetReady || budgetPrefs.putBytes("budget",&reserved,sizeof(reserved))!=sizeof(reserved))reply.code=-104;
+      else{
+        ledger=reserved;
+        fetchArea(request.area,reply);
+        if(reply.code==429 || (reply.code==503 && reply.retryAt)){
+          ledger.limited(time(nullptr),reply.retryAt);
+          if(budgetPrefs.putBytes("budget",&ledger,sizeof(ledger))!=sizeof(ledger))
+            Serial.println("ADS-B cooldown storage failed");
+        }else if(reply.code==200){ledger.retryAt=0;ledger.limitedReplies=0;}
+      }
+      reply.budget=ledger;
       xSemaphoreGive(networkGate);
       xQueueOverwrite(results, &reply);
       reply.planes=nullptr; // Ownership passes through the queue to the display task.

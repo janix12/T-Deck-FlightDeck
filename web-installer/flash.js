@@ -1,14 +1,14 @@
-// These digests identify the two published v1.0.1 release assets.
+// Digests for the firmware files offered by this installer.
 const images = {
   update: {
     filename: "FlightDeck.ino.bin", address: 0x10000,
-    sha256: "dab1c7a0f04a26f50a3f3c19f57eb34737d01058d251ede010a0aed7e7adcedb",
-    md5: "df16c7ed5126f5b24a113b741ebe86cb"
+    sha256: "57871e05e7787a1f148ccbd348b42fe4c80eb036ff60d9d209e653c8bf121a4d",
+    md5: "fbbd4f1be807b3985ed5d497e22366e3"
   },
   full: {
     filename: "FlightDeck-full.bin", address: 0,
-    sha256: "0608f5a9f8eb6e778db732dccb08ae3642411617d31d177f1d0676c727dc2d0b",
-    md5: "22cd1fc0abbe363ef8188386df5b3d78"
+    sha256: "ad965d9930a3aa4a066605579101fd7f3ac3425992846bd9ac834771020d5fe1",
+    md5: "4e463df5b1aabd97dfc234f5eb459eb0"
   }
 };
 

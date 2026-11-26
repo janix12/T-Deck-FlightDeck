@@ -79,19 +79,21 @@ static int labelPrefixBytes(const String &text,int font,int available){
   }
   return p-start;
 }
+static void drawGlyph(int left,int top,const UiFace &face,const UiGlyph &g,uint16_t color){
+  unsigned i=0;
+  for(int row=0;row<g.height;++row)for(int col=0;col<g.width;++col,++i){
+    const uint8_t coverage=(face.pixels[g.offset+i/4]>>(6-2*(i%4)))&3;
+    if(!coverage)continue;
+    const int px=left+col,py=top+row;
+    screen.drawPixel(px,py,coverage==3?color:screen.alphaBlend(coverage*85,color,screen.readPixel(px,py)));
+  }
+}
 static void label(int x,int y,const String &text,uint16_t color=ink,int font=2){
   const UiFace &face=uiFace(font);
   const uint8_t *p=(const uint8_t*)text.c_str();
   while(*p){
     const UiGlyph &g=face.glyphs[nextGlyph(p)];
-    const int left=x+g.left,top=y+face.baseline+g.top;
-    unsigned i=0;
-    for(int row=0;row<g.height;++row)for(int col=0;col<g.width;++col,++i){
-      const uint8_t coverage=(face.pixels[g.offset+i/4]>>(6-2*(i%4)))&3;
-      if(!coverage)continue;
-      const int px=left+col,py=top+row;
-      screen.drawPixel(px,py,coverage==3?color:screen.alphaBlend(coverage*85,color,screen.readPixel(px,py)));
-    }
+    drawGlyph(x+g.left,y+face.baseline+g.top,face,g,color);
     x+=g.advance;
   }
 }

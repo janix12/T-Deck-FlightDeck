@@ -60,7 +60,17 @@ A [telepítőmappában](install/) két kész firmware található. Az alábbi pa
 
 1. Nyisd meg a **Beállítások** oldalt a **3** gombbal. Add meg a Wi-Fi nevét és jelszavát. A hálózatnév mezőből keresést is indíthatsz. Nyílt hálózatnál üres jelszót ments. A bal alsó **Mentés** elmenti, a jobb alsó **Mégse** elveti a beírt értéket.
 2. GPS nélkül add meg a szélességet és a hosszúságot tizedes fokban, tizedesponttal. Időzónának a `Budapest`, az `UTC` vagy egy POSIX-időzóna adható meg. Wi-Fi-n az óra NTP-vel szinkronizál, induláskor érvényes GPS-idő is beállíthatja. Kézzel az UTC-időt `YYYY-MM-DD HH:MM` formában írd be.
-3. Az **1** gombbal nyisd meg a **Légtér** nézetet. Az alapbeállítás 40 tengeri mérföldes körzet és 30 másodperces frissítés. Egy gépre koppintva láthatod a hívójelét, magasságát, sebességét és helyét. Sikertelen frissítéskor a kijelző jelzi az utolsó adat korát.
+3. Az **1** gombbal nyisd meg a **Légtér** nézetet. Az alapbeállítás 40 tengeri mérföldes körzet és kétperces frissítés. Egy gépre koppintva láthatod a hívójelét, magasságát, sebességét és helyét.
+
+## Miért kétpercenként frissül a légtér?
+
+Az adsb.lol API-kulcs nélkül **500 lekérést enged naponta, nyilvános IP-címenként**. Az azonos internetkapcsolatot használó készülékek ezen a kereten osztoznak. A szolgáltató éjfélkor (00:00 UTC) indít új napot. Ez Magyarországon télen 01:00, nyáron 02:00. [Az adsb.lol hivatalos korlátai](https://www.adsb.lol/docs/open-data/api)
+
+A FlightDeck v1.0.2 alapból **120 másodpercenként** kér repülőadatot. Ez 16 órányi folyamatos légtérnézethez legfeljebb **480 kérés**. A **Beállítások → Frissítés (mp)** alatt 120–300 másodperc választható. A korábbi rövidebb beállítás frissítéskor 120 másodpercre vált. Másik oldalon és képernyőpihenő közben szünetel az új repülőlekérések indítása.
+
+A **Műszerek** lap az eszköz saját napi számlálóját mutatja. A készülék újraindítás után is megőrzi a felhasznált keretet. Ha a szerver **HTTP 429** választ ad, a radaron az **API-korlát** felirat és a következő próbálkozás helyi időpontja látszik. A készülék betartja a szolgáltató várakozási idejét (`Retry-After`). Ha ilyen fejléc nem érkezik, egyre ritkábban próbálkozik. Az időjárási rétegek külön szolgáltatásokból érkeznek.
+
+Wi-Fi-szakadáskor a készülék újracsatlakozik. Tartósan gyenge jelnél azonos hálózatnévvel és biztonsági móddal működő, legalább 10 dB-lel erősebb hozzáférési pontot keres. A barangolás is megtartja a lekérdezések ütemezését.
 
 ## Kezelés
 

@@ -60,7 +60,17 @@ The [installation folder](install/) contains two ready-to-flash images. The comm
 
 1. Open **Settings** (key **3**). Enter your Wi-Fi name and password. You can scan for networks in the name field. For an open network, save an empty password. Tap **Save** at the lower left or **Cancel** at the lower right.
 2. Set latitude and longitude in decimal degrees if you use the device without GPS. Choose `Budapest`, `UTC` or a POSIX time zone. Wi-Fi synchronises the clock using NTP. A valid GPS date and time can initialise it too. Manual UTC entry uses `YYYY-MM-DD HH:MM`.
-3. Open **Airspace** (key **1**). Defaults are a 40 nautical mile radius and a 30-second refresh. Tap an aircraft to see its callsign, altitude, speed and location. If a refresh fails, the screen shows the age of the last data.
+3. Open **Airspace** (key **1**). Defaults are a 40 nautical mile radius and a two-minute refresh. Tap an aircraft to see its callsign, altitude, speed and location.
+
+## Why does the flight map refresh every two minutes?
+
+Without an API key, adsb.lol allows **500 requests per day per public IP address**. Devices sharing an internet connection share this allowance. The provider resets its daily counter at **00:00 UTC**. [Official adsb.lol API limits](https://www.adsb.lol/docs/open-data/api)
+
+FlightDeck v1.0.2 requests flight data every **120 seconds** by default. This uses at most **480 requests in 16 hours** of continuous Airspace use. Select an interval from 120 to 300 seconds in **Settings → Refresh (sec)**. Upgrading raises older, shorter intervals to 120 seconds. The device pauses new flight requests on other pages and while the screen saver is active.
+
+**Instruments** shows this device’s daily request count, which survives a restart. If the server returns **HTTP 429**, the radar shows **API limit** and the next attempt in local time. FlightDeck honours the provider’s `Retry-After` header and backs off progressively if the header is missing. Weather layers use separate providers.
+
+The device reconnects after losing Wi-Fi. When the signal stays weak, it looks for an access point on the same network name and security mode with a signal at least 10 dB stronger. Roaming preserves the flight request schedule.
 
 ## Controls
 

@@ -12,10 +12,10 @@ print("#pragma once")
 print("struct UiGlyph { uint16_t offset; uint8_t width, height, advance; int8_t left, top; };")
 print("struct UiFace { const UiGlyph *glyphs; const uint8_t *pixels; int baseline, height; };")
 print("static constexpr uint16_t uiAccents[] = {" + ",".join(hex(ord(c)) for c in alphabet[95:]) + "};")
-for size, line in [(11, 10), (15, 18), (24, 27), (46, 48)]:
+for size, line in [(9, 9), (11, 10), (15, 18), (24, 27), (46, 48)]:
     font = ImageFont.truetype(sys.argv[1], size)
     metrics, pixels = [], []
-    for char in alphabet:
+    for char in (("USB",) if size == 9 else alphabet):
         mask, (left, top) = font.getmask2(char, mode="L", anchor="ls")
         width, height = mask.size
         advance = round(font.getlength(char))

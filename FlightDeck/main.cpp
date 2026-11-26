@@ -10,7 +10,7 @@
 
 enum Field {SSID, PASS, ZONE, LAT, LON, RANGE, PERIOD, LIGHT, BAUD, GPS_PIN, LOGGING, CLOCK, LANG, THEME, SAVER, FIELDS};
 static const char *labels[]={"Wi-Fi név","Wi-Fi jelszó","Időzóna","Kézi szélesség","Kézi hosszúság","Sugár (NM)","Frissítés (mp)","Fényerő 1-16","GPS baud","GPS RX GPIO","SD napló 0/1","UTC óra","Nyelv","Téma","Pihenő (perc)"};
-static const char *defaults[]={"","","Budapest","47.4979","19.0402","40","30","10","0","44","0","","HU","0","30"};
+static const char *defaults[]={"","","Budapest","47.4979","19.0402","40","120","10","0","44","0","","HU","0","30"};
 static String cfg[FIELDS],edit,notice;
 static Preferences prefs;
 static int page,field,selected;
@@ -23,7 +23,7 @@ static int rateIndex,activeRate;
 static Traffic traffic,incoming;
 static int apiCode;
 #include "appearance.h"
-static uint32_t lastNetAttempt;
+static uint32_t lastNetAttempt,lastSignalCheck,weakSince,lastRoamScan;
 static volatile uint8_t disconnectReason;
 static bool probePending;
 static int seenNetworks=-1,matchingChannel,matchingAuth=-1;
@@ -38,15 +38,29 @@ static Area currentArea(){
   return {hasFix()?gps.location.lat():cfg[LAT].toDouble(),hasFix()?gps.location.lng():cfg[LON].toDouble(),cfg[RANGE].toInt()};
 }
 static void network(){
+  if(probePending){WiFi.scanDelete();probePending=false;}
+  weakSince=0;
   if(cfg[SSID].length()) WiFi.begin(cfg[SSID].c_str(),cfg[PASS].c_str());
   else WiFi.disconnect(false,false);
   seenNetworks=-1; matchingChannel=0; matchingAuth=-1;
-  lastNetAttempt=millis(); nextFetch=millis();
+  lastNetAttempt=millis();
 }
 static void networkProbe(){
-  if(choosingNetwork || WiFi.status()==WL_CONNECTED || cfg[SSID].isEmpty()) return;
+  if(choosingNetwork || cfg[SSID].isEmpty()) return;
+  const bool connected=WiFi.status()==WL_CONNECTED;
+  const uint32_t now=millis();
   if(!probePending){
-    if(seenNetworks!=-1 || millis()-lastNetAttempt<12000) return;
+    if(connected){
+      if(now-lastSignalCheck<2000)return;
+      lastSignalCheck=now;
+      if(WiFi.RSSI()>-75){weakSince=0;return;}
+      if(!weakSince)weakSince=now;
+      if(now-weakSince<15000 || (lastRoamScan && now-lastRoamScan<90000) || busy)return;
+      lastRoamScan=now;
+    }else{
+      weakSince=0;
+      if(seenNetworks!=-1 || now-lastNetAttempt<12000)return;
+    }
     probePending=startScan()==WIFI_SCAN_RUNNING;
     if(!probePending) seenNetworks=-2;
     return;
@@ -54,13 +68,22 @@ static void networkProbe(){
   int count=WiFi.scanComplete();
   if(count==WIFI_SCAN_RUNNING) return;
   seenNetworks=count; probePending=false;
+  wifi_ap_record_t current{};
+  if(connected && (esp_wifi_sta_get_ap_info(&current)!=ESP_OK || current.rssi>-75)){
+    WiFi.scanDelete();return;
+  }
   int best=-1;
   for(int i=0;i<count;i++) if(WiFi.SSID(i)==cfg[SSID]){
+    auto auth=WiFi.encryptionType(i);
+    if((auth==WIFI_AUTH_OPEN)!=cfg[PASS].isEmpty())continue;
+    if(connected && (auth!=current.authmode || !memcmp(WiFi.BSSID(i),current.bssid,6) ||
+                     WiFi.RSSI(i)<current.rssi+10))continue;
     if(best<0 || WiFi.RSSI(i)>WiFi.RSSI(best)) best=i;
   }
   if(best>=0){
     uint8_t bssid[6]; memcpy(bssid,WiFi.BSSID(best),6);
     matchingChannel=WiFi.channel(best); matchingAuth=WiFi.encryptionType(best);
+    if(connected)Serial.printf("WiFi roam RSSI %d -> %d channel %d\n",current.rssi,WiFi.RSSI(best),matchingChannel);
     WiFi.begin(cfg[SSID].c_str(),cfg[PASS].isEmpty()?nullptr:cfg[PASS].c_str(),matchingChannel,bssid);
     lastNetAttempt=millis();
   }
@@ -113,7 +136,7 @@ static bool applyField(){
     case LAT: if(!numeric(edit,-90,90)) return false; break;
     case LON: if(!numeric(edit,-180,180)) return false; break;
     case RANGE: if(!numeric(edit,1,250,true)) return false; break;
-    case PERIOD: if(!numeric(edit,15,300,true)) return false; break;
+    case PERIOD: if(!numeric(edit,trafficMinPeriod,300,true)) return false; break;
     case LIGHT: if(!numeric(edit,1,16,true)) return false; break;
     case BAUD: if(edit!="0" && edit!="4800" && edit!="9600" && edit!="19200" && edit!="38400" && edit!="57600" && edit!="115200") return false; break;
     case GPS_PIN: if(edit!="43" && edit!="44") return false; break;
@@ -162,12 +185,26 @@ static String clockText(){
   tm local; localtime_r(&t,&local); char out[8]; strftime(out,sizeof(out),"%H:%M",&local); return out;
 }
 static String feedStatus(){
+  const uint32_t now=time(nullptr);
+  if(WiFi.status()==WL_CONNECTED && now>=trafficClockFloor){
+    bool localCap=budget.usedToday(now)>=trafficDailyLimit;
+    if(budget.retryAt>now || localCap){
+      const time_t next=budget.nextAllowed(cfg[PERIOD].toInt());
+      struct tm local;localtime_r(&next,&local);char out[8];strftime(out,sizeof(out),"%H:%M",&local);
+      String msg=String(localCap?tr("Napi keret","Daily limit"):tr("API-korlát","API limit"))+" / "+out;
+      if(traffic.stamp)msg+=" / "+String(max(0L,long(time(nullptr)-traffic.stamp))/60)+tr(" p"," min");
+      return msg;
+    }
+    if(!budgetReady || apiCode==-104)return tr("Keretmentési hiba","Quota storage error");
+    if(!traffic.stamp && !busy && now<budget.nextAllowed(cfg[PERIOD].toInt()))
+      return String(tr("Frissítés: ","Refresh in "))+String(budget.nextAllowed(cfg[PERIOD].toInt())-now)+tr(" mp"," s");
+  }
   if(traffic.stamp){
     long age=max(0L,long(time(nullptr)-traffic.stamp));
     String old=age>=120?String(age/60)+tr(" perc"," min"):String(age)+tr(" mp"," s");
     if(WiFi.status()!=WL_CONNECTED) return tr("Offline  /  utolso adat: ","Offline  /  last data: ")+old;
     if(apiCode!=200) return tr("Frissitesi hiba ","Update error ")+String(apiCode)+tr("  /  utolso adat: ","  /  last data: ")+old;
-    return (age>90?tr("Régi adat  /  ","Stale data  /  "):"adsb.lol  /  ")+old;
+    return (age>cfg[PERIOD].toInt()+30?tr("Régi adat  /  ","Stale data  /  "):"adsb.lol  /  ")+old;
   }
   if(!cfg[SSID].length()) return tr("Wi-Fi beallitas szukseges","Set up Wi-Fi");
   if(WiFi.status()==WL_NO_SSID_AVAIL) return tr("Wi-Fi halozat nem lathato","Wi-Fi network not found");
@@ -188,6 +225,8 @@ static void diagnostics(){
   label(9,148,String("LoRa RX ")+(radioOK?String(radioPackets)+tr(" csomag"," packets"):"--")+"   Mic "+(micOK?String(micPeak):"--"));
   label(9,174,tr("Hangpróba [B]    SD újra [R]","Speaker [B]      Retry SD [R]"),speakerOK?mint:muted);
   label(9,197,WiFi.status()==WL_CONNECTED?WiFi.localIP().toString():feedStatus(),muted);
+  label(9,219,String("ADS-B ")+String(budget.usedToday(time(nullptr)))+"/500 UTC  "+
+      (WiFi.status()==WL_CONNECTED?String(WiFi.RSSI())+" dBm":String("Wi-Fi --")),muted,1);
 }
 struct EditorButton {
   int left;
@@ -230,7 +269,7 @@ static void settings(){
       case BAUD: hint=tr("0 = automatikus felismerés","0 = automatic");break;
       case CLOCK: hint="UTC: YYYY-MM-DD HH:MM";break;
       case RANGE: hint=tr("1 - 250 tengeri mérföld","1 - 250 nautical miles");break;
-      case PERIOD: hint=tr("15 - 300 másodperc","15 - 300 seconds");break;
+      case PERIOD: hint=tr("120 - 300 mp / 16 óra: 120 mp","120 - 300 s / 16 hours: 120 s");break;
       case GPS_PIN: hint=tr("43 vagy 44","43 or 44");break;
       case PASS: hint=tr("Üres = nyílt Wi-Fi","Empty = open Wi-Fi");break;
     }
@@ -259,7 +298,8 @@ static void drawBatteryIcon(int x,int y,int charge,bool usb){
   if(usb){
     screen.fillTriangle(x+9,y+2,x+4,y+9,x+8,y+9,outline);
     screen.fillTriangle(x+7,y+7,x+11,y+7,x+6,y+13,outline);
-    centeredLabel(x+12,y,width-14,16,"USB",ink,1);
+    const UiGlyph &usbText=face9.glyphs[0];
+    drawGlyph(x+12+(width-14-usbText.width)/2,y+(16-usbText.height)/2,face9,usbText,ink);
   }else{
     const String value=charge<0?String("--%"):String(charge)+"%";
     centeredLabel(x,y,width,16,value,ink,1);
@@ -472,7 +512,7 @@ static void input(){
 static void handleTraffic(){
   uint32_t now=millis();
   if(xQueueReceive(results,&incoming,0)==pdTRUE){
-    busy=false; apiCode=incoming.code;
+    busy=false; apiCode=incoming.code;budget=incoming.budget;
     if(apiCode==200){
       int nextSelection=0;
       for(int i=0;i<incoming.count;i++){
@@ -487,10 +527,16 @@ static void handleTraffic(){
       free(traffic.planes); traffic=incoming; incoming.planes=nullptr; selected=nextSelection;
       listCursor=constrain(listCursor,0,max(0,traffic.count-1));
     }
-    nextFetch=now+1000UL*(apiCode==429?max(120L,cfg[PERIOD].toInt()):cfg[PERIOD].toInt()); dirty=true;
+    nextFetch=now+(apiCode==-104?60000UL:1000UL);dirty=true;
   }
-  if(!busy && WiFi.status()==WL_CONNECTED && time(nullptr)>=1700000000 && due(now,nextFetch)){
-    Area a=currentArea(); a.radius=max(a.radius,int(ceilf(viewRadius(zoomStep)))); busy=xQueueSend(requests,&a,0)==pdTRUE;
+  if(nextFetch && due(now,nextFetch))nextFetch=0;
+  if(!busy && !nextFetch && !sleeping && !bench.active && page==0 && budgetReady && WiFi.status()==WL_CONNECTED){
+    uint32_t utc=time(nullptr);
+    unsigned period=cfg[PERIOD].toInt();
+    if(utc<trafficClockFloor || utc<budget.nextAllowed(period))return;
+    TrafficRequest request{currentArea(),period};
+    request.area.radius=max(request.area.radius,int(ceilf(viewRadius(zoomStep))));
+    busy=xQueueSend(requests,&request,0)==pdTRUE;
   }
 }
 static void logEnvironment(){
@@ -539,6 +585,9 @@ static void status(){
   Serial.println();
   Serial.printf("Network configured=%d keySet=%d reason=%u scan=%d matchChannel=%d auth=%d clock=%d\n",
     !cfg[SSID].isEmpty(),!cfg[PASS].isEmpty(),disconnectReason,seenNetworks,matchingChannel,matchingAuth,time(nullptr)>1700000000);
+  Serial.printf("ADS-B period=%ld used=%u/500 last=%u retryAt=%u next=%u busy=%d storage=%d\n",
+    cfg[PERIOD].toInt(),budget.usedToday(time(nullptr)),budget.last,budget.retryAt,
+    budget.nextAllowed(cfg[PERIOD].toInt()),busy,budgetReady);
   if(unknownBarometer.length() && sensor=="--") Serial.println(unknownBarometer);
   Serial.printf("FlightDeck I2C=[%s] baro=%s AHT=%d sht=%d temp=%.2f hPa=%.2f RH=%.1f GPS_RX=%s baud=%d crc=%lu fix=%d sat=%lu SD_MB=%u volume_MiB=%u FS=%d SDerr=%d/%d BAT=%.3f touch=%d kb=%d lora=%d mic=%d peak=%d spk=%d psram=%u wifi=%d api=%d planes=%d\n",
     busList.c_str(),sensor.c_str(),ahtOK,shtOK,temperature,pressure,humidity,cfg[GPS_PIN].c_str(),activeRate,gps.passedChecksum(),hasFix(),gps.satellites.value(),
@@ -548,6 +597,8 @@ void setup(){
   Serial.begin(115200);
   prefs.begin("flightdeck",false);
   for(int i=0;i<FIELDS;i++){String k="v"+String(i); cfg[i]=prefs.getString(k.c_str(),defaults[i]);}
+  if(cfg[PERIOD].toInt()<trafficMinPeriod || cfg[PERIOD].toInt()>300)cfg[PERIOD]=defaults[PERIOD];
+  loadBudget();
   setPalette();lastActivity=millis();
   startBoard(cfg[LIGHT].toInt()); startGps();
   WiFi.persistent(false); WiFi.mode(WIFI_STA);
@@ -557,7 +608,7 @@ void setup(){
   WiFi.setAutoReconnect(false); network(); zone();
   networkGate=xSemaphoreCreateMutex();wxJobs=xQueueCreate(1,sizeof(WxRequest));wxReplies=xQueueCreate(1,sizeof(WxFrame));
   xTaskCreatePinnedToCore(wxWorker,"weather",14336,nullptr,1,nullptr,0);
-  requests=xQueueCreate(1,sizeof(Area)); results=xQueueCreate(1,sizeof(Traffic));
+  requests=xQueueCreate(1,sizeof(TrafficRequest)); results=xQueueCreate(1,sizeof(Traffic));
   xTaskCreatePinnedToCore(trafficWorker,"adsb",14336,nullptr,1,nullptr,0);
   if(!cfg[SSID].length()) page=2;
 }
