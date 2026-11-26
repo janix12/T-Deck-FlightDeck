@@ -1,5 +1,7 @@
 # FlightDeck for LilyGO T-Deck
 
+**[Download the ready-to-flash firmware and follow the short installation guide →](https://github.com/janix12/T-Deck-FlightDeck/releases/latest)**
+
 **[Magyar útmutató](README.hu.md)** · [Hardware and schematics](docs/hardware.md) · [Map data and credits](maps/README.md)
 
 See which town an aircraft is flying over. FlightDeck turns the 320 × 240 display of a LilyGO T-Deck into a flight map with aircraft details, animated rain radar and a temperature map. Aircraft positions come from ADS-B reports over Wi-Fi. An optional GPS sets the map centre as you travel.

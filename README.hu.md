@@ -1,5 +1,7 @@
 # FlightDeck a LilyGO T-Deckhez
 
+**[Kész firmware letöltése és rövid telepítési útmutató →](https://github.com/janix12/T-Deck-FlightDeck/releases/latest)**
+
 **[English guide](README.md)** · [Hardver és kapcsolási rajzok](docs/hardware.md) · [Térképadatok és források](maps/README.md)
 
 Nézd meg, melyik település fölött jár egy repülő. A FlightDeck a LilyGO T-Deck 320 × 240 pixeles kijelzőjén repülőtérképet, gépadatlapot, mozgó esőradart és hőmérsékleti térképet jelenít meg. A repülők ADS-B helyzetjelentései Wi-Fi-n érkeznek. Opcionális GPS-szel a térkép utazás közben követi a helyzetedet.
