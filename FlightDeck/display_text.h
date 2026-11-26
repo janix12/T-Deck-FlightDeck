@@ -36,9 +36,66 @@ static int drawLabel(int x,int y,const String &s,uint16_t color,int font,bool pa
   }
   return x-start;
 }
-static void label(int x,int y,const String &s,uint16_t color=ink,int font=2){
+static void mapLabel(int x,int y,const String &s,uint16_t color=ink,int font=2){
   const uint8_t *p=(const uint8_t*)s.c_str();while(*p && *p<128)++p;
   if(!*p){screen.setTextColor(color);screen.drawString(s,x,y,font);return;}
   drawLabel(x,y,s,color,font,true);
 }
-static int labelWidth(const String &s,int font){return drawLabel(0,0,s,ink,font,false);}
+#include "ui_font.h"
+
+static const UiFace &uiFace(int font){
+  switch(font){case 1:return face11;case 4:return face24;case 6:return face46;default:return face15;}
+}
+static unsigned nextGlyph(const uint8_t *&p){
+  unsigned c=*p++;
+  if(c>=32 && c<127)return c-32;
+  if(c>=0xc2 && c<=0xdf && (*p&0xc0)==0x80){
+    c=((c&31)<<6)|(*p++&63);
+    for(unsigned i=0;i<sizeof(uiAccents)/sizeof(*uiAccents);++i)
+      if(uiAccents[i]==c)return 95+i;
+  }else while((*p&0xc0)==0x80)++p;
+  return '?'-32;
+}
+struct LabelMetrics { int width=0,top=0,bottom=0; };
+static LabelMetrics measureLabel(const String &text,int font){
+  const UiFace &face=uiFace(font);
+  LabelMetrics m;
+  const uint8_t *p=(const uint8_t*)text.c_str();
+  while(*p){
+    const UiGlyph &g=face.glyphs[nextGlyph(p)];
+    m.width+=g.advance;
+    if(g.height){m.top=min(m.top,int(g.top));m.bottom=max(m.bottom,g.top+g.height);}
+  }
+  return m;
+}
+static int labelWidth(const String &text,int font){return measureLabel(text,font).width;}
+static int labelPrefixBytes(const String &text,int font,int available){
+  const UiFace &face=uiFace(font);
+  const uint8_t *start=(const uint8_t*)text.c_str(),*p=start;
+  while(*p){
+    const uint8_t *previous=p;
+    available-=face.glyphs[nextGlyph(p)].advance;
+    if(available<0)return previous-start;
+  }
+  return p-start;
+}
+static void label(int x,int y,const String &text,uint16_t color=ink,int font=2){
+  const UiFace &face=uiFace(font);
+  const uint8_t *p=(const uint8_t*)text.c_str();
+  while(*p){
+    const UiGlyph &g=face.glyphs[nextGlyph(p)];
+    const int left=x+g.left,top=y+face.baseline+g.top;
+    unsigned i=0;
+    for(int row=0;row<g.height;++row)for(int col=0;col<g.width;++col,++i){
+      const uint8_t coverage=(face.pixels[g.offset+i/4]>>(6-2*(i%4)))&3;
+      if(!coverage)continue;
+      const int px=left+col,py=top+row;
+      screen.drawPixel(px,py,coverage==3?color:screen.alphaBlend(coverage*85,color,screen.readPixel(px,py)));
+    }
+    x+=g.advance;
+  }
+}
+static void centeredLabel(int x,int y,int w,int h,const String &text,uint16_t color,int font=2){
+  const LabelMetrics m=measureLabel(text,font);
+  label(x+(w-m.width)/2,y+(h-m.bottom+m.top)/2-m.top-uiFace(font).baseline,text,color,font);
+}

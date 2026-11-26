@@ -1,21 +1,23 @@
-// These digests identify the two published v1.0 release assets.
+// These digests identify the two published v1.0.1 release assets.
 const images = {
   update: {
     filename: "FlightDeck.ino.bin", address: 0x10000,
-    sha256: "ff459edb676a80935a4e8c67e2d5f02a5179dc501efb16beab3bfc1c67b65d79",
-    md5: "6ac1207653d2d1bd72f0fda584b3e875"
+    sha256: "dab1c7a0f04a26f50a3f3c19f57eb34737d01058d251ede010a0aed7e7adcedb",
+    md5: "df16c7ed5126f5b24a113b741ebe86cb"
   },
   full: {
     filename: "FlightDeck-full.bin", address: 0,
-    sha256: "b97e282e4a67b4ed1c2e004010f48f259b6e315fe7950eca82d4c15df8f88f3e",
-    md5: "7e28d8a38bebd174d3cae2e67a51acf4"
+    sha256: "0608f5a9f8eb6e778db732dccb08ae3642411617d31d177f1d0676c727dc2d0b",
+    md5: "22cd1fc0abbe363ef8188386df5b3d78"
   }
 };
 
 export async function installFirmware(loader, mode, status, progress) {
   const image = images[mode];
   status("download");
-  const response = await fetch(new URL("../install/" + image.filename, import.meta.url));
+  const url = new URL("../install/" + image.filename, import.meta.url);
+  url.searchParams.set("sha256", image.sha256);
+  const response = await fetch(url);
   if (!response.ok) throw new Error("downloadError");
   const data = new Uint8Array(await response.arrayBuffer());
   const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", data));

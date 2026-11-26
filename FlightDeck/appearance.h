@@ -35,8 +35,12 @@ static bool interact(){
  sleeping=false;backlight(cfg[LIGHT].toInt());dirty=true;return false;
 }
 static void startSaver(){sleeping=true;backlight(1);dirty=true;}
+static void framedBox(int x,int y,int w,int h,int radius,uint16_t fill,uint16_t border){
+ screen.fillRoundRect(x,y,w,h,radius,border);
+ screen.fillRoundRect(x+2,y+2,w-4,h-4,radius-2,fill);
+}
 static void pill(int x,int y,int w,int h){
- screen.fillRoundRect(x,y,w,h,6,bg);screen.drawRoundRect(x,y,w,h,6,grid);
+ framedBox(x,y,w,h,6,bg,grid);
 }
 static String stateText(const Plane &p){
  const char *state=flightState(p);

@@ -277,7 +277,7 @@ static void weatherMap(){
     for(int y=0;y<3;y++)for(int x=0;x<3;x++){
       int px=constrain(v.x(w.at.lon+(x-1)*w.at.halfLon)-23,3,270);
       int py=constrain(v.y(w.at.lat+(1-y)*w.at.halfLat)-8,38,188);
-      if(isfinite(w.temps[y*3+x])){pill(px,py,46,17);label(px+4,py+4,String(w.temps[y*3+x],1)+" C",ink,1);}
+      if(isfinite(w.temps[y*3+x])){pill(px,py,46,17);String value=String(w.temps[y*3+x],1)+" C";mapLabel(px+(46-screen.textWidth(value,1))/2,py+5,value,ink,1);}
     }
   }
   String desc=page==3?"RainViewer":show && w.metar?"METAR ~":"Open-Meteo";

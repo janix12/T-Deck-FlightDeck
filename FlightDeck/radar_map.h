@@ -83,7 +83,7 @@ static void drawPlane(int x,int y,float track,bool active,bool stale){
     }
   }
   if(active)screen.drawCircle(x,y,13,amber);
-  if(!isfinite(track)) label(x+8,y-11,"?",color,1);
+  if(!isfinite(track)) mapLabel(x+8,y-11,"?",color,1);
 }
 static void cardField(int y,const char *title,const String &value){
   if(y+30<cardBodyY || y>=cardBodyY+cardBodyH) return;
@@ -91,10 +91,10 @@ static void cardField(int y,const char *title,const String &value){
   label(cardX+6,y+9,value,ink,2);
 }
 static void drawCard(const Plane *p,const char *town,bool inside,float distance){
-  screen.fillRoundRect(cardX,cardTop,130,211,7,bg);screen.drawRoundRect(cardX,cardTop,130,211,7,grid);
+  framedBox(cardX,cardTop,130,211,7,bg,grid);
   screen.fillRoundRect(cardList?listTabX:cardX+2,32,cardList?73:52,23,4,grid);
-  label(cardX+9,35,tr("Gép","Flight"),cardList?muted:mint);
-  label(listTabX+7,35,String(tr("Lista ","List "))+String(traffic.count),cardList?mint:muted);
+  centeredLabel(cardX+2,32,52,23,tr("Gép","Flight"),cardList?muted:mint);
+  centeredLabel(listTabX,32,73,23,String(tr("Lista ","List "))+String(traffic.count),cardList?mint:muted);
   screen.setViewport(cardX+2,cardBodyY,125,cardBodyH,false);
   if(!p) label(cardX+7,65,tr("Nincs gép","No aircraft"),muted);
   else if(cardList){
@@ -110,12 +110,16 @@ static void drawCard(const Plane *p,const char *town,bool inside,float distance)
     }
   } else{
     int y=cardBodyY+3-detailScroll;
-    int font=screen.textWidth(p->name,4)<=112?4:2;
+    int font=labelWidth(p->name,4)<=112?4:2;
     label(cardX+6,y,p->name,amber,font);
     String name=town?town:atlas?tr("Csomagon kívül","Outside map"):mapStatus;
     label(cardX+6,y+32,inside?tr("TELEPÜLÉS","MUNICIPALITY"):town?tr("KÖZELÉBEN","NEAREST TOWN"):tr("TÉRKÉP","MAP"),muted,1);
-    if(screen.textWidth(name,2)<=115) label(cardX+6,y+42,name,ink);
-    else {label(cardX+6,y+42,name.substring(0,18),ink,1);label(cardX+6,y+51,name.substring(18,36),ink,1);}
+    if(labelWidth(name,2)<=115) label(cardX+6,y+42,name,ink);
+    else {
+      const int split=labelPrefixBytes(name,1,115);
+      label(cardX+6,y+42,name.substring(0,split),ink,1);
+      label(cardX+6,y+53,name.substring(split),ink,1);
+    }
     cardField(y+67,tr("ÁLLAPOT","STATUS"),stateText(*p));
     cardField(y+98,tr("MAGASSÁG","ALTITUDE"),p->ground?tr("Foldon","Ground"):number(p->altitude)+" m");
     cardField(y+129,tr("SEBESSÉG","SPEED"),number(p->speed)+" km/h");
@@ -171,14 +175,14 @@ static void drawGeography(const MapView &v,const char *selectedTown,const MapHea
     bool free=true;
     for(int k=0;k<count;k++) if(b.left<=used[k].right+3 && b.right+3>=used[k].left &&
        b.top<=used[k].bottom+3 && b.bottom+3>=used[k].top){free=false;break;}
-    if(free){screen.fillCircle(x,y,1,muted); if(page>=3)label(b.left+1,b.top+1,name,bg,1);
-      label(b.left,b.top,name,page>=3?ink:muted,1);used[count++]=b;}
+    if(free){screen.fillCircle(x,y,1,muted); if(page>=3)mapLabel(b.left+1,b.top+1,name,bg,1);
+      mapLabel(b.left,b.top,name,page>=3?ink:muted,1);used[count++]=b;}
   }
 }
 static void zoomButtons(int width){
   for(int i=0;i<2;i++){
     int x=width-67+i*32;pill(x,207,30,29);
-    screen.drawFastHLine(x+8,221,14,ink);if(i)screen.drawFastVLine(x+15,215,13,ink);
+    screen.fillRect(x+8,220,14,2,ink);if(i)screen.fillRect(x+14,214,2,14,ink);
   }
 }
 static void radar(){
@@ -205,14 +209,14 @@ static void radar(){
   float scale=1;
   for(int n:{1,2,5,10,20,50,100,200}) if(n*1.852f*v.pixelsPerDeg/111.195f<=54) scale=n;
   int bar=lroundf(scale*1.852f*v.pixelsPerDeg/111.195f);
-  pill(5,207,max(bar+12,56),29);screen.drawFastHLine(11,229,bar,ink);label(11,213,String(int(scale))+" NM",ink,1);
+  pill(5,207,max(bar+12,56),29);screen.drawFastHLine(11,229,bar,ink);mapLabel(11,213,String(int(scale))+" NM",ink,1);
   pill(72,207,29,29);for(int i=0;i<3;i++){screen.drawPixel(79,215+i*4,mint);screen.drawFastHLine(84,215+i*4,10,ink);}
   zoomButtons(mapWidth);
   screen.resetViewport();
   if(cardOpen)drawCard(p,town,inside,distance);
   else if(p){
     int x=v.x(p->lon),y=v.y(p->lat);
-    if(x>=0 && x<268 && y>34 && y<196){int w=screen.textWidth(p->name,1)+8;pill(x+13,y-9,w,16);label(x+17,y-5,p->name,amber,1);}
+    if(x>=0 && x<268 && y>34 && y<196){int w=screen.textWidth(p->name,1)+8;pill(x+13,y-9,w,16);mapLabel(x+17,y-5,p->name,amber,1);}
   }
   if(!traffic.stamp || stale || apiCode!=200){
     String msg=feedStatus();int w=min(mapWidth-8,labelWidth(msg,1)+10);

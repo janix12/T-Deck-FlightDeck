@@ -196,9 +196,8 @@ struct EditorButton {
     return x>=left && x<left+width && y>=top && y<top+height;
   }
   void draw(const char *text,uint16_t fill,uint16_t border,uint16_t foreground) const{
-    screen.fillRoundRect(left,top,width,height,6,fill);
-    screen.drawRoundRect(left,top,width,height,6,border);
-    label(left+(width-labelWidth(text,2))/2,top+(height-screen.fontHeight(2))/2,text,foreground);
+    framedBox(left,top,width,height,6,fill,border);
+    centeredLabel(left,top,width,height,text,foreground);
   }
 };
 static constexpr EditorButton saveButton{8},cancelButton{164};
@@ -213,7 +212,7 @@ static void settings(){
         int y=59+(i-top)*25;
         if(i==networkIndex) screen.fillRoundRect(5,y-2,310,23,4,grid);
         String name=WiFi.SSID(i);
-        label(10,y,name.length()?name.substring(0,26):tr("(rejtett)","(hidden)"));
+        label(10,y,name.length()?name.substring(0,labelPrefixBytes(name,2,240)):tr("(rejtett)","(hidden)"));
         label(260,y,String(WiFi.RSSI(i)),muted);
       }
     }
@@ -244,25 +243,26 @@ static void settings(){
   for(int i=top;i<min(top+6,int(FIELDS));i++){
     int y=35+(i-top)*27;
     if(i==field) screen.fillRoundRect(5,y-2,310,25,4,grid);
-    label(11,y,fieldLabel(i),i==field?mint:ink); label(160,y,valueFor(i).substring(0,19));
+    label(11,y,fieldLabel(i),i==field?mint:ink);
+    String value=valueFor(i);label(160,y,value.substring(0,labelPrefixBytes(value,2,150)));
   }
   label(10,198,tr("Görgő: le/fel    Nyomás: szerkesztés","Scroll to browse    Press to edit"),muted);
-  pill(7,218,46,20);label(24,220,"<",mint);
-  pill(267,218,46,20);label(285,220,">",mint);
-  label(138,224,String(top/6+1)+" / "+String((FIELDS+5)/6),muted,1);
+  pill(7,218,46,20);centeredLabel(7,218,46,20,"<",mint);
+  pill(267,218,46,20);centeredLabel(267,218,46,20,">",mint);
+  centeredLabel(53,218,214,20,String(top/6+1)+" / "+String((FIELDS+5)/6),muted,1);
 }
 static void drawBatteryIcon(int x,int y,int charge,bool usb){
   constexpr int width=35;
   const uint16_t outline=usb?mint:charge<0?muted:charge<=20?amber:mint;
-  screen.drawRoundRect(x,y,width,16,3,outline);
+  framedBox(x,y,width,16,4,bg,outline);
   screen.fillRect(x+width,y+5,2,6,outline);
   if(usb){
     screen.fillTriangle(x+9,y+2,x+4,y+9,x+8,y+9,outline);
     screen.fillTriangle(x+7,y+7,x+11,y+7,x+6,y+13,outline);
-    label(x+13,y+4,"USB",ink,1);
+    centeredLabel(x+12,y,width-14,16,"USB",ink,1);
   }else{
     const String value=charge<0?String("--%"):String(charge)+"%";
-    label(x+(width-labelWidth(value,1))/2,y+4,value,ink,1);
+    centeredLabel(x,y,width,16,value,ink,1);
   }
 }
 #include "self_test.h"
@@ -300,23 +300,25 @@ static void render(){
   if(page==0)radar();
   else if(weatherPage()){mapWidth=320;midX=160;weatherMap();}
   else if(page==1)diagnostics();else settings();
-  pill(4,3,30,27);for(int i=0;i<3;i++)screen.drawFastHLine(12,11+i*4,13,ink);
+  pill(4,3,30,26);for(int i=0;i<3;i++)screen.fillRect(12,11+i*4,14,2,ink);
   String title=pageTitle(page);
   if(!page)title+="   "+String(traffic.count);
   if(page==3)title+="   "+number(viewRadius(weatherZoomStep))+" NM";
-  int titleW=labelWidth(title,2)+23;pill(38,3,titleW,27);
-  screen.fillCircle(47,16,3,WiFi.status()==WL_CONNECTED?mint:amber);label(55,7,title,ink);
+  int titleW=labelWidth(title,2)+23;pill(38,3,titleW,26);
+  screen.fillCircle(47,16,3,WiFi.status()==WL_CONNECTED?mint:amber);
+  centeredLabel(55,3,titleW-23,26,title,ink);
   pill(221,3,95,26);
   drawBatteryIcon(224,8,batteryPercent(batteryEstimateV),externalPower);
-  label(262,7,clockText(),ink);screen.fillCircle(309,15,2,hasFix()?mint:muted);
+  centeredLabel(268,3,38,26,clockText(),ink);screen.fillCircle(310,16,2,hasFix()?mint:muted);
   if(page==0 && cardOpen && !menuOpen){
-    pill(cardX,2,closeButtonWidth,25);
-    const int cx=cardX+closeButtonWidth/2,cy=14;
-    screen.drawLine(cx-4,cy-4,cx+4,cy+4,ink);
-    screen.drawLine(cx-4,cy+4,cx+4,cy-4,ink);
+    pill(cardX,3,closeButtonWidth,26);
+    for(int i=0;i<8;++i){
+      screen.fillRect(cardX+(closeButtonWidth-9)/2+i,12+i,2,1,ink);
+      screen.fillRect(cardX+(closeButtonWidth-9)/2+7-i,12+i,2,1,ink);
+    }
   }
   if(menuOpen){
-    screen.fillRoundRect(4,34,166,201,8,bg);screen.drawRoundRect(4,34,166,201,8,grid);
+    framedBox(4,34,166,201,8,bg,grid);
     for(int i=0;i<6;i++){
       int y=39+i*32;if(i==menuIndex)screen.fillRoundRect(8,y,158,29,5,grid);
       screen.fillCircle(17,y+14,3,i==menuIndex?mint:muted);label(28,y+6,menuTitle(i),i==menuIndex?mint:ink);
