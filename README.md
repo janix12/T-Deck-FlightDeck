@@ -10,11 +10,13 @@ See which town an aircraft is flying over. FlightDeck turns the 320 × 240 displ
 
 | Airspace around Budapest | Nearby flights, sorted by distance |
 |:---:|:---:|
-| ![Aircraft silhouettes on the map around Budapest](docs/images/airspace.png) | ![Scrollable flight list beside the map](docs/images/flights.png) |
+| ![Aircraft silhouettes on the map around Budapest](docs/images/airspace.png?v=1.0.1) | ![Scrollable flight list beside the map](docs/images/flights.png?v=1.0.1) |
 | **Rain radar over Central Europe** | **Surface air temperature** |
-| ![RainViewer precipitation overlay across Central Europe](docs/images/rain.png) | ![Estimated temperature around Budapest from airport observations](docs/images/temperature.png) |
+| ![RainViewer precipitation overlay across Central Europe](docs/images/rain.png?v=1.0.1) | ![Temperature map around Budapest](docs/images/temperature.png?v=1.0.1) |
+| **Main menu** | **Time zone settings** |
+| ![Main menu open over the flight map](docs/images/menu.png) | ![Time zone editor with Save and Cancel buttons](docs/images/time-zone.png) |
 
-These are captures from a T-Deck using the public Budapest map centre. The screens shown are in Hungarian. Select **Beállítások → Nyelv → English** for the English interface.
+These screens were captured on a T-Deck running FlightDeck v1.0.1. The maps are centred on Budapest. The screens shown are in Hungarian. Select **Beállítások → Nyelv → English** for the English interface.
 
 ## What you need
 

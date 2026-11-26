@@ -10,11 +10,13 @@ Nézd meg, melyik település fölött jár egy repülő. A FlightDeck a LilyGO 
 
 | Légtér Budapest körül | Közeli gépek távolság szerint |
 |:---:|:---:|
-| ![Repülőikonok Budapest környékének térképén](docs/images/airspace.png) | ![Görgethető géplista a térkép mellett](docs/images/flights.png) |
+| ![Repülőikonok Budapest környékének térképén](docs/images/airspace.png?v=1.0.1) | ![Görgethető géplista a térkép mellett](docs/images/flights.png?v=1.0.1) |
 | **Közép-európai esőradar** | **Felszínközeli léghőmérséklet** |
-| ![RainViewer csapadékréteg Közép-Európa felett](docs/images/rain.png) | ![Budapest környéki hőmérséklet repülőtéri észlelésekből](docs/images/temperature.png) |
+| ![RainViewer csapadékréteg Közép-Európa felett](docs/images/rain.png?v=1.0.1) | ![Budapest környéki hőmérsékleti térkép](docs/images/temperature.png?v=1.0.1) |
+| **Főmenü** | **Időzóna beállítása** |
+| ![A főmenü a légtértérkép fölött](docs/images/menu.png) | ![Időzóna szerkesztése a Mentés és Mégse gombokkal](docs/images/time-zone.png) |
 
-A képek a T-Deck kijelzőjéről származnak, a nyilvános budapesti térképközépponttal. A felület nyelve a **Beállítások → Nyelv** sorban váltható.
+A képek a FlightDeck v1.0.1-et futtató T-Deck kijelzőjéről származnak. A térképek középpontja Budapest. A felület nyelve a **Beállítások → Nyelv** sorban váltható.
 
 ## Mire van szükséged?
 
