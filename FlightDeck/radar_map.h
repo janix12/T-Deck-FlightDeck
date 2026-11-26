@@ -220,7 +220,12 @@ static void radar(){
   }
   if(!traffic.stamp || stale || apiCode!=200 || WiFi.status()!=WL_CONNECTED ||
      budget.usedToday(now)>=trafficDailyLimit || budget.retryAt>uint32_t(now)){
-    String msg=feedStatus();int w=min(mapWidth-8,labelWidth(msg,1)+10);
-    pill(4,185,w,17);screen.setViewport(6,187,w-4,13,false);label(8,190,msg,muted,1);screen.resetViewport();
+    constexpr int top=185,height=20;
+    String msg=feedStatus();
+    int textWidth=labelWidth(msg,1),w=min(mapWidth-8,textWidth+10);
+    pill(4,top,w,height);
+    screen.setViewport(6,top+2,w-4,height-4,false);
+    centeredLabel(9,top,textWidth,height,msg,muted,1);
+    screen.resetViewport();
   }
 }

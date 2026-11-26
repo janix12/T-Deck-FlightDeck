@@ -66,7 +66,7 @@ A [telepítőmappában](install/) két kész firmware található. Az alábbi pa
 
 Az adsb.lol API-kulcs nélkül **500 lekérést enged naponta, nyilvános IP-címenként**. Az azonos internetkapcsolatot használó készülékek ezen a kereten osztoznak. A szolgáltató éjfélkor (00:00 UTC) indít új napot. Ez Magyarországon télen 01:00, nyáron 02:00. [Az adsb.lol hivatalos korlátai](https://www.adsb.lol/docs/open-data/api)
 
-A FlightDeck v1.0.2 alapból **120 másodpercenként** kér repülőadatot. Ez 16 órányi folyamatos légtérnézethez legfeljebb **480 kérés**. A **Beállítások → Frissítés (mp)** alatt 120–300 másodperc választható. A korábbi rövidebb beállítás frissítéskor 120 másodpercre vált. Másik oldalon és képernyőpihenő közben szünetel az új repülőlekérések indítása.
+A FlightDeck a v1.0.2-es verziótól alapból **120 másodpercenként** kér repülőadatot. Ez 16 órányi folyamatos légtérnézethez legfeljebb **480 kérés**. A **Beállítások → Frissítés (mp)** alatt 120–300 másodperc választható. A korábbi rövidebb beállítás frissítéskor 120 másodpercre vált. Másik oldalon és képernyőpihenő közben szünetel az új repülőlekérések indítása.
 
 A **Műszerek** lap az eszköz saját napi számlálóját mutatja. A készülék újraindítás után is megőrzi a felhasznált keretet. Ha a szerver **HTTP 429** választ ad, a radaron az **API-korlát** felirat és a következő próbálkozás helyi időpontja látszik. A készülék betartja a szolgáltató várakozási idejét (`Retry-After`). Ha ilyen fejléc nem érkezik, egyre ritkábban próbálkozik. Az időjárási rétegek külön szolgáltatásokból érkeznek.
 

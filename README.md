@@ -66,7 +66,7 @@ The [installation folder](install/) contains two ready-to-flash images. The comm
 
 Without an API key, adsb.lol allows **500 requests per day per public IP address**. Devices sharing an internet connection share this allowance. The provider resets its daily counter at **00:00 UTC**. [Official adsb.lol API limits](https://www.adsb.lol/docs/open-data/api)
 
-FlightDeck v1.0.2 requests flight data every **120 seconds** by default. This uses at most **480 requests in 16 hours** of continuous Airspace use. Select an interval from 120 to 300 seconds in **Settings → Refresh (sec)**. Upgrading raises older, shorter intervals to 120 seconds. The device pauses new flight requests on other pages and while the screen saver is active.
+Starting with v1.0.2, FlightDeck requests flight data every **120 seconds** by default. This uses at most **480 requests in 16 hours** of continuous Airspace use. Select an interval from 120 to 300 seconds in **Settings → Refresh (sec)**. Upgrading raises older, shorter intervals to 120 seconds. The device pauses new flight requests on other pages and while the screen saver is active.
 
 **Instruments** shows this device’s daily request count, which survives a restart. If the server returns **HTTP 429**, the radar shows **API limit** and the next attempt in local time. FlightDeck honours the provider’s `Retry-After` header and backs off progressively if the header is missing. Weather layers use separate providers.
 
