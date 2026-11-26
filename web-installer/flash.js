@@ -2,13 +2,13 @@
 const images = {
   update: {
     filename: "FlightDeck.ino.bin", address: 0x10000,
-    sha256: "fda9c59c6bce468d0d1621baa40703f2aabdef9f5c41616b027e60694da7711f",
-    md5: "2f13c37f56700aebf2726b474aad9917"
+    sha256: "11575905b166b1e8f0c5f26f35dbdc082afc7f378557b344a56a96ddde48e56a",
+    md5: "91a134c40316628dfff0df5ed41e71c9"
   },
   full: {
     filename: "FlightDeck-full.bin", address: 0,
-    sha256: "ba1ff3c6e3e10fedf9dce0fa8686d6d819ac29c0b5f03d02651aa73a681d04be",
-    md5: "7523641aff2d6c204f05ecf51bd5f922"
+    sha256: "9202d9b8ba135cc262d63bb3df4ff6526b18394886d30b2da99e94cb6d4854bf",
+    md5: "81fc15846d37c2e0d16225406ea32c94"
   }
 };
 

@@ -299,7 +299,7 @@ static void drawBatteryIcon(int x,int y,int charge,bool usb){
     screen.fillTriangle(x+9,y+2,x+4,y+9,x+8,y+9,outline);
     screen.fillTriangle(x+7,y+7,x+11,y+7,x+6,y+13,outline);
     const UiGlyph &usbText=face9.glyphs[0];
-    drawGlyph(x+12+(width-14-usbText.width)/2,y+(16-usbText.height)/2,face9,usbText,ink);
+    drawGlyph(x+12+(width-14-usbText.width)/2,y+(17-usbText.height)/2,face9,usbText,ink);
   }else{
     const String value=charge<0?String("--%"):String(charge)+"%";
     centeredLabel(x,y,width,16,value,ink,1);

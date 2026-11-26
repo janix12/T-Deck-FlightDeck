@@ -8,15 +8,15 @@ Open the installer in desktop Chrome or Edge and connect your original T-Deck wi
 
 See which town an aircraft is flying over. FlightDeck turns the 320 × 240 display of a LilyGO T-Deck into a flight map with aircraft details, animated rain radar and a temperature map. Aircraft positions come from ADS-B reports over Wi-Fi. An optional GPS sets the map centre as you travel.
 
-| Airspace around Budapest | Nearby flights, sorted by distance |
+| Airspace during an API limit | Flight list during the same pause |
 |:---:|:---:|
-| ![Aircraft silhouettes on the map around Budapest](https://janix12.github.io/T-Deck-FlightDeck/docs/images/airspace.png?v=1.0.1) | ![Scrollable flight list beside the map](https://janix12.github.io/T-Deck-FlightDeck/docs/images/flights.png?v=1.0.1) |
+| ![Budapest map with the USB indicator, bold 10 NM scale and API limit notice](https://janix12.github.io/T-Deck-FlightDeck/docs/images/airspace.png?v=1.0.4) | ![Scrollable flight list beside the map](https://janix12.github.io/T-Deck-FlightDeck/docs/images/flights.png?v=1.0.4) |
 | **Rain radar over Central Europe** | **Surface air temperature** |
-| ![RainViewer precipitation overlay across Central Europe](https://janix12.github.io/T-Deck-FlightDeck/docs/images/rain.png?v=1.0.1) | ![Temperature map around Budapest](https://janix12.github.io/T-Deck-FlightDeck/docs/images/temperature.png?v=1.0.1) |
+| ![RainViewer precipitation overlay across Central Europe](https://janix12.github.io/T-Deck-FlightDeck/docs/images/rain.png?v=1.0.4) | ![Temperature map around Budapest](https://janix12.github.io/T-Deck-FlightDeck/docs/images/temperature.png?v=1.0.4) |
 | **Main menu** | **Time zone settings** |
-| ![Main menu open over the flight map](https://janix12.github.io/T-Deck-FlightDeck/docs/images/menu.png?v=1.0.1) | ![Time zone editor with Save and Cancel buttons](https://janix12.github.io/T-Deck-FlightDeck/docs/images/time-zone.png?v=1.0.1) |
+| ![Main menu open over the flight map](https://janix12.github.io/T-Deck-FlightDeck/docs/images/menu.png?v=1.0.4) | ![Time zone editor with Save and Cancel buttons](https://janix12.github.io/T-Deck-FlightDeck/docs/images/time-zone.png?v=1.0.4) |
 
-These screens were captured on a T-Deck running FlightDeck v1.0.1. The maps are centred on Budapest. The screens shown are in Hungarian. Select **Beállítások → Nyelv → English** for the English interface.
+These screens were captured on a T-Deck running FlightDeck v1.0.4. The maps are centred on Budapest. In the first row the flight provider has paused requests. The time in the API limit notice is the next retry. The screens shown are in Hungarian. Select **Beállítások → Nyelv → English** for the English interface.
 
 ## What you need
 

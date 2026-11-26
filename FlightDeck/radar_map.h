@@ -179,10 +179,11 @@ static void drawGeography(const MapView &v,const char *selectedTown,const MapHea
       mapLabel(b.left,b.top,name,page>=3?ink:muted,1);used[count++]=b;}
   }
 }
+constexpr int mapButtonHeight=29, mapButtonY=240-3-mapButtonHeight;
 static void zoomButtons(int width){
   for(int i=0;i<2;i++){
-    int x=width-67+i*32;pill(x,207,30,29);
-    screen.fillRect(x+8,220,14,2,ink);if(i)screen.fillRect(x+14,214,2,14,ink);
+    int x=width-67+i*32;pill(x,mapButtonY,30,mapButtonHeight);
+    screen.fillRect(x+8,mapButtonY+14,14,2,ink);if(i)screen.fillRect(x+14,mapButtonY+8,2,14,ink);
   }
 }
 static void radar(){
@@ -209,8 +210,16 @@ static void radar(){
   float scale=1;
   for(int n:{1,2,5,10,20,50,100,200}) if(n*1.852f*v.pixelsPerDeg/111.195f<=54) scale=n;
   int bar=lroundf(scale*1.852f*v.pixelsPerDeg/111.195f);
-  pill(5,207,max(bar+12,56),29);screen.drawFastHLine(11,229,bar,ink);mapLabel(11,213,String(int(scale))+" NM",ink,1);
-  pill(72,207,29,29);for(int i=0;i<3;i++){screen.drawPixel(79,215+i*4,mint);screen.drawFastHLine(84,215+i*4,10,ink);}
+  const int scaleWidth=max(bar+12,56);
+  pill(5,mapButtonY,scaleWidth,mapButtonHeight);
+  centeredLabel(5,mapButtonY+5,scaleWidth,15,String(int(scale))+" NM",ink,2);
+  screen.drawFastHLine(5+(scaleWidth-bar)/2,mapButtonY+22,bar,ink);
+  pill(72,mapButtonY,29,mapButtonHeight);
+  for(int i=0;i<3;i++){
+    const int row=mapButtonY+10+i*4;
+    screen.fillRect(79,row,2,2,mint);
+    screen.fillRect(84,row,10,2,ink);
+  }
   zoomButtons(mapWidth);
   screen.resetViewport();
   if(cardOpen)drawCard(p,town,inside,distance);
