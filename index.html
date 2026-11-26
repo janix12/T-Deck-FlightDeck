@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d1c22">
+  <title>FlightDeck · USB-telepítő</title>
+  <link rel="stylesheet" href="./web-installer/style.css">
+</head>
+<body>
+  <header>
+    <a class="brand" href="https://github.com/janix12/T-Deck-FlightDeck"><span aria-hidden="true">✈</span> FlightDeck</a>
+    <nav aria-label="Nyelv / Language"><a href="?lang=hu" lang="hu" hreflang="hu">Magyar</a><a href="?lang=en" lang="en" hreflang="en">English</a></nav>
+  </header>
+  <main>
+    <section aria-labelledby="title">
+      <p class="model">LILYGO T-DECK <span>/</span> v1.0</p>
+      <h1 id="title" data-t="title">USB-telepítő</h1>
+      <p class="intro" data-t="intro">Csatlakoztasd az eredeti T-Decket USB-adatkábellel a számítógéphez, kapcsold be, majd zárd be a soros monitort.</p>
+      <fieldset id="modes" disabled>
+        <legend data-t="mode">Telepítési mód</legend>
+        <label><input type="radio" name="mode" value="update" checked><span><strong data-t="update">FlightDeck frissítése</strong><small data-t="updateHelp">A már telepített FlightDeck beállításai megmaradnak.</small></span></label>
+        <label><input type="radio" name="mode" value="full"><span><strong data-t="full">Első telepítés</strong><small data-t="fullHelp">A teljes firmware felülírja a korábbi rendszert és a mentett beállításokat.</small></span></label>
+      </fieldset>
+      <button id="install" disabled data-t="button">Csatlakozás és telepítés</button>
+      <p class="support" data-t="support">Asztali Chrome vagy Edge szükséges. A gomb után válaszd ki a T-Deck USB-portját.</p>
+      <div id="feedback" aria-live="polite" role="status"><span id="status"></span> <span id="percent"></span></div>
+      <progress hidden id="progress" max="100" value="0" aria-label="USB"></progress>
+      <noscript>A telepítéshez engedélyezd a JavaScriptet. / Enable JavaScript to install via USB.</noscript>
+    </section>
+    <aside>
+      <figure><img src="./docs/images/airspace.png" width="320" height="240" alt="FlightDeck" data-alt><figcaption><span class="dot"></span><span data-t="caption">A FlightDeck légtérnézete a T-Decken</span></figcaption></figure>
+      <details><summary data-t="help">Nem csatlakozik a T-Deck?</summary><p data-t="boot">Tartsd lenyomva a trackball közepét, nyomd meg és engedd el az RST gombot, majd engedd el a trackballt. Próbáld meg újra a csatlakozást. Ha a port nem jelenik meg, ellenőrizd az adatkábelt, és zárd be a portot használó többi alkalmazást.</p></details>
+      <a class="manual" href="https://github.com/janix12/T-Deck-FlightDeck/releases/tag/v1.0" data-t="manual">Firmware letöltése és kézi telepítés ↗</a>
+    </aside>
+  </main>
+  <script type="module" src="./web-installer/installer.js"></script>
+</body>
+</html>

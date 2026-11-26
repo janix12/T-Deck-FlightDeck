@@ -1,6 +1,8 @@
 # FlightDeck for LilyGO T-Deck
 
-**[Download the ready-to-flash firmware and follow the short installation guide →](https://github.com/janix12/T-Deck-FlightDeck/releases/latest)**
+**[Open the USB installer →](https://janix12.github.io/T-Deck-FlightDeck/?lang=en)** · [Firmware downloads and manual installation](https://github.com/janix12/T-Deck-FlightDeck/releases/latest)
+
+Open the installer in desktop Chrome or Edge and connect your original T-Deck with a USB data cable. Choose **First installation** for a new device or to replace another system. If it already runs FlightDeck, choose **Update FlightDeck** to keep your settings. Click **Connect and install** and select the device’s USB port.
 
 **[Magyar útmutató](README.hu.md)** · [Hardware and schematics](docs/hardware.md) · [Map data and credits](maps/README.md)
 
