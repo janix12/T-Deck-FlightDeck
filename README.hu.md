@@ -29,6 +29,12 @@ A képek a v1.3.1-et futtató T-Deck kijelzőjéről származnak. A lapcím mell
 
 A T-Decken rögzített bemutatók egy korábbi budapesti forgalmi mintát használnak.
 
+**Egyetlen gép követése**
+
+![A DEMO101 kiválasztása és a Csak ez a gép bekapcsolása után bezárul az adatlap. A környező települések elmozdulnak, miközben a repülő középen marad.](docs/images/follow-aircraft-hu.gif)
+
+A járat adatlapjának alján kapcsold be a **Csak ez a gép** kapcsolót. Ezzel a **Követés** is bekapcsol. Koppints a **×** gombra a teljes térképhez. A GIF gyorsított, szimulált útvonalon mutatja a DEMO101 mozgását.
+
 ![A T-Deck Wi-Fi-jelzője bontáskor és újracsatlakozáskor](docs/images/wifi-reconnect-hu.gif)
 
 A felső sávban három ív jelzi az aktív kapcsolatot, áthúzott ikon a szakadást, környíl az újracsatlakozást. A képkockákat egy T-Decken rögzítettük.

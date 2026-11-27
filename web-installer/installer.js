@@ -1,6 +1,8 @@
 import { installFirmware } from "./flash.js?v=versions-2";
 
 const en = {
+  soloDemoCaption: "Solo aircraft · following DEMO101 on a simulated track",
+  soloDemoAlt: "DEMO101 is selected, Solo aircraft is enabled and the details are closed. The full map moves under the centred aircraft.",
   touchMapCaption: "Touch controls · drag, zoom and recentre",
   touchMapAlt: "A finger drags the map to the right, taps + to zoom in, then taps the Airspace title to centre the map again.",
   trackballCaption: "Using the trackball with recorded flight data",

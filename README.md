@@ -29,6 +29,12 @@ These screens were captured on a T-Deck running v1.3.1. The three waves beside t
 
 These T-Deck recordings replay an earlier traffic sample from Budapest.
 
+**Follow a single aircraft**
+
+![DEMO101 is selected, Solo aircraft is enabled and the details are closed. Towns move across the full map while the aircraft stays in the centre.](docs/images/follow-aircraft-en.gif)
+
+Turn on **Solo aircraft** at the bottom of the flight details. This also turns on **Follow**. Tap **×** to return to the full map. The GIF shows DEMO101 flying an accelerated, simulated track.
+
 ![Wi-Fi status on the T-Deck as the connection drops and returns](docs/images/wifi-reconnect-en.gif)
 
 The top bar shows three arcs when connected, a crossed-out icon when offline, and a circular arrow while reconnecting. The animation uses frames captured on a T-Deck.
