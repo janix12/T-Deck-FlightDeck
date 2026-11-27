@@ -1,6 +1,8 @@
 import { installFirmware } from "./flash.js?v=versions-2";
 
 const en = {
+  instrumentsDemoCaption: "Instruments · temperature, humidity and air pressure",
+  instrumentsDemoAlt: "The hamburger menu opens the Instruments screen. The T-Deck sensors show temperature (°C), relative humidity (%) and air pressure (hPa).",
   heatDemoCaption: "Temperature map · regional temperatures and a closer look at Budapest",
   heatDemoAlt: "Open-Meteo temperatures and a colour scale. Three taps on + zoom in on Budapest, where the map shows 2.9 °C.",
   rainDemoCaption: "Rain radar · zoom in on Budapest and pause playback",

@@ -47,6 +47,12 @@ The archived RainViewer images span 12:40 to 13:00 Budapest time on 26 November 
 
 The labels show modelled air temperatures two metres above the ground. Tap **+** to zoom in. The colour scale at the bottom adjusts to each view. The recording uses data for 12:30 Budapest time on 27 November 2026. [Data from Open-Meteo](https://open-meteo.com/)
 
+### Instruments
+
+![The hamburger menu opens from Airspace. The Instruments screen then shows temperature, relative humidity and air pressure.](docs/images/instruments-en.gif)
+
+Tap **☰** in the top left and choose **Instruments**. Temperature (°C) and air pressure (hPa) appear next to the sensor name. **RH** shows relative humidity as a percentage. The readings in the recording come from sensors connected to the T-Deck.
+
 ![Wi-Fi status on the T-Deck as the connection drops and returns](docs/images/wifi-reconnect-en.gif)
 
 The top bar shows three arcs when connected, a crossed-out icon when offline, and a circular arrow while reconnecting. The animation uses frames captured on a T-Deck.

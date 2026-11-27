@@ -47,6 +47,12 @@ A RainViewer archivált képei 2026. november 26-án, budapesti idő szerint 12:
 
 A címkék a felszín felett két méterrel számított léghőmérsékletet mutatják. A **+** gombbal közelíthetsz. Az alsó színskála mindig az adott nézethez igazodik. A felvétel a 2026. november 27-i, budapesti idő szerint 12:30-as adatokat mutatja. [Adatforrás: Open-Meteo](https://open-meteo.com/)
 
+### Műszerek
+
+![A Légtér képernyőn megnyílik a hamburger menü, majd a Műszerek lapon megjelenik a hőmérséklet, a relatív páratartalom és a légnyomás.](docs/images/instruments-hu.gif)
+
+Koppints a bal felső **☰** gombra, majd válaszd a **Műszerek** menüpontot. A szenzor neve mellett a hőmérsékletet (°C) és a légnyomást (hPa) láthatod. Az **RH** a relatív páratartalmat jelzi százalékban. Az értékeket a felvételen a T-Deckhez csatlakoztatott szenzorok mérték.
+
 ![A T-Deck Wi-Fi-jelzője bontáskor és újracsatlakozáskor](docs/images/wifi-reconnect-hu.gif)
 
 A felső sávban három ív jelzi az aktív kapcsolatot, áthúzott ikon a szakadást, környíl az újracsatlakozást. A képkockákat egy T-Decken rögzítettük.
