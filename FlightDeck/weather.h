@@ -32,6 +32,7 @@ class WeatherBody:public Stream {
   void flush() override{}
 };
 static int wxGet(const String &url,WeatherBody &body){
+  if(menuOpen)return pollPaused;
   if(!body.data)return -201;
   WiFiClientSecure tls;tls.setCACert(weatherRoots);tls.setHandshakeTimeout(10);
   HTTPClient http;http.setReuse(false);http.setConnectTimeout(7000);http.setTimeout(9000);
@@ -215,13 +216,15 @@ static void weatherTick(){
   WxFrame reply;
   if(xQueueReceive(wxReplies,&reply,0)){
     wxBusy=false;int slot=reply.at.layer-3;auto &old=wxCache[slot];
-    if(reply.code==200 && reply.frames){releaseWx(old);old=reply;rainIndex=-1;}
+    if(reply.code==pollPaused){releaseWx(reply);nextWx[slot]=0;}
+    else if(reply.code==200 && reply.frames){releaseWx(old);old=reply;rainIndex=-1;}
     else {releaseWx(reply);old.code=reply.code;}
-    nextWx[slot]=millis()+(reply.code==200?600000:60000);dirty=true;
+    if(reply.code!=pollPaused)nextWx[slot]=millis()+(reply.code==200?600000:60000);
+    dirty=true;
     Serial.printf("WEATHER layer=%d code=%d frames=%d epoch=%ld center=%.4f,%.4f\n",reply.at.layer,reply.code,reply.frames,(long)reply.stamp[0],reply.at.lat,reply.at.lon);
     if(reply.at.layer==4 && reply.frames)Serial.printf("HEAT source=%s center_C=%.1f\n",reply.metar?"METAR":"Open-Meteo",reply.temps[4]);
   }
-  if(!weatherPage() || wxBusy || WiFi.status()!=WL_CONNECTED || time(nullptr)<1700000000)return;
+  if(menuOpen || !weatherPage() || wxBusy || WiFi.status()!=WL_CONNECTED || time(nullptr)<1700000000)return;
   auto q=weatherView();auto &old=wxCache[page-3];
   if(!due(millis(),nextWx[page-3]) && (sameWx(old.at,q)||sameWx(lastWxJob,q)))return;
   if(millis()-lastWxAttempt<1500)return;

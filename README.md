@@ -88,7 +88,10 @@ The device reconnects after losing Wi-Fi. When the signal stays weak, it looks f
 | Action | How |
 |---|---|
 | Open the menu | Tap **☰** or press **M**. Keys **1–5** open Airspace, Instruments, Settings, Rain radar and Heat map. |
+| Leave the menu open | The menu closes 60 seconds after the last touch, keypress or trackball input. While it is open, new aircraft requests, weather requests and automatic firmware checks pause. |
 | Zoom or inspect a flight | Tap **+ / −** or press **I / O**. Open the list with the lower-left list icon. Tap it again, tap **×**, or press **F** to return to the full map. Swipe the side card to scroll. |
+| Follow a flight | Select an aircraft from the list, scroll to the bottom of its details and turn on **Follow**. The map zooms in and centers on each new position. If the signal is lost, the last known position stays visible. The device looks for the aircraft again at the normal refresh interval. |
+| Solo aircraft | This independent switch hides other aircraft icons on the map. You can still browse the list. Both switches stay active when you close the card and turn off when you choose another aircraft. |
 | Read aircraft symbols | A filled plane has a position at most 90 seconds old. An outline marks an older position. A **?** means the heading is unknown. States marked **\*** are estimates from movement. |
 | Read the weather | RainViewer supplies up to three recent frames. Tap the bottom time label to pause or resume. The heat map uses nine Open-Meteo samples or nearby METAR airport observations. Both weather views refresh about every ten minutes. |
 | Check hardware | Open **Instruments** (key **2**). Press **B** to test the speaker or **R** to retry mounting the card. The battery icon shows estimated charge on battery power or **USB** on detected external power. The blue LED indicates charging. |

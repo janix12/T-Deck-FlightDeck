@@ -26,7 +26,7 @@ static void setPalette(){
  bg=rgb565(p.card);ink=rgb565(p.text);muted=rgb565(p.sub);grid=rgb565(p.line);
  mint=rgb565(p.accent);amber=rgb565(p.hot);land=rgb565(p.land);river=rgb565(p.river);edge=rgb565(p.edge);
 }
-static bool menuOpen,sleeping,cardOpen;
+static bool sleeping,cardOpen;
 static int menuIndex;
 static uint32_t lastActivity;
 static bool interact(){

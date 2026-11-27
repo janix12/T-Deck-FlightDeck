@@ -41,6 +41,14 @@ static uint32_t nextFetch,lastGpsChange,lastSentence,lastLog;
 static const int rates[]={9600,38400,115200,4800,19200,57600};
 static int rateIndex,activeRate;
 static Traffic traffic,incoming;
+static bool followPlane,onlyPlane;
+static Plane pinnedPlane{};
+static int zoomStep,followZoom;
+static bool lastWasLookup;
+static const Plane *selectedPlane(){
+  if(selected>=0 && selected<traffic.count)return &traffic.planes[selected];
+  return followPlane || onlyPlane?&pinnedPlane:nullptr;
+}
 static int apiCode;
 #include "appearance.h"
 static uint32_t lastNetAttempt,lastSignalCheck,weakSince,lastRoamScan;
@@ -263,7 +271,7 @@ static bool applyField(){
   if(field==LIGHT) backlight(edit.toInt());
   if(field==KEY_LIGHT)keyboardLight(edit.toInt());
   if(field==BAUD || field==GPS_PIN) { rateIndex=0; startGps(); }
-  if(field==RANGE || field==LAT || field==LON){ free(traffic.planes);traffic={}; selected=0; nextFetch=millis(); }
+  if(field==RANGE || field==LAT || field==LON){ free(traffic.planes);traffic={}; selected=zoomStep=0; followPlane=onlyPlane=false; nextFetch=millis(); }
   return true;
 }
 static String valueFor(int f){
@@ -542,7 +550,7 @@ static void activate(){
       edit=field==LANG?(english()?"HU":"EN"):String((cfg[THEME].toInt()+1)%3);
       applyField();
     }else {editing=true; edit=""; notice="";pickedSsid=field==PASS?cfg[SSID]:String("");pickedAuth=-1;}
-  } else if(page==1) beep(); else if(page==0){if(cardOpen && cardList)pickPlane(listCursor);else if(!cardOpen)cardMode(true);else cardOpen=false;}
+  } else if(page==1) beep(); else if(page==0){if(cardOpen && cardList)pickPlane(listCursor);else if(!cardOpen)cardMode(true);else if(switchFocus>=0)togglePlaneSwitch(switchFocus);else cardOpen=false;}
   else if(page==3){playing=!playing;rainIndex=playing?-1:(wxCache[0].frames?int(millis()/1400%wxCache[0].frames):0);}
   dirty=true;
 }
@@ -609,15 +617,21 @@ static void input(){
   init=true;
   static bool pressed=false;
   static bool dragCard=false,scrolled=false;
-  static int firstY,lastY;
+  static int firstX,firstY,lastY;
   int16_t x,y;
   bool down=touchOK && touch.isPressed() && touch.getPoint(&x,&y,1);
   if(down && pressed && dragCard){
-    if(abs(y-firstY)>4) scrolled=true;
-    if(scrolled){scrollCard(lastY-y);lastY=y;}
+    if(abs(y-firstY)>4 || abs(x-firstX)>6) scrolled=true;
+    if(scrolled){switchFocus=-1;scrollCard(lastY-y);lastY=y;}
   }
   if(!down && pressed && dragCard){
-    if(!scrolled && cardList) pickPlane((listScroll+firstY-cardBodyY)/listRow);
+    if(!scrolled && !menuOpen && page==0 && cardOpen){
+      if(cardList)pickPlane((listScroll+firstY-cardBodyY)/listRow);
+      else{
+        int offset=firstY-cardBodyY+detailScroll-switchesTop;
+        if(offset>=0 && offset<2*switchHeight)togglePlaneSwitch(offset/switchHeight);
+      }
+    }
     dragCard=false;
   }
   if(down && !pressed){
@@ -659,7 +673,7 @@ static void input(){
       cardMode(x>=listTabX);
     }
     else if(page==0 && cardOpen && x>=cardX && y>=cardBodyY && y<cardBodyY+cardBodyH){
-      dragCard=true;scrolled=false;firstY=lastY=y;
+      dragCard=true;scrolled=false;firstX=x;firstY=lastY=y;
     }
     else if(page==0 && y>=205 && x>=mapWidth-67 && x<mapWidth) zoomMap(x>=mapWidth-35?1:-1);
     else if(page==0 && y>=204 && x>=69 && x<=103){
@@ -667,11 +681,13 @@ static void input(){
     }
     else if(page==0 && traffic.count && y>=mapTop && y<mapTop+mapHeight) {
       if(x<mapWidth){
-        float best=225; MapView v=mapView();
+        float best=225; int hit=-1;MapView v=mapView();
         for(int i=0;i<traffic.count;i++){const Plane &p=traffic.planes[i];
+          if(onlyPlane && i!=selected)continue;
           float dist=sq(float(v.x(p.lon)-x))+sq(float(v.y(p.lat)-y));
-          if(dist<best){best=dist;pickPlane(i);}
+          if(dist<best){best=dist;hit=i;}
         }
+        if(hit>=0)pickPlane(hit);
       }
     }
     dirty=true;
@@ -681,17 +697,28 @@ static void input(){
 static void handleTraffic(){
   uint32_t now=millis();
   if(xQueueReceive(results,&incoming,0)==pdTRUE){
-    busy=false; apiCode=incoming.code;budget=incoming.budget;
-    if(apiCode==200){
-      int nextSelection=0;
+    busy=false;budget=incoming.budget;
+    if(incoming.code==pollPaused)return;
+    apiCode=incoming.code;
+    if(apiCode==200 && incoming.lookupId[0] && (!followPlane || strcmp(incoming.lookupId,pinnedPlane.id))){
+      free(incoming.planes);incoming.planes=nullptr;
+    }else if(apiCode==200){
+      lastWasLookup=incoming.lookupId[0];
+      if(lastWasLookup && !incoming.count){
+        // An empty aircraft lookup says nothing about other traffic in the area.
+        free(incoming.planes);incoming.planes=nullptr;dirty=true;return;
+      }
+      const bool pinned=followPlane || onlyPlane;
+      int nextSelection=pinned?-1:0;
       for(int i=0;i<incoming.count;i++){
         Plane &p=incoming.planes[i];
         if(!p.id[0]) continue;
         for(int j=0;j<traffic.count;j++) if(!strcmp(p.id,traffic.planes[j].id)){
           updateMotion(p,traffic.planes[j]);
-          if(j==selected) nextSelection=i;
+          if(!pinned && j==selected) nextSelection=i;
           break;
         }
+        if(pinned && !strcmp(p.id,pinnedPlane.id)){pinnedPlane=p;nextSelection=i;}
       }
       free(traffic.planes); traffic=incoming; incoming.planes=nullptr; selected=nextSelection;
       listCursor=constrain(listCursor,0,max(0,traffic.count-1));
@@ -699,12 +726,19 @@ static void handleTraffic(){
     nextFetch=now+(apiCode==-104?60000UL:1000UL);dirty=true;
   }
   if(nextFetch && due(now,nextFetch))nextFetch=0;
-  if(!busy && !nextFetch && !sleeping && !bench.active && page==0 && budgetReady && WiFi.status()==WL_CONNECTED){
+  if(!busy && !nextFetch && !menuOpen && !sleeping && !bench.active && page==0 && budgetReady && WiFi.status()==WL_CONNECTED){
     uint32_t utc=time(nullptr);
     unsigned period=cfg[PERIOD].toInt();
     if(utc<trafficClockFloor || utc<budget.nextAllowed(period))return;
-    TrafficRequest request{currentArea(),period};
-    request.area.radius=max(request.area.radius,int(ceilf(viewRadius(zoomStep))));
+    Area observer=currentArea();
+    TrafficRequest request{observer,period,observer,{}};
+    request.area.radius=max(request.area.radius,int(ceilf(viewRadius(followPlane?followZoom:zoomStep))));
+    if(followPlane){
+      request.area.lat=pinnedPlane.lat;request.area.lon=pinnedPlane.lon;
+      // Allow room for a fast aircraft to travel between scheduled updates.
+      request.area.radius=max(request.area.radius,int(period/5+10));
+      if(selected<0 && !lastWasLookup)strcpy(request.lookupId,pinnedPlane.id);
+    }
     busy=xQueueSend(requests,&request,0)==pdTRUE;
   }
 }
@@ -740,14 +774,14 @@ static void verifyCardWrite(){
   Serial.printf("SDTEST write=%d close=%d remount=%d verified=%u removed=%d\n",ok,closed,sdOK,match?512u:0u,removed);
 }
 static void status(){
-  Serial.printf("GUI page=%d menu=%d card=%d sleep=%d minutes=%ld theme=%ld lang=%s wxBusy=%d rain=%d heat=%d\n",page,menuOpen,cardOpen,sleeping,cfg[SAVER].toInt(),cfg[THEME].toInt(),cfg[LANG].c_str(),wxBusy,wxCache[0].frames,wxCache[1].frames);
+  Serial.printf("GUI page=%d menu=%d card=%d sleep=%d minutes=%ld theme=%ld lang=%s wxBusy=%d rain=%d heat=%d follow=%d solo=%d\n",page,int(menuOpen.load()),cardOpen,sleeping,cfg[SAVER].toInt(),cfg[THEME].toInt(),cfg[LANG].c_str(),wxBusy,wxCache[0].frames,wxCache[1].frames,followPlane,onlyPlane);
   MapView v=mapView();
   Serial.printf("MapIO source=%s fat=%d wp=%d install=%d written=%u probe=%d reopenSize=%u read=%d err=%u/%u sdfat=%s fatfs=%s diff=%d actual=%d expected=%d\n",
     mapFromSD?"SD":"flash",sdOK?card.fatType():0,writeProtect,installedMap,writtenLength,sameHandle,storedLength,mapReadCount,ioCode,ioData,probeStatus,nativeStatus,diffByte,actualByte,diffByte<0?-1:flightdeck_map_start[diffByte]);
   Serial.printf("Map %s %s bytes=%u places=%u zoom=%.1f NM",mapStatus,mapFilename,mapProgress,atlas?atlas->places:0,weatherPage()?viewRadius(weatherZoomStep):v.nm);
-  if(traffic.count){
+  if(const Plane *plane=selectedPlane()){
     bool inside; float km;
-    const Plane &p=traffic.planes[selected];
+    const Plane &p=*plane;
     const char *town=placeBelow(p,inside,km);
     Serial.printf(" town=%s inside=%d state=%s",town?town:"--",inside,flightState(p));
   }
@@ -796,8 +830,9 @@ void setup(){
 void loop(){
   static uint32_t lastInput,lastFrame,lastSample,lastStatus;
   uint32_t now=millis();
-  otaTick();readGps(); readAht(); weatherTick(); handleTraffic(); networkProbe();
   if(now-lastInput>=28){lastInput=now; if(bench.active)benchInput();else input();}
+  if(menuOpen && millis()-lastActivity>=60000UL){menuOpen=false;dirty=true;}
+  otaTick();readGps(); readAht(); weatherTick(); handleTraffic(); networkProbe();
   if(!bench.active && !sleeping && cfg[SAVER].toInt()>0 && millis()-lastActivity>=60000UL*cfg[SAVER].toInt())startSaver();
   if(now-lastSample>=1500){lastSample=now; sampleEnvironment(); sampleInputs();}
   if(dirty || now-lastFrame>=1000){dirty=false;lastFrame=now; render();}

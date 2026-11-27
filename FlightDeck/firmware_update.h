@@ -109,7 +109,7 @@ static void updateWorker(void *arg){
   UpdateJob job=*static_cast<UpdateJob*>(arg);delete static_cast<UpdateJob*>(arg);
   UpdateReply reply{};reply.state=UpdateState::error;
   xSemaphoreTake(networkGate,portMAX_DELAY);
-  reply.error=fetchUpdate(job,reply);
+  reply.error=!job.install && menuOpen?pollPaused:fetchUpdate(job,reply);
   xSemaphoreGive(networkGate);
   xQueueSend(otaReplies,&reply,portMAX_DELAY);vTaskDelete(nullptr);
 }
@@ -127,6 +127,7 @@ static void beginUpdate(bool install,const FirmwareOffer *archived=nullptr){
 static void otaTick(){
   UpdateReply reply;
   if(otaReplies && xQueueReceive(otaReplies,&reply,0)==pdTRUE){
+    if(reply.error==pollPaused){otaState=UpdateState::idle;otaTried=false;return;}
     otaState=reply.state;otaError=reply.error;offer=reply.offer;
     lastOtaTry=millis();otaDelay=otaError?30UL*60000:86400000UL;dirty=true;
     Serial.printf("FW check state=%d error=%d version=%s\n",int(otaState),otaError,offer.version);
@@ -135,7 +136,7 @@ static void otaTick(){
     if(millis()-lastOtaTry>1200)ESP.restart();
     return;
   }
-  if((!updateScreen || updatePage==UpdatePage::status) && (!otaTried || millis()-lastOtaTry>=otaDelay))beginUpdate(false);
+  if(!menuOpen && (!updateScreen || updatePage==UpdatePage::status) && (!otaTried || millis()-lastOtaTry>=otaDelay))beginUpdate(false);
 }
 static bool updateBusy(){
   return otaState==UpdateState::checking || otaState==UpdateState::downloading || otaState==UpdateState::rebooting;

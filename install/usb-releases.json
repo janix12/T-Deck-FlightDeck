@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.3.0",
+    "update": {
+      "sha256": "c40f5c6528a774dcfea873c6a2c031caf7514ceb4263b0d84b71c6cd01914f7f",
+      "md5": "3c606571bb4b394ef1dc148e17d0f74d"
+    },
+    "full": {
+      "sha256": "aaa3d0a654856c52c9346471afe359990b0c0409a79fbb85b3ca93c737b7394c",
+      "md5": "46f05b29a2860c8092107498c33a4924"
+    }
+  },
+  {
     "version": "1.2.0",
     "update": {
       "sha256": "78c48bd2a3d5e2e2026a078e4e87637837a29f967ee8fb56041688117450f69e",

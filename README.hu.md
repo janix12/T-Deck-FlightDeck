@@ -88,7 +88,10 @@ Wi-Fi-szakadáskor a készülék újracsatlakozik. Tartósan gyenge jelnél azon
 | Művelet | Mit nyomj meg? |
 |---|---|
 | Menü és oldalak | A **☰** vagy az **M** nyitja a menüt. Az **1–5** gombok sorrendben a Légteret, a Műszereket, a Beállításokat, az Esőradart és a Hőtérképet nyitják meg. |
+| Nyitva hagyott menü | A menü az utolsó érintés, billentyű vagy trackball-mozdulat után 60 másodperccel bezárul. Amíg nyitva van, az új repülő-, időjárás- és automatikus verziólekérdezések szünetelnek. |
 | Nagyítás és gépadatok | Koppints a **+ / −** gombokra, vagy nyomj **I / O**-t. A bal alsó listaikon megnyitja a géplistát. Újabb koppintás, a **×** vagy az **F** bezárja. Az oldalsó kártyát függőlegesen húzva görgetheted. |
+| Követés | Válassz gépet a listából, görgess az adatlap aljára, és kapcsold be a **Követés** kapcsolót. A térkép ránagyít a gépre, és minden új pozíciónál középre helyezi. Ha a jel eltűnik, az utolsó ismert hely marad látható. A készülék a szokásos frissítési ütemben keresi újra. |
+| Csak ez a gép | Ez a külön kapcsoló elrejti a többi gép ikonját a térképen. A lista továbbra is böngészhető. A kártyát bezárhatod, mindkét kapcsoló érvényben marad. Másik gép kiválasztásakor a két kapcsoló kikapcsol. |
 | Repülőikonok | A kitöltött ikon legfeljebb 90 másodperces pozíciót jelöl. Régebbi pozíciónál a gép körvonalként látszik. A **?** ismeretlen irányt, az állapot melletti **\*** a mozgásból becsült állapotot jelzi. |
 | Időjárás | Az esőradar legfeljebb három RainViewer-képkockát játszik le. Az alsó időpontra koppintva megállíthatod vagy folytathatod. A hőtérkép kilenc Open-Meteo mintát vagy közeli repülőterek METAR-észleléseit használja. Mindkét nézet körülbelül tízpercenként frissül. |
 | Hardver ellenőrzése | A **2** nyitja a **Műszerek** lapot. A **B** hangszórópróbát indít, az **R** újrapróbálja az SD csatolását. Az akkuikon akkuról becsült százalékot, felismert külső tápon **USB** feliratot mutat. A tényleges töltést a kék LED jelzi. |

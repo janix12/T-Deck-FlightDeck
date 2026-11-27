@@ -2,10 +2,12 @@
 
 static int mapWidth=320,midX=160;
 static constexpr int mapTop=0,mapHeight=240,midY=120;
-static int zoomStep,weatherZoomStep;
+static int weatherZoomStep;
+static float manualLat,manualLon;
 static bool cardList;
-static int detailScroll,listScroll,listCursor;
-static constexpr int cardX=190,cardBodyY=58,cardBodyH=176,listRow=29,detailHeight=314;
+static int detailScroll,listScroll,listCursor,switchFocus=-1;
+static constexpr int cardX=190,cardBodyY=58,cardBodyH=176,listRow=29;
+static constexpr int switchesTop=318,switchHeight=31,detailHeight=switchesTop+2*switchHeight+4;
 static constexpr int cardTop=29,listTabX=cardX+55,closeButtonWidth=30;
 static int scrollLimit(){
   return max(0,(cardList?traffic.count*listRow:detailHeight)-cardBodyH);
@@ -15,16 +17,34 @@ static void scrollCard(int pixels){
   offset=constrain(offset+pixels,0,scrollLimit());dirty=true;
 }
 static void cardMode(bool list){
-  cardOpen=true;cardList=list;listCursor=selected;
+  cardOpen=true;cardList=list;listCursor=max(0,selected);switchFocus=-1;
   if(list) listScroll=constrain(selected*listRow-listRow,0,scrollLimit());
   dirty=true;
 }
 static void pickPlane(int i){
   if(i<0 || i>=traffic.count) return;
-  cardOpen=true;selected=listCursor=i;detailScroll=0;cardList=false;dirty=true;
+  if((followPlane || onlyPlane) && strcmp(pinnedPlane.id,traffic.planes[i].id))followPlane=onlyPlane=false;
+  if(zoomStep>0){manualLat=traffic.planes[i].lat;manualLon=traffic.planes[i].lon;}
+  cardOpen=true;selected=listCursor=i;detailScroll=0;switchFocus=-1;cardList=false;dirty=true;
+}
+static void togglePlaneSwitch(int row){
+  const Plane *p=selectedPlane();
+  if(!p || !p->id[0])return;
+  pinnedPlane=*p;
+  if(row==0){
+    followPlane=!followPlane;
+    if(followPlane){followZoom=max(1,zoomStep+1);lastWasLookup=false;}
+  }else onlyPlane=!onlyPlane;
+  if(!followPlane && !onlyPlane && selected<0)selected=0;
+  dirty=true;
 }
 static void cardBall(int direction){
-  if(!cardList){scrollCard(direction*19);return;}
+  if(!cardList){
+    if(selectedPlane() && detailScroll==scrollLimit() && (direction>0 || switchFocus>=0)){
+      switchFocus=constrain(switchFocus+direction,-1,1);dirty=true;
+    }else {switchFocus=-1;scrollCard(direction*19);}
+    return;
+  }
   listCursor=constrain(listCursor+direction,0,max(0,traffic.count-1));
   if(listCursor*listRow<listScroll) listScroll=listCursor*listRow;
   if((listCursor+1)*listRow>listScroll+cardBodyH) listScroll=(listCursor+1)*listRow-cardBodyH;
@@ -45,15 +65,21 @@ static MapView mapView(){
   Area area=traffic.stamp?traffic.area:currentArea();
   MapView v{};
   v.lat=area.lat; v.lon=area.lon;
-  if(zoomStep>0 && traffic.count){v.lat=traffic.planes[selected].lat;v.lon=traffic.planes[selected].lon;}
-  v.nm=viewRadius(zoomStep);
+  const Plane *p=selectedPlane();
+  if(followPlane && p){v.lat=p->lat;v.lon=p->lon;}
+  else if(zoomStep>0){v.lat=manualLat;v.lon=manualLon;}
+  v.nm=viewRadius(followPlane?followZoom:zoomStep);
   v.pixelsPerDeg=111.195f*(mapHeight/2)/(1.852f*v.nm);
   v.lonFactor=v.pixelsPerDeg*cosf(radians(v.lat));
   return v;
 }
 static void zoomMap(int direction){
-  int &level=page>=3?weatherZoomStep:zoomStep;
+  int &level=page>=3?weatherZoomStep:followPlane?followZoom:zoomStep;
   if(viewRadius(level)==viewRadius(level+direction)) return;
+  if(page==0 && !followPlane && level==0 && direction>0){
+    const Plane *p=selectedPlane();Area a=currentArea();
+    manualLat=p?p->lat:a.lat;manualLon=p?p->lon:a.lon;
+  }
   level+=direction;
   if(page==0 && (viewRadius(level)>cfg[RANGE].toInt() || level<=0)) nextFetch=millis();
   dirty=true;
@@ -96,7 +122,7 @@ static void drawCard(const Plane *p,const char *town,bool inside,float distance)
   centeredLabel(cardX+2,32,52,23,tr("Gép","Flight"),cardList?muted:mint);
   centeredLabel(listTabX,32,73,23,String(tr("Lista ","List "))+String(traffic.count),cardList?mint:muted);
   screen.setViewport(cardX+2,cardBodyY,125,cardBodyH,false);
-  if(!p) label(cardX+7,65,tr("Nincs gép","No aircraft"),muted);
+  if(!p || (cardList && !traffic.count)) label(cardX+7,65,tr("Nincs gép","No aircraft"),muted);
   else if(cardList){
     listScroll=constrain(listScroll,0,scrollLimit());
     for(int i=listScroll/listRow;i<traffic.count;i++){
@@ -120,7 +146,7 @@ static void drawCard(const Plane *p,const char *town,bool inside,float distance)
       label(cardX+6,y+42,name.substring(0,split),ink,1);
       label(cardX+6,y+53,name.substring(split),ink,1);
     }
-    cardField(y+67,tr("ÁLLAPOT","STATUS"),stateText(*p));
+    cardField(y+67,tr("ÁLLAPOT","STATUS"),selected<0?tr("Elveszett jel","Signal lost"):stateText(*p));
     cardField(y+98,tr("MAGASSÁG","ALTITUDE"),p->ground?tr("Foldon","Ground"):number(p->altitude)+" m");
     cardField(y+129,tr("SEBESSÉG","SPEED"),number(p->speed)+" km/h");
     cardField(y+160,tr("TÁVOLSÁG","DISTANCE"),number(p->km,1)+" km");
@@ -129,6 +155,17 @@ static void drawCard(const Plane *p,const char *town,bool inside,float distance)
     cardField(y+253,tr("ICAO / AZONOSÍTÓ","ICAO ADDRESS"),p->id);
     if(town && !inside) cardField(y+284,tr("HELYSÉG TÁVOLSÁGA","TOWN DISTANCE"),number(distance,1)+" km");
     else label(cardX+6,y+287,tr("* Becsült állapot","* Estimated state"),muted,1);
+    for(int i=0;i<2;i++){
+      int top=cardBodyY+switchesTop+i*switchHeight-detailScroll;
+      if(top+switchHeight<=cardBodyY || top>=cardBodyY+cardBodyH)continue;
+      bool on=i?onlyPlane:followPlane;
+      uint16_t color=p->id[0]?(on?mint:muted):grid;
+      if(switchFocus==i)screen.drawRoundRect(cardX+3,top,119,switchHeight-1,5,mint);
+      label(cardX+7,top+8,i?tr("Csak ez a gép","Solo aircraft"):tr("Követés","Follow"),ink);
+      int left=cardX+97,cy=top+15;
+      screen.fillRoundRect(left,cy-7,23,15,7,on?color:grid);
+      screen.fillCircle(left+(on?15:7),cy,5,on?bg:color);
+    }
   }
   screen.resetViewport();
   if(p && scrollLimit()){
@@ -190,7 +227,7 @@ static void radar(){
   mapWidth=cardOpen?188:320;midX=mapWidth/2;
   MapView v=mapView();
   bool inside=false; float distance=INFINITY;
-  const Plane *p=traffic.count?&traffic.planes[selected]:nullptr;
+  const Plane *p=selectedPlane();
   const char *town=p?placeBelow(*p,inside,distance):nullptr;
   screen.setViewport(0,mapTop,mapWidth,mapHeight,false);
   screen.fillRect(0,mapTop,mapWidth,mapHeight,land);
@@ -201,10 +238,10 @@ static void radar(){
   const time_t now=time(nullptr);
   bool stale=traffic.stamp && now-traffic.stamp>cfg[PERIOD].toInt()+30;
   for(int i=traffic.count-1;i>=-1;i--){
-    if(!p || i==selected) continue;
+    if(!p || (i>=0 && (i==selected || onlyPlane))) continue;
     const Plane &q=i<0?*p:traffic.planes[i];
     int x=v.x(q.lon),y=v.y(q.lat);
-    if(x>=-9 && x<mapWidth+9 && y>=mapTop-9 && y<mapTop+mapHeight+9) drawPlane(x,y,q.heading,i<0,now-q.observed>90);
+    if(x>=-9 && x<mapWidth+9 && y>=mapTop-9 && y<mapTop+mapHeight+9) drawPlane(x,y,q.heading,i<0,(i<0 && selected<0) || now-q.observed>90);
   }
 
   const float pixelsPerNm=(mapHeight/2.f)/v.nm;
