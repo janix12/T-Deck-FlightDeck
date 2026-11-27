@@ -10,15 +10,17 @@ The **Firmware version** list selects the latest release by default. To restore 
 
 See which town an aircraft is flying over. FlightDeck turns the 320 × 240 display of a LilyGO T-Deck into a flight map with aircraft details, animated rain radar and a temperature map. Aircraft positions come from ADS-B reports over Wi-Fi. An optional GPS sets the map centre as you travel.
 
-| 32 aircraft around Budapest | Aircraft list and 10 NM scale |
+| Follow and Solo aircraft | The tracked aircraft on the full map |
 |:---:|:---:|
+| ![Both switches are on at the bottom of the aircraft details](docs/images/follow-controls-en.png) | ![The aircraft icon and callsign TEST101 appear in the centre of the full map](docs/images/follow-map-en.png) |
+| **32 aircraft around Budapest** | **Aircraft list and 10 NM scale** |
 | ![32 aircraft on the Budapest radar with the 10 NM scale](https://janix12.github.io/T-Deck-FlightDeck/docs/images/airspace-traffic.png?v=1.1.2) | ![The selected flight and scrollable aircraft list](https://janix12.github.io/T-Deck-FlightDeck/docs/images/flights.png?v=1.1.2) |
 | **Rain radar over Central Europe** | **Surface air temperature** |
 | ![RainViewer precipitation overlay across Central Europe](https://janix12.github.io/T-Deck-FlightDeck/docs/images/rain.png?v=1.0.4) | ![Temperature map around Budapest](https://janix12.github.io/T-Deck-FlightDeck/docs/images/temperature.png?v=1.0.4) |
 | **Main menu** | **Time zone settings** |
 | ![Main menu open over the flight map](https://janix12.github.io/T-Deck-FlightDeck/docs/images/menu.png?v=1.0.4) | ![Time zone editor with Save and Cancel buttons](https://janix12.github.io/T-Deck-FlightDeck/docs/images/time-zone.png?v=1.0.4) |
 
-Both radar screenshots were captured on a T-Deck running v1.1.2 with live traffic. Choose **Beállítások → Nyelv → English** for the English interface. [Earlier example of the API limit notice](docs/images/airspace.png)
+The first pair shows v1.3.0 following the same demo flight, TEST101, before and after closing the details. The next pair shows live traffic captured with v1.1.2. Choose **Beállítások → Nyelv → English** for the English interface. [Earlier example of the API limit notice](docs/images/airspace.png)
 
 ## What you need
 

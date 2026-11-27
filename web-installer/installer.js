@@ -7,6 +7,8 @@ const en = {
   mode: "Installation mode", update: "Update FlightDeck", updateHelp: "Keep the settings on a T-Deck already running FlightDeck.",
   full: "First installation", fullHelp: "The full firmware replaces the previous system and its saved settings.",
   button: "Connect and install", support: "Use desktop Chrome or Edge. After clicking, select the T-Deck’s USB port.",
+  followControlsCaption: "Follow and Solo aircraft · demo flight", followControlsAlt: "The Follow and Solo aircraft switches are both on at the bottom of the aircraft details.",
+  followMapCaption: "Demo flight TEST101 on the full map", followMapAlt: "The aircraft icon and callsign TEST101 appear in the centre of the full map.",
   trafficCaption: "32 aircraft around Budapest · 10 NM", trafficAlt: "Aircraft icons around Budapest with the selected flight’s callsign",
   caption: "Aircraft list · 10 NM", alt: "Open aircraft list with the 10 NM scale",
   limitExample: "Earlier example of the API limit notice ↗",
@@ -50,6 +52,7 @@ document.querySelector('a[hreflang="' + lang + '"]').setAttribute("aria-current"
 if (lang === "en") {
   for (const element of document.querySelectorAll("[data-t]")) element.textContent = en[element.dataset.t];
   for (const image of document.querySelectorAll("[data-alt]")) image.alt = en[image.dataset.alt];
+  for (const image of document.querySelectorAll("[data-en-src]")) image.src = image.dataset.enSrc;
 }
 const button = document.querySelector("#install");
 const modes = document.querySelector("#modes");

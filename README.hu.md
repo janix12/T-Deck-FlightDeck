@@ -10,15 +10,17 @@ A **Firmware-verzió** listában alapból a legfrissebb kiadás van kiválasztva
 
 Nézd meg, melyik település fölött jár egy repülő. A FlightDeck a LilyGO T-Deck 320 × 240 pixeles kijelzőjén repülőtérképet, gépadatlapot, mozgó esőradart és hőmérsékleti térképet jelenít meg. A repülők ADS-B helyzetjelentései Wi-Fi-n érkeznek. Opcionális GPS-szel a térkép utazás közben követi a helyzetedet.
 
-| 32 repülő Budapest körül | Repülőlista és 10 NM-es lépték |
+| Követés és Csak ez a gép | A követett gép a teljes térképen |
 |:---:|:---:|
+| ![A gépadatlapon mindkét kapcsoló be van kapcsolva](docs/images/follow-controls-hu.png) | ![A teljes térkép közepén a TEST101 repülőikonja és hívójele látszik](docs/images/follow-map-hu.png) |
+| **32 repülő Budapest körül** | **Repülőlista és 10 NM-es lépték** |
 | ![32 gép a budapesti radaron, 10 NM-es léptékkel](https://janix12.github.io/T-Deck-FlightDeck/docs/images/airspace-traffic.png?v=1.1.2) | ![A kiválasztott járat és a görgethető repülőlista](https://janix12.github.io/T-Deck-FlightDeck/docs/images/flights.png?v=1.1.2) |
 | **Közép-európai esőradar** | **Felszínközeli léghőmérséklet** |
 | ![RainViewer csapadékréteg Közép-Európa felett](https://janix12.github.io/T-Deck-FlightDeck/docs/images/rain.png?v=1.0.4) | ![Budapest környéki hőmérsékleti térkép](https://janix12.github.io/T-Deck-FlightDeck/docs/images/temperature.png?v=1.0.4) |
 | **Főmenü** | **Időzóna beállítása** |
 | ![A főmenü a légtértérkép fölött](https://janix12.github.io/T-Deck-FlightDeck/docs/images/menu.png?v=1.0.4) | ![Időzóna szerkesztése a Mentés és Mégse gombokkal](https://janix12.github.io/T-Deck-FlightDeck/docs/images/time-zone.png?v=1.0.4) |
 
-A két radarkép ugyanarról a T-Deckről készült v1.1.2-vel, élő forgalommal. A felület nyelve a **Beállítások → Nyelv** sorban váltható. [Korábbi példa az API-korlát jelzésére](docs/images/airspace.png)
+Az első képpáron a v1.3.0 ugyanazt a TEST101 bemutatójáratot követi az adatlap bezárása előtt és után. A következő képpár a v1.1.2-vel rögzített élő forgalmat mutatja. A felület nyelve a **Beállítások → Nyelv** sorban váltható. [Korábbi példa az API-korlát jelzésére](docs/images/airspace.png)
 
 ## Mire van szükséged?
 
