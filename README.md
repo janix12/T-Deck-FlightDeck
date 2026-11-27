@@ -41,6 +41,12 @@ Turn on **Solo aircraft** at the bottom of the flight details. This also turns o
 
 The archived RainViewer images span 12:40 to 13:00 Budapest time on 26 November 2026. Tap **+** to zoom in. Tap the timestamp at the bottom left to pause playback, and tap it again to resume.
 
+### Temperature map around Budapest
+
+![The map shows temperatures in degrees Celsius. Three taps zoom from 160 NM to 20 NM around Budapest, where the map shows 2.9 °C.](docs/images/heat-map-en.gif)
+
+The labels show modelled air temperatures two metres above the ground. Tap **+** to zoom in. The colour scale at the bottom adjusts to each view. The recording uses data for 12:30 Budapest time on 27 November 2026. [Data from Open-Meteo](https://open-meteo.com/)
+
 ![Wi-Fi status on the T-Deck as the connection drops and returns](docs/images/wifi-reconnect-en.gif)
 
 The top bar shows three arcs when connected, a crossed-out icon when offline, and a circular arrow while reconnecting. The animation uses frames captured on a T-Deck.

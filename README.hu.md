@@ -41,6 +41,12 @@ A járat adatlapjának alján kapcsold be a **Csak ez a gép** kapcsolót. Ezzel
 
 A RainViewer archivált képei 2026. november 26-án, budapesti idő szerint 12:40 és 13:00 között készültek. A **+** gombbal közelíthetsz. A bal alsó időbélyegre koppintva megállíthatod a lejátszást, újabb koppintással pedig folytathatod.
 
+### Hőtérkép Budapest körül
+
+![A térképen Celsius-fokban látszanak a hőmérsékletek. Három koppintással 160 NM-ről 20 NM-re közelítünk Budapestre, ahol 2,9 °C látható.](docs/images/heat-map-hu.gif)
+
+A címkék a felszín felett két méterrel számított léghőmérsékletet mutatják. A **+** gombbal közelíthetsz. Az alsó színskála mindig az adott nézethez igazodik. A felvétel a 2026. november 27-i, budapesti idő szerint 12:30-as adatokat mutatja. [Adatforrás: Open-Meteo](https://open-meteo.com/)
+
 ![A T-Deck Wi-Fi-jelzője bontáskor és újracsatlakozáskor](docs/images/wifi-reconnect-hu.gif)
 
 A felső sávban három ív jelzi az aktív kapcsolatot, áthúzott ikon a szakadást, környíl az újracsatlakozást. A képkockákat egy T-Decken rögzítettük.
