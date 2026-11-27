@@ -35,6 +35,12 @@ A T-Decken rögzített bemutatók egy korábbi budapesti forgalmi mintát haszn�
 
 A járat adatlapjának alján kapcsold be a **Csak ez a gép** kapcsolót. Ezzel a **Követés** is bekapcsol. Koppints a **×** gombra a teljes térképhez. A GIF gyorsított, szimulált útvonalon mutatja a DEMO101 mozgását.
 
+**Esőradar Budapest körül**
+
+![A csapadéksáv mozgása három radarképen, nagyítás Budapestre a + gombbal, majd az animáció megállítása az időbélyegre koppintva.](docs/images/rain-radar-hu.gif)
+
+A RainViewer archivált képei 2026. november 26-án, budapesti idő szerint 12:40 és 13:00 között készültek. A **+** gombbal közelíthetsz. A bal alsó időbélyegre koppintva megállíthatod a lejátszást, újabb koppintással pedig folytathatod.
+
 ![A T-Deck Wi-Fi-jelzője bontáskor és újracsatlakozáskor](docs/images/wifi-reconnect-hu.gif)
 
 A felső sávban három ív jelzi az aktív kapcsolatot, áthúzott ikon a szakadást, környíl az újracsatlakozást. A képkockákat egy T-Decken rögzítettük.

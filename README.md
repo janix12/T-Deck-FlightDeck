@@ -35,6 +35,12 @@ These T-Deck recordings replay an earlier traffic sample from Budapest.
 
 Turn on **Solo aircraft** at the bottom of the flight details. This also turns on **Follow**. Tap **×** to return to the full map. The GIF shows DEMO101 flying an accelerated, simulated track.
 
+**Rain radar around Budapest**
+
+![A rain band moves across three radar images. Tapping + zooms in on Budapest, then tapping the timestamp pauses the animation.](docs/images/rain-radar-en.gif)
+
+The archived RainViewer images span 12:40 to 13:00 Budapest time on 26 November 2026. Tap **+** to zoom in. Tap the timestamp at the bottom left to pause playback, and tap it again to resume.
+
 ![Wi-Fi status on the T-Deck as the connection drops and returns](docs/images/wifi-reconnect-en.gif)
 
 The top bar shows three arcs when connected, a crossed-out icon when offline, and a circular arrow while reconnecting. The animation uses frames captured on a T-Deck.

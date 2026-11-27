@@ -1,6 +1,8 @@
 import { installFirmware } from "./flash.js?v=versions-2";
 
 const en = {
+  rainDemoCaption: "Rain radar · zoom in on Budapest and pause playback",
+  rainDemoAlt: "A RainViewer rain band moves, the map zooms in on Budapest, then playback pauses on the 13:00 radar image.",
   soloDemoCaption: "Solo aircraft · following DEMO101 on a simulated track",
   soloDemoAlt: "DEMO101 is selected, Solo aircraft is enabled and the details are closed. The full map moves under the centred aircraft.",
   touchMapCaption: "Touch controls · drag, zoom and recentre",
