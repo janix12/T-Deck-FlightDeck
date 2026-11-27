@@ -116,6 +116,8 @@ The [installation folder](install/) contains two ready-to-flash images. The comm
 
 On first boot, choose **Download** in the **Download map** dialog. The T-Deck downloads the 5.84 MB first edition over Wi-Fi to `/WORLD.FDM` on a writable microSD card. The downloaded map is available offline.
 
+[microSD card and partition guide · capacity, formatting and free space](docs/microsd.md#english)
+
 At startup and every 24 hours, the device checks a small revision file on GitHub. If the map is current, that is the only download. For a new edition it downloads the package automatically and verifies the stored file with SHA-256 before activating it. After corruption or an interrupted download, it retries when Wi-Fi and a synchronised clock are available.
 
 ## Saved Wi-Fi networks and firmware updates

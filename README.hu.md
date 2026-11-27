@@ -116,6 +116,8 @@ A [telepítőmappában](install/) két kész firmware található. Az alábbi pa
 
 Az első indításkor válaszd a **Térkép letöltése** ablakban a **Letöltés** gombot. A T-Deck Wi-Fi-n tölti le az 5,84 MB-os első kiadást az írható microSD-kártyára. A fájl neve `/WORLD.FDM`. A letöltött térképet offline is használhatod.
 
+[microSD-kártya és partíció választása · kapacitás, formázás, szabad hely](docs/microsd.md#magyar)
+
 Induláskor, majd 24 óránként a készülék lekéri a GitHubról a kis verziófájlt. Naprakész térképnél ezzel végez. Új kiadásnál automatikusan letölti a csomagot, és aktiválás előtt SHA-256-tal ellenőrzi a tárolt fájlt. Sérülés vagy megszakadt letöltés után újrapróbálja, amikor van Wi-Fi és szinkronizált az óra.
 
 ## Mentett Wi-Fi és firmware-frissítés
