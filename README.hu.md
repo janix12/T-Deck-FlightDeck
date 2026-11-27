@@ -22,6 +22,12 @@ Nézd meg, melyik település fölött jár egy repülő. A FlightDeck a LilyGO 
 
 A képek a v1.3.1-et futtató T-Deck kijelzőjéről származnak. A lapcím melletti három ív az aktív Wi-Fi-kapcsolatot mutatja. A radaron az ADS-B-lekéréskor észlelt 29 gép és a követésre kiválasztott DLH6CH járat látszik. A felület nyelve a **Beállítások → Nyelv** sorban váltható. [Korábbi példa az API-korlát jelzésére](docs/images/airspace.png)
 
+**Térkép és géplista a trackballal**
+
+![A térkép elmozdul, majd a kijelölés végiggördül a géplistán. A középső kattintás megnyitja az ELY361 adatlapját.](docs/images/trackball-navigation-hu.gif)
+
+Görgesd a golyót a térkép mozgatásához. Nyomd le a lista megnyitásához, görgess a kívánt járatra, majd nyomd le újra az adatlapjához. A T-Decken rögzített bemutató egy korábbi budapesti forgalmi mintát használ.
+
 ![A T-Deck Wi-Fi-jelzője bontáskor és újracsatlakozáskor](docs/images/wifi-reconnect-hu.gif)
 
 A felső sávban három ív jelzi az aktív kapcsolatot, áthúzott ikon a szakadást, környíl az újracsatlakozást. A képkockákat egy T-Decken rögzítettük.

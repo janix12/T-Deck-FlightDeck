@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0d1c22">
   <title>FlightDeck · USB-telepítő</title>
-  <link rel="stylesheet" href="./web-installer/style.css?v=wifi132-demo">
+  <link rel="stylesheet" href="./web-installer/style.css?v=trackball133">
 </head>
 <body>
   <header>
@@ -48,16 +48,20 @@
           <img src="./docs/images/wifi131-map-hu.png" data-en-src="./docs/images/wifi131-map-en.png" width="320" height="240" alt="A térkép közepén a követett DLH6CH járat ikonja és hívójele." data-alt="followMapAlt">
           <figcaption><span class="dot"></span><span data-t="followMapCaption">DLH6CH követése a teljes térképen</span></figcaption>
         </figure>
+        <figure id="trackball">
+          <img src="./docs/images/trackball-navigation-hu.gif" data-en-src="./docs/images/trackball-navigation-en.gif" width="320" height="286" alt="A trackball elmozdítja a térképet, kattintásra megnyílik a lista, majd lefelé görgetés és újabb kattintás után az ELY361 adatlapja." data-alt="trackballAlt">
+          <figcaption data-t="trackballCaption">A trackball használata egy rögzített járatlistán</figcaption>
+        </figure>
+        <figure class="wifi-demo">
+          <img src="./docs/images/wifi-reconnect-hu.gif" data-en-src="./docs/images/wifi-reconnect-en.gif" width="320" height="106" alt="A három Wi-Fi-ív bontáskor áthúzott jelre, újracsatlakozáskor környílra, végül ismét három ívre vált." data-alt="wifiDemoAlt">
+          <figcaption data-t="wifiDemoCaption">Wi-Fi bontása és újracsatlakozás a T-Decken</figcaption>
+        </figure>
       </div>
-      <figure class="wifi-demo">
-        <img src="./docs/images/wifi-reconnect-hu.gif" data-en-src="./docs/images/wifi-reconnect-en.gif" width="320" height="106" alt="A három Wi-Fi-ív bontáskor áthúzott jelre, újracsatlakozáskor környílra, végül ismét három ívre vált." data-alt="wifiDemoAlt">
-        <figcaption data-t="wifiDemoCaption">Wi-Fi bontása és újracsatlakozás a T-Decken</figcaption>
-      </figure>
       <a class="manual" href="./docs/images/airspace.png" data-t="limitExample">Korábbi példa az API-korlát jelzésére ↗</a>
       <details><summary data-t="help">Nem csatlakozik a T-Deck?</summary><p data-t="boot">Tartsd lenyomva a trackball közepét, nyomd meg és engedd el az RST gombot, majd engedd el a trackballt. Próbáld meg újra a csatlakozást. Ha a port nem jelenik meg, ellenőrizd az adatkábelt, és zárd be a portot használó többi alkalmazást.</p></details>
       <a id="manual" class="manual" href="https://github.com/janix12/T-Deck-FlightDeck/releases/latest" data-t="manual">Firmware letöltése és kézi telepítés ↗</a>
     </aside>
   </main>
-  <script type="module" src="./web-installer/installer.js?v=wifi132-demo"></script>
+  <script type="module" src="./web-installer/installer.js?v=trackball133"></script>
 </body>
 </html>

@@ -22,6 +22,12 @@ See which town an aircraft is flying over. FlightDeck turns the 320 × 240 displ
 
 These screens were captured on a T-Deck running v1.3.1. The three waves beside the page title show an active Wi-Fi connection. The radar recorded 29 aircraft in one live ADS-B update, with DLH6CH selected for tracking. Choose **Beállítások → Nyelv → English** for the English interface. [Earlier example of the API limit notice](docs/images/airspace.png)
 
+**Using the trackball on the map and in the aircraft list**
+
+![The map pans, then the highlight scrolls through the aircraft list. A centre click opens the details for ELY361.](docs/images/trackball-navigation-en.gif)
+
+Roll the ball to pan the map. Press it to open the list, scroll to a flight, then press again to open its details. This T-Deck recording replays an earlier traffic sample from Budapest.
+
 ![Wi-Fi status on the T-Deck as the connection drops and returns](docs/images/wifi-reconnect-en.gif)
 
 The top bar shows three arcs when connected, a crossed-out icon when offline, and a circular arrow while reconnecting. The animation uses frames captured on a T-Deck.
