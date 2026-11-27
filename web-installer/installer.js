@@ -1,14 +1,17 @@
 import { installFirmware } from "./flash.js?v=versions-2";
 
 const en = {
-  instrumentCardsCaption: "Instruments · sensors, memory and CPU load",
-  instrumentCardsAlt: "The v1.4.1 Instruments screen shows RAM, PSRAM, CPU 0 and CPU 1 below the sensor cards.",
+  mapTitle: "How does the offline map update?",
+  mapFirst: "On first boot, choose Download in the Download map dialog. The T-Deck downloads the 5.84 MB first edition over Wi-Fi to /WORLD.FDM on a writable microSD card. The downloaded map is available offline.",
+  mapCheck: "At startup and every 24 hours, the device checks a small revision file on GitHub. If the map is current, that is the only download. For a new edition it downloads the package automatically and verifies the stored file with SHA-256 before activating it. After corruption or an interrupted download, it retries when Wi-Fi and a synchronised clock are available.",
+  instrumentCardsCaption: "Instruments · sensors, memory, CPU and microSD",
+  instrumentCardsAlt: "The v1.5.0 Instruments screen shows free and total microSD space below the memory and CPU gauges.",
   settingsPanelCaption: "Settings · Display and device",
   settingsPanelAlt: "The Display and device settings. Icons at the end of each row indicate cycling, editing or toggling a value.",
   saverDemoCaption: "Screen saver · clock and tap to wake",
   saverDemoAlt: "Choosing Sleep now from the ☰ menu shows the clock. A single tap returns to Airspace.",
-  instrumentsDemoCaption: "Opening Instruments and reading live system load",
-  instrumentsDemoAlt: "The menu opens Instruments, where RAM, PSRAM and the load on both CPU cores update.",
+  instrumentsDemoCaption: "Opening Instruments and checking microSD space",
+  instrumentsDemoAlt: "The menu opens Instruments. Highlights show memory and CPU load, then free and total microSD space.",
   heatDemoCaption: "Temperature map · regional temperatures and a closer look at Budapest",
   heatDemoAlt: "Open-Meteo temperatures and a colour scale. Three taps on + zoom in on Budapest, where the map shows 2.9 °C.",
   rainDemoCaption: "Rain radar · zoom in on Budapest and pause playback",

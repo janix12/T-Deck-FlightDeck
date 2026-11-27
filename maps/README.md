@@ -20,9 +20,9 @@ py maps/build_world.py map-input maps/WORLD.FDM
 
 **Publishing updates · Térképfrissítés közzététele** — The builder also writes `world.json`. Changed map bytes increment the map revision. Publish the manifest and `WORLD.FDM` in the same Git commit. A generátor változó tartalomnál növeli a térkép verzióját. A verziófájlt és a térképet azonos Git-commitban tedd közzé. A kliens induláskor, majd 24 óránként ellenőrzi a verziófájlt.
 
-**EN** · `hungary.fdm` contains simplified Hungarian municipal boundaries, settlement names, water and country borders. `central-europe.fdm` is the weather overview, covering 5–33° E and 39–57° N. Both are built into the firmware. On a writable card the firmware can install and verify a copy of the detailed map. The weather frames are downloaded separately.
+**EN** · `hungary.fdm` contains simplified Hungarian municipal boundaries, settlement names, water and country borders. `central-europe.fdm` is the weather overview, covering 5–33° E and 39–57° N. Both regional layers ship inside the separate WORLD.FDM download for v1.5.0. The weather frames are downloaded separately.
 
-**HU** · A `hungary.fdm` egyszerűsített magyar településhatárokat, helységneveket, vízrajzot és országhatárokat tartalmaz. A `central-europe.fdm` az időjárási áttekintőtérkép, az 5–33° keleti hosszúság és 39–57° északi szélesség közötti területre. Mindkettő beépül a firmware-be. Írható kártyára a részletes térkép másolatát a készülék telepíti és ellenőrzi. Az időjárási képkockákat külön tölti le.
+**HU** · A `hungary.fdm` egyszerűsített magyar településhatárokat, helységneveket, vízrajzot és országhatárokat tartalmaz. A `central-europe.fdm` az időjárási áttekintőtérkép, az 5–33° keleti hosszúság és 39–57° északi szélesség közötti területre. A v1.5.0-ban mindkét regionális réteg a külön letölthető WORLD.FDM része. Az időjárási képkockákat külön tölti le.
 
 | Component / Összetevő | Attribution and changes / Forrás és módosítás |
 |---|---|
@@ -34,9 +34,9 @@ py maps/build_world.py map-input maps/WORLD.FDM
 
 ## Optional rebuild · Újragenerálás igény szerint
 
-**EN** · For a normal firmware build use the included packs. To generate new packs, install Python 3 and place these inputs in a folder named `map-input` in the project root. Keep the ZIPs compressed. For the Natural Earth inputs, use the pinned revision linked above.
+**EN** · The supplied regional packs are inputs to the world map builder. To generate new packs, install Python 3 and place these inputs in a folder named `map-input` in the project root. Keep the ZIPs compressed. For the Natural Earth inputs, use the pinned revision linked above.
 
-**HU** · A szokásos firmware-fordításhoz a mellékelt csomagok elegendők. Új csomagok készítéséhez telepítsd a Python 3-at, és az alábbi fájlokat helyezd a projekt gyökerében lévő `map-input` mappába. A ZIP-eket hagyd tömörítve. A Natural Earth fájljaihoz a fent hivatkozott revíziót használd.
+**HU** · A mellékelt regionális csomagokat a világtérkép generátora használja. Új csomagok készítéséhez telepítsd a Python 3-at, és az alábbi fájlokat helyezd a projekt gyökerében lévő `map-input` mappába. A ZIP-eket hagyd tömörítve. A Natural Earth fájljaihoz a fent hivatkozott revíziót használd.
 
 | Download / Letöltés | Local name / Helyi fájlnév |
 |---|---|
@@ -52,6 +52,6 @@ py maps/build_map.py map-input
 py maps/build_map.py map-input --overview
 ```
 
-**EN** · Recompile with a fresh build cache after changing a pack. The assembly file embeds the binary map at compile time.
+**EN** · After changing a regional pack, run the world map builder and publish the resulting WORLD.FDM and world.json together.
 
-**HU** · Módosítás után üres fordítási gyorsítótárral fordíts újra. Az assembly fájl fordításkor ágyazza be a térképcsomagot.
+**HU** · Regionális csomag módosítása után futtasd a világtérkép-generátort, és a WORLD.FDM fájlt az új world.json fájllal együtt tedd közzé.

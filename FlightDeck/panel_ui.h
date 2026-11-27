@@ -18,14 +18,14 @@ static int instrumentFocus;
 static void instrumentAction(int action){
   if(hardwareDetails || action==0)hardwareDetails=!hardwareDetails;
   else if(action==1)beep();
-  else {mountCard();loadMap(true);}
+  else if(!mapBusy){mountCard();loadMap(true);}
   dirty=true;
 }
 
 static void sensorCard(int index,const char *name,float reading,int decimals,const char *unit){
-  const int x=5+index*104,w=102,y=37;
+  const int x=5+index*104,w=102,y=36;
   const uint16_t accent=index==0?amber:index==1?mint:ink;
-  framedBox(x,y,w,86,9,land,grid);
+  framedBox(x,y,w,74,9,land,grid);
   const int cx=x+16,cy=y+17;
   if(index==0){
     screen.drawRoundRect(cx-2,cy-8,5,13,2,accent);
@@ -45,8 +45,8 @@ static void sensorCard(int index,const char *name,float reading,int decimals,con
   label(ux,y+7,unit,muted);
   String value=number(reading,decimals);
   if(!english())value.replace('.',',');
-  label(x+10,y+28,value,isfinite(reading)?ink:muted,labelWidth(value,4)<=w-18?4:2);
-  label(x+10,y+62,name,muted);
+  label(x+10,y+25,value,isfinite(reading)?ink:muted,labelWidth(value,4)<=w-18?4:2);
+  label(x+10,y+51,name,muted);
 }
 
 static void hardwareRow(int y,const char *title,const String &value){
@@ -55,17 +55,44 @@ static void hardwareRow(int y,const char *title,const String &value){
 }
 
 static void usageGauge(int index,const char *title,int percent,const String &detail){
-  const int x=5+(index*313)/4,y=126,w=76;
-  screen.fillRoundRect(x,y,w,40,5,land);
+  const int x=5+(index*313)/4,y=113,w=76;
+  screen.fillRoundRect(x,y,w,36,5,land);
   label(x+4,y+3,title,ink,1);
   String value=percent<0?"--":String(percent)+"%";
   label(x+w-4-labelWidth(value,1),y+3,value,mint,1);
   screen.fillRect(x+4,y+16,w-8,3,grid);
   if(percent>0)screen.fillRect(x+4,y+16,max(1,(w-8)*percent/100),3,mint);
-  centeredLabel(x,y+21,w,15,detail,muted,1);
+  centeredLabel(x,y+18,w,15,detail,muted,1);
 }
 
-static constexpr int hardwareButtonY=169,hardwareButtonHeight=31;
+static constexpr int hardwareButtonY=177,hardwareButtonHeight=24;
+
+static void storageRow(){
+  if(!mapBusy)sampleStorage();
+  constexpr int x=5,y=152,w=310,h=22;
+  screen.fillRoundRect(x,y,w,h,5,land);
+  label(12,y+4,"microSD",ink);
+  bool known=sdOK && sdFreeBytes>=0 && volumeBytes;
+  String value;
+  if(known){
+    bool gib=volumeMiB>=10240;
+    auto amount=[&](uint64_t bytes){
+      String s=gib?String(double(bytes)/1073741824.,1):String(uint32_t(bytes/1048576));
+      if(!english())s.replace('.',',');
+      return s;
+    };
+    value=String(tr("Szabad ","Free "))+amount(sdFreeBytes)+" / "+amount(volumeBytes)+(gib?" GiB":" MiB");
+  }else value=!cardMiB?tr("Nincs kártya","No card"):!sdOK?tr("Kötethiba","Volume error"):
+               storageNeedsScan?tr("Mérés...","Reading..."):tr("Olvasási hiba","Read error");
+  int right=x+w-7,left=right-labelWidth(value,2);
+  label(left,y+4,value,known?ink:muted);
+  int bar=left-81;
+  if(known && bar>=14){
+    screen.fillRect(74,y+9,bar,4,grid);
+    int fill=int((uint64_t(sdFreeBytes)*bar)/volumeBytes);
+    if(fill)screen.fillRect(74,y+9,fill,4,mint);
+  }
+}
 
 static void diagnostics(){
   String gpsState=hasFix()?"FIX":lastSentence?tr("NMEA / fixre vár","NMEA / waiting for fix"):tr("Jelet keres","Searching");
@@ -95,10 +122,11 @@ static void diagnostics(){
     int percent=i<portNUM_PROCESSORS?coreLoad[i].percent.load(std::memory_order_relaxed):-1;
     usageGauge(2+i,i?"CPU 1":"CPU 0",percent,tr("1 mp átlag","1 s avg"));
   }
+  storageRow();
   framedBox(5,hardwareButtonY,310,hardwareButtonHeight,7,land,instrumentFocus==0?mint:grid);
-  label(13,hardwareButtonY+6,tr("Hardveradatok","Hardware details"),ink);
-  label(132,hardwareButtonY+10,fitText(sensors,1,157),muted,1);
-  chevron(298,hardwareButtonY+15,mint);
+  label(13,hardwareButtonY+4,tr("Hardveradatok","Hardware details"),ink);
+  label(132,hardwareButtonY+7,fitText(sensors,1,157),muted,1);
+  chevron(298,hardwareButtonY+12,mint);
   actionButton(5,203,151,tr("Hangpróba [B]","Speaker [B]"),instrumentFocus==1);
   actionButton(162,203,153,tr("SD újra [R]","Retry SD [R]"),instrumentFocus==2);
 }

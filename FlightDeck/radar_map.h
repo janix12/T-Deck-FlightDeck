@@ -55,10 +55,11 @@ static void cardBall(int direction){
 struct MapView {
   float lat,lon,nm,pixelsPerDeg,lonFactor;
   float units=5000.f;
+  float originLon=19,originLat=47;
   int x(float lng) const {return midX+lroundf(remainderf(lng-lon,360)*lonFactor);}
   int y(float latitude) const {return midY-lroundf((latitude-lat)*pixelsPerDeg);}
-  int mapX(int v) const {return midX+lroundf((v-(lon-19)*units)*(lonFactor/units));}
-  int mapY(int v) const {return midY-lroundf((v-(lat-47)*units)*(pixelsPerDeg/units));}
+  int mapX(int v) const {return midX+lroundf((v/units+remainderf(originLon-lon,360.f))*lonFactor);}
+  int mapY(int v) const {return midY-lroundf((v/units+(originLat-lat))*pixelsPerDeg);}
 };
 static float viewRadius(int level){
   return constrain(ldexpf(float(cfg[RANGE].toInt()),-level),1.f,250.f);
@@ -73,7 +74,7 @@ static MapView mapView(){
   else if(zoomStep>0){v.lat=manualLat;v.lon=manualLon;}
   v.nm=viewRadius(followPlane?followZoom:zoomStep);
   v.pixelsPerDeg=111.195f*(mapHeight/2)/(1.852f*v.nm);
-  v.lonFactor=v.pixelsPerDeg*cosf(radians(v.lat));
+  v.lonFactor=v.pixelsPerDeg*std::max(.001f,cosf(radians(v.lat)));
   return v;
 }
 static void zoomMap(int direction){
@@ -146,7 +147,7 @@ static void drawCard(const Plane *p,const char *town,bool inside,float distance)
     int y=cardBodyY+3-detailScroll;
     int font=labelWidth(p->name,4)<=112?4:labelWidth(p->name,2)<=112?2:1;
     label(cardX+6,y,p->name,amber,font);
-    String name=town?town:atlas?tr("Csomagon kívül","Outside map"):tr("Nincs térkép","No map");
+    String name=town?town:world::offsets?tr("Nincs 30 km-en belül","None within 30 km"):atlas?tr("Csomagon kívül","Outside map"):tr("Nincs térkép","No map");
     label(cardX+6,y+32,inside?tr("TELEPÜLÉS","MUNICIPALITY"):town?tr("KÖZELÉBEN","NEAREST TOWN"):tr("TÉRKÉP","MAP"),muted,1);
     if(labelWidth(name,2)<=115) label(cardX+6,y+42,name,ink);
     else {
@@ -161,7 +162,8 @@ static void drawCard(const Plane *p,const char *town,bool inside,float distance)
     cardField(y+191,tr("HALADÁSI IRÁNY","TRACK"),number(p->heading)+" deg");
     cardField(y+222,tr("FÜGGŐLEGES SEB.","VERTICAL RATE"),number(p->verticalRate)+" ft/min");
     cardField(y+253,tr("ICAO / AZONOSÍTÓ","ICAO ADDRESS"),p->id);
-    if(town && !inside) cardField(y+284,tr("HELYSÉG TÁVOLSÁGA","TOWN DISTANCE"),number(distance,1)+" km");
+    if(world::urban[0])cardField(y+284,tr("VÁROSTÉRSÉG","URBAN AREA"),world::urban);
+    else if(town && !inside) cardField(y+284,tr("HELYSÉG TÁVOLSÁGA","TOWN DISTANCE"),number(distance,1)+" km");
     else label(cardX+6,y+287,tr("* Becsült állapot","* Estimated state"),muted,1);
     for(int i=0;i<2;i++){
       int top=cardBodyY+switchesTop+i*switchHeight-detailScroll;
@@ -183,15 +185,20 @@ static void drawCard(const Plane *p,const char *town,bool inside,float distance)
     screen.drawFastVLine(317,cardBodyY+offset*(span-thumb)/limit,thumb,muted);
   }
 }
-extern "C" const uint8_t flightdeck_overview_start[];
-static void drawGeography(const MapView &v,const char *selectedTown,const MapHeader *data=atlas){
+struct MapLabelBoxes {
+  struct Box {int left,top,right,bottom;} used[16];
+  int count=0;
+};
+static void drawGeography(const MapView &v,const char *selectedTown,const MapHeader *data=atlas,
+                          MapLabelBoxes *shared=nullptr,bool linesOnly=false,bool labelsOnly=false){
   if(!data) return;
   const auto *towns=reinterpret_cast<const MapPlace*>(data+1);
   const auto *lines=reinterpret_cast<const MapPath*>(towns+data->places);
   const auto *points=reinterpret_cast<const MapPoint*>(lines+data->paths);
   const char *names=reinterpret_cast<const char*>(points+data->points);
-  for(unsigned i=0;i<data->paths;i++){
+  for(unsigned i=0;!labelsOnly && i<data->paths;i++){
     const MapPath &p=lines[i];
+    if(p.kind>=6)continue; // Clipped urban footprints are for hit testing.
     const bool highlight=selectedTown && (names+p.name)==selectedTown && p.kind>=4;
     if(p.kind>=4 && !highlight){
       if(v.nm>(page>=3?15:70))continue;
@@ -208,14 +215,17 @@ static void drawGeography(const MapView &v,const char *selectedTown,const MapHea
       x=nx;y=ny;
     }
   }
-  struct Box {int left,top,right,bottom;};
-  Box used[16]; int count=0;
+  if(linesOnly)return;
+  MapLabelBoxes local;
+  auto &boxes=shared?*shared:local;
+  auto &used=boxes.used;
+  int &count=boxes.count;
   for(unsigned i=0;i<data->places && count<16;i++){
     const MapPlace &p=towns[i]; int x=v.mapX(p.at.x),y=v.mapY(p.at.y);
     if(x<2 || y<mapTop+6 || x>=mapWidth-4 || y>=mapTop+mapHeight-6) continue;
     const char *name=names+p.name;
     const int width=screen.textWidth(name,1);
-    Box b{x+3,y-4,x+3+width,y+5};
+    MapLabelBoxes::Box b{x+3,y-4,x+3+width,y+5};
     if(b.right>=mapWidth) {b.right=x-3;b.left=b.right-width;}
     if(b.left<0) continue;
     // Keep each town name entirely visible above the toolbar and below the HUD.
@@ -226,6 +236,24 @@ static void drawGeography(const MapView &v,const char *selectedTown,const MapHea
     if(free){screen.fillCircle(x,y,1,muted); if(page>=3)mapLabel(b.left+1,b.top+1,name,bg,1);
       mapLabel(b.left,b.top,name,page>=3?ink:muted,1);used[count++]=b;}
   }
+}
+static void drawAirspaceMap(const MapView &v,const char *municipality){
+  float dx=std::min(180.f,(midX+1)/std::max(.0001f,v.lonFactor)),dy=(midY+1)/v.pixelsPerDeg;
+  if(!world::offsets){
+    drawGeography(v,municipality);return;
+  }
+  bool local=v.lon+dx>=15.5f && v.lon-dx<=23.25f && v.lat+dy>=45.25f && v.lat-dy<=49;
+  MapLabelBoxes boxes;
+  int step=(v.nm>100 || dx>8)?10:2;
+  auto drawTiles=[&](bool labels){
+    world::visit(v.lon,v.lat,dx,dy,step,[&](const MapHeader &tile,float cx,float cy){
+      MapView view=v;view.originLon=cx;view.originLat=cy;
+      drawGeography(view,nullptr,&tile,&boxes,!labels,labels);
+    });
+  };
+  drawTiles(false);
+  if(local)drawGeography(v,municipality,atlas,&boxes);
+  drawTiles(true);
 }
 constexpr int mapButtonHeight=29, mapButtonY=240-3-mapButtonHeight;
 static void zoomButtons(int width){
@@ -242,7 +270,7 @@ static void radar(){
   const char *town=p?placeBelow(*p,inside,distance):nullptr;
   screen.setViewport(0,mapTop,mapWidth,mapHeight,false);
   screen.fillRect(0,mapTop,mapWidth,mapHeight,land);
-  drawGeography(v,inside?town:nullptr);
+  drawAirspaceMap(v,inside?town:nullptr);
   Area center=traffic.stamp?traffic.area:currentArea();
   int ox=v.x(center.lon),oy=v.y(center.lat);
   screen.drawCircle(ox,oy,4,mint);screen.drawPixel(ox,oy,mint);

@@ -1,6 +1,6 @@
 {
   "device": "lilygo-t-deck-esp32s3",
-  "version": "1.4.1",
-  "size": 2510032,
-  "sha256": "a388075ba797741d7ecbd798402354ffa960b619d8dd0e79d297010bc5f9f472"
+  "version": "1.5.0",
+  "size": 1337792,
+  "sha256": "be9a94feee39c4c44265bf712e016d08a4e386171b26004f8eb0f217766c621b"
 }

@@ -284,7 +284,7 @@ static void weatherMap(){
                       q.lat-q.halfLat<45.25f || q.lat+q.halfLat>49.f;
   if(regional){
     v.units=2000.f;
-    drawGeography(v,nullptr,reinterpret_cast<const MapHeader*>(flightdeck_overview_start));
+    drawGeography(v,nullptr,overviewAtlas);
   }else drawGeography(v,nullptr);
   if(show && page==4){
     for(int y=0;y<3;y++)for(int x=0;x<3;x++){

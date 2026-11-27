@@ -17,10 +17,10 @@ See which town an aircraft is flying over. FlightDeck turns the 320 × 240 displ
 | ![The Follow and Solo aircraft switches are both on in the aircraft details.](docs/images/wifi131-controls-en.png) | ![The icon and callsign of the tracked flight DLH6CH in the centre of the map.](docs/images/wifi131-map-en.png) |
 | **Rain radar over Central Europe** | **Surface air temperature** |
 | ![The RainViewer precipitation layer with the active Wi-Fi icon.](docs/images/wifi131-rain-en.png) | ![Temperature map around Budapest.](docs/images/wifi131-heat-en.png) |
-| **Instruments · v1.4.1** | **Settings · v1.4.0** |
-| ![RAM and PSRAM usage and CPU 0 and CPU 1 load appear below the sensor cards.](docs/images/v141-instruments-en.png) | ![Action icons on the Display and device settings page.](docs/images/v140-settings-en.png) |
+| **Instruments · v1.5.0** | **Settings · v1.4.0** |
+| ![Memory, per-core CPU load and free / total microSD space on the Instruments screen.](docs/images/v150-instruments-en.png) | ![Action icons on the Display and device settings page.](docs/images/v140-settings-en.png) |
 
-The traffic and weather screens were captured on v1.3.1. The Instruments screen was captured on v1.4.1 and Settings on v1.4.0. The three waves beside the page title show an active Wi-Fi connection. The radar recorded 29 aircraft in one live ADS-B update, with DLH6CH selected for tracking. Choose **Beállítások → Nyelv → English** for the English interface. [Earlier example of the API limit notice](docs/images/airspace.png)
+The traffic and weather screens were captured on v1.3.1. The Instruments screen was captured on v1.5.0 and Settings on v1.4.0. The three waves beside the page title show an active Wi-Fi connection. The radar recorded 29 aircraft in one live ADS-B update, with DLH6CH selected for tracking. Choose **Beállítások → Nyelv → English** for the English interface. [Earlier example of the API limit notice](docs/images/airspace.png)
 
 | Using the trackball | Using the touchscreen |
 |:---:|:---:|
@@ -49,7 +49,7 @@ The labels show modelled air temperatures two metres above the ground. Tap **+**
 
 ### Instruments
 
-![The menu opens Instruments. The RAM, PSRAM and both CPU readings update beneath the sensor cards.](docs/images/instruments-en.gif)
+![The menu opens Instruments. The animation highlights memory, CPU load and free / total microSD space.](docs/images/instruments-en.gif)
 
 **RAM** and **PSRAM** show the used and total heap capacity and the percentage in use. **CPU 0** and **CPU 1** show each core’s estimated load from samples taken over the last second.
 
@@ -70,8 +70,8 @@ The top bar shows three arcs when connected, a crossed-out icon when offline, an
 ## What you need
 
 - The original **LilyGO T-Deck**, ESP32-S3, 16 MB flash, 8 MB OPI PSRAM, and a USB data cable. The firmware targets the main ESP32-S3. The keyboard has its own controller.
-- A **2.4 GHz Wi-Fi network** for live flights and weather. The built-in maps cover Hungary in detail and Central Europe at wider weather zoom levels.
-- **GPS, external I²C environmental sensors and microSD are optional.** Without a GPS fix the map uses the coordinates in Settings. The default is central Budapest. Missing sensor readings appear as `--`. Without a usable card the map loads from flash.
+- A **2.4 GHz Wi-Fi network** for live flights and weather. Firmware 1.5.0 offers a separate offline world map on first boot. Choose **Later** to configure Wi-Fi first. Use **Instruments → Retry SD [R]** to reopen the download prompt if the map is missing.
+- **GPS, external I²C environmental sensors and microSD are optional.** Without a GPS fix the map uses the coordinates in Settings. The default is central Budapest. Missing sensor readings appear as `--`. The offline map requires a writable microSD unless the device has separately provisioned internal map storage.
 
 ## Install or update
 
@@ -112,6 +112,12 @@ The [installation folder](install/) contains two ready-to-flash images. The comm
 2. Set latitude and longitude in decimal degrees if you use the device without GPS. Choose `Budapest`, `UTC` or a POSIX time zone. Wi-Fi synchronises the clock using NTP. A valid GPS date and time can initialise it too. Manual UTC entry uses `YYYY-MM-DD HH:MM`.
 3. Open **Airspace** (key **1**). Defaults are a 40 nautical mile radius and a two-minute refresh. Tap an aircraft to see its callsign, altitude, speed and location.
 
+## Offline map updates
+
+On first boot, choose **Download** in the **Download map** dialog. The T-Deck downloads the 5.84 MB first edition over Wi-Fi to `/WORLD.FDM` on a writable microSD card. The downloaded map is available offline.
+
+At startup and every 24 hours, the device checks a small revision file on GitHub. If the map is current, that is the only download. For a new edition it downloads the package automatically and verifies the stored file with SHA-256 before activating it. After corruption or an interrupted download, it retries when Wi-Fi and a synchronised clock are available.
+
 ## Saved Wi-Fi networks and firmware updates
 
 Open **Settings → Saved networks** to browse up to eight profiles. **Add network** scans for nearby networks. Select a saved name to connect or forget it. Forgetting a network requires confirmation. Upgrading imports the previously saved network. After a lost connection FlightDeck looks for available saved networks and uses their stored credentials.
@@ -144,7 +150,7 @@ The device reconnects after losing Wi-Fi. When the signal stays weak, it looks f
 | Wi-Fi in the top bar | Three steady waves indicate a Wi-Fi connection with an IP address. The waves build up while connecting. A circular arrow indicates a retry. A crossed-out Wi-Fi symbol means disconnected or unconfigured. |
 | Read aircraft symbols | A filled plane has a position at most 90 seconds old. An outline marks an older position. A **?** means the heading is unknown. States marked **\*** are estimates from movement. |
 | Read the weather | RainViewer supplies up to three recent frames. Tap the bottom time label to pause or resume. The heat map uses nine Open-Meteo samples or nearby METAR airport observations. Both weather views refresh about every ten minutes. |
-| Check hardware | Open **Instruments** (key **2**). Press **B** to test the speaker or **R** to retry mounting the card. The battery icon shows estimated charge on battery power or **USB** on detected external power. The blue LED indicates charging. |
+| Check hardware | Open **Instruments** (key **2**). The **microSD** row shows free and total volume space. Press **B** to test the speaker or **R** to retry mounting the card. The battery icon shows estimated charge on battery power or **USB** on detected external power. The blue LED indicates charging. |
 | Numbers and symbols | Tap **SYM** on screen while editing. On a newer matrix-mode keyboard, press the physical **SYM** key to toggle. On older keyboards, hold **SYM** and press **Q**. Repeat to switch back. With **SYM ON**, **W E R** type **1 2 3**, **Space** types **0**, and **Q** types **#**. The separate on-screen **0** button works in either mode. |
 | Keyboard lighting | On older keyboards, hold **ALT** and press **B** to turn the light on or off. It can stay lit while the screen saver is active. On newer controllers, adjust the brightness under **Settings → Keyboard light (%)**. |
 | Change appearance | On the last Settings page, select a language, theme and sleep delay. The default is 30 minutes. Enter **0** to disable sleep. A touch or key wakes the screen. |
@@ -158,7 +164,7 @@ Install Git for Windows and open PowerShell in the project folder. The first com
 .\build.ps1
 ```
 
-Your new images are in `firmware/`. Use those paths in the flashing commands to install your own build. The map packs in `maps/` are included at build time. Regeneration is optional. [Map sources and regeneration](maps/README.md)
+Your new images are in `firmware/`. Use those paths in the flashing commands to install your own build. Map data is downloaded separately. The device checks the GitHub map revision at startup and every 24 hours thereafter. A new revision or damaged local file triggers a download and SHA-256 verification. Interrupted downloads retry automatically. [Map sources and regeneration](maps/README.md)
 
 To prepare a release, fetch tags (`git fetch --tags`), set the new version in `FlightDeck/firmware_version.h`, then run `py tools/prepare_rollback.py` before building. Publish the generated catalog and `install/archive/` files with the firmware. Older devices use the same permanent archive URLs. After packaging the new binaries, manifest.json and SHA256SUMS.txt in the install directory, run `py tools/prepare_rollback.py --usb`. Publish the resulting `install/usb-releases.json` and the archived full images as well.
 

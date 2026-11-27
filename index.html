@@ -26,6 +26,7 @@
       </fieldset>
       <button id="install" disabled data-t="button">Csatlakozás és telepítés</button>
       <p class="support" data-t="support">Asztali Chrome vagy Edge szükséges. A gomb után válaszd ki a T-Deck USB-portját.</p>
+      <details><summary data-t="mapTitle">Hogyan frissül az offline térkép?</summary><p data-t="mapFirst">Az első indításkor válaszd a Térkép letöltése ablakban a Letöltés gombot. A T-Deck Wi-Fi-n tölti le az 5,84 MB-os első kiadást az írható microSD-kártyára. A fájl neve /WORLD.FDM. A letöltött térképet offline is használhatod.</p><p data-t="mapCheck">Induláskor, majd 24 óránként a készülék lekéri a GitHubról a kis verziófájlt. Naprakész térképnél ezzel végez. Új kiadásnál automatikusan letölti a csomagot, és aktiválás előtt SHA-256-tal ellenőrzi a tárolt fájlt. Sérülés vagy megszakadt letöltés után újrapróbálja, amikor van Wi-Fi és szinkronizált az óra.</p></details>
       <div id="feedback" aria-live="polite" role="status"><span id="status"></span> <span id="percent"></span></div>
       <progress hidden id="progress" max="100" value="0" aria-label="USB"></progress>
       <noscript>A telepítéshez engedélyezd a JavaScriptet. / Enable JavaScript to install via USB.</noscript>
@@ -33,8 +34,8 @@
     <aside>
       <div class="screens">
         <figure id="instrument-cards">
-          <img src="./docs/images/v141-instruments-hu.png" data-en-src="./docs/images/v141-instruments-en.png" width="320" height="240" alt="A v1.4.1 Műszerek lapján a szenzorok alatt a RAM, a PSRAM, a CPU 0 és a CPU 1 értékei látszanak." data-alt="instrumentCardsAlt">
-          <figcaption data-t="instrumentCardsCaption">Műszerek · szenzorok, memória és CPU-terhelés</figcaption>
+          <img src="./docs/images/v150-instruments-hu.png" data-en-src="./docs/images/v150-instruments-en.png" width="320" height="240" alt="A v1.5.0 Műszerek lapján a microSD sor a szabad és a teljes kapacitást mutatja a RAM és a két CPU-mag alatt." data-alt="instrumentCardsAlt">
+          <figcaption data-t="instrumentCardsCaption">Műszerek · szenzorok, memória, CPU és microSD</figcaption>
         </figure>
         <figure id="settings">
           <img src="./docs/images/v140-settings-hu.png" data-en-src="./docs/images/v140-settings-en.png" width="320" height="240" alt="A Kijelző és eszköz beállításai. A sorvégi ikonok az értékváltást, szerkesztést és ki-be kapcsolást jelzik." data-alt="settingsPanelAlt">
@@ -77,8 +78,8 @@
           <figcaption data-t="heatDemoCaption">Hőtérkép · hőmérsékletek és nagyítás Budapestre</figcaption>
         </figure>
         <figure id="instruments">
-          <img src="./docs/images/instruments-hu.gif" data-en-src="./docs/images/instruments-en.gif" width="320" height="286" alt="A menüből megnyílik a Műszerek lap, majd frissül a RAM, a PSRAM és a két CPU-mag kijelzése." data-alt="instrumentsDemoAlt">
-          <figcaption data-t="instrumentsDemoCaption">A Műszerek megnyitása és az élő terhelés leolvasása</figcaption>
+          <img src="./docs/images/instruments-hu.gif" data-en-src="./docs/images/instruments-en.gif" width="320" height="286" alt="A menüből megnyílik a Műszerek lap. A kiemelés a memória és a CPU után a microSD szabad és teljes kapacitását mutatja." data-alt="instrumentsDemoAlt">
+          <figcaption data-t="instrumentsDemoCaption">A Műszerek megnyitása és a microSD-tárhely leolvasása</figcaption>
         </figure>
         <figure id="screen-saver">
           <img src="./docs/images/screen-saver-hu.gif" data-en-src="./docs/images/screen-saver-en.gif" width="320" height="286" alt="A ☰ menü Képernyőpihenő pontja elindítja az órát. Egy koppintásra visszatér a Légtér képernyő." data-alt="saverDemoAlt">
@@ -94,6 +95,6 @@
       <a id="manual" class="manual" href="https://github.com/janix12/T-Deck-FlightDeck/releases/latest" data-t="manual">Firmware letöltése és kézi telepítés ↗</a>
     </aside>
   </main>
-  <script type="module" src="./web-installer/installer.js?v=resources141"></script>
+  <script type="module" src="./web-installer/installer.js?v=world150"></script>
 </body>
 </html>

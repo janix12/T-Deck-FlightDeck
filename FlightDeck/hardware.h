@@ -47,6 +47,10 @@ static Adafruit_DPS310 dps;
 static Adafruit_SHT31 sht;
 static SdFs card;
 static uint32_t cardMiB,volumeMiB;
+static uint64_t volumeBytes;
+static int64_t sdFreeBytes=-1;
+static bool storageNeedsScan;
+static uint32_t lastStorageProbe;
 static bool ahtPresent,ahtOK;
 static uint32_t ahtStarted;
 static float ahtTemp=NAN,ahtRH=NAN;
@@ -256,7 +260,21 @@ static void mountCard(){
   bool ready=card.cardBegin(SdSpiConfig(BOARD_SDCARD_CS,SHARED_SPI,800000,&SPI));
   cardMiB=ready?card.card()->sectorCount()/2048:0;
   sdOK=ready && card.volumeBegin();
-  volumeMiB=sdOK?(uint64_t(card.clusterCount())*card.bytesPerCluster())/(1024*1024):0;
+  volumeBytes=sdOK?uint64_t(card.clusterCount())*card.bytesPerCluster():0;
+  volumeMiB=volumeBytes/(1024*1024);
+  sdFreeBytes=-1;storageNeedsScan=sdOK;lastStorageProbe=0;
+}
+static void sampleStorage(){
+  if(!sdOK){sdFreeBytes=-1;return;}
+  if(!storageNeedsScan && millis()-lastStorageProbe<10000)return;
+  lastStorageProbe=millis();
+  cid_t id;
+  if(!card.card()->readCID(&id)){sdFreeBytes=-1;storageNeedsScan=false;return;}
+  if(!storageNeedsScan && sdFreeBytes>=0)return;
+  int32_t clusters=card.freeClusterCount();
+  sdFreeBytes=clusters>=0 && uint32_t(clusters)<=card.clusterCount()?
+    int64_t(clusters)*card.bytesPerCluster():-1;
+  storageNeedsScan=false;
 }
 static void loadMap(bool retry=false);
 static void startBoard(int light) {

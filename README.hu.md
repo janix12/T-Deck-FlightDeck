@@ -17,10 +17,10 @@ Nézd meg, melyik település fölött jár egy repülő. A FlightDeck a LilyGO 
 | ![A gépadatlapon bekapcsolt Követés és Csak ez a gép kapcsolók.](docs/images/wifi131-controls-hu.png) | ![A térkép közepén a követett DLH6CH járat ikonja és hívójele.](docs/images/wifi131-map-hu.png) |
 | **Közép-európai esőradar** | **Felszínközeli léghőmérséklet** |
 | ![A RainViewer csapadékrétege és az aktív Wi-Fi jele.](docs/images/wifi131-rain-hu.png) | ![Hőmérsékleti térkép Budapest körül.](docs/images/wifi131-heat-hu.png) |
-| **Műszerek · v1.4.1** | **Beállítások · v1.4.0** |
-| ![A szenzorkártyák alatt látszik a RAM és a PSRAM foglaltsága, valamint a CPU 0 és CPU 1 terhelése.](docs/images/v141-instruments-hu.png) | ![A Kijelző és eszköz lap műveletikonjai.](docs/images/v140-settings-hu.png) |
+| **Műszerek · v1.5.0** | **Beállítások · v1.4.0** |
+| ![A szenzorkártyák alatt látszik a RAM és a PSRAM foglaltsága, valamint a két CPU-mag terhelése és a microSD szabad és teljes tárhelye.](docs/images/v150-instruments-hu.png) | ![A Kijelző és eszköz lap műveletikonjai.](docs/images/v140-settings-hu.png) |
 
-A repülőforgalmi és időjárási képek a v1.3.1, a Műszerek képe a v1.4.1, a Beállítások képe a v1.4.0 kijelzőjéről származnak. A lapcím melletti három ív az aktív Wi-Fi-kapcsolatot mutatja. A radaron az ADS-B-lekéréskor észlelt 29 gép és a követésre kiválasztott DLH6CH járat látszik. A felület nyelve a **Beállítások → Nyelv** sorban váltható. [Korábbi példa az API-korlát jelzésére](docs/images/airspace.png)
+A repülőforgalmi és időjárási képek a v1.3.1, a Műszerek képe a v1.5.0, a Beállítások képe a v1.4.0 kijelzőjéről származnak. A lapcím melletti három ív az aktív Wi-Fi-kapcsolatot mutatja. A radaron az ADS-B-lekéréskor észlelt 29 gép és a követésre kiválasztott DLH6CH járat látszik. A felület nyelve a **Beállítások → Nyelv** sorban váltható. [Korábbi példa az API-korlát jelzésére](docs/images/airspace.png)
 
 | Térkép és géplista a trackballal | Térkép mozgatása érintéssel |
 |:---:|:---:|
@@ -49,7 +49,7 @@ A címkék a felszín felett két méterrel számított léghőmérsékletet mut
 
 ### Műszerek
 
-![A menüből megnyílik a Műszerek lap. A szenzorok alatt frissül a RAM, a PSRAM és a két CPU-mag kijelzése.](docs/images/instruments-hu.gif)
+![A menüből megnyílik a Műszerek lap. A GIF kiemeli a RAM és a CPU kijelzőit, majd a microSD szabad és teljes kapacitását.](docs/images/instruments-hu.gif)
 
 A **RAM** és a **PSRAM** mezőben a foglalt és a teljes heapmemória mérete, valamint a foglaltság százaléka látható. A **CPU 0** és a **CPU 1** külön mutatja a két mag becsült terhelését az utolsó egy másodperc mintái alapján.
 
@@ -70,8 +70,8 @@ A felső sávban három ív jelzi az aktív kapcsolatot, áthúzott ikon a szaka
 ## Mire van szükséged?
 
 - Az eredeti **LilyGO T-Deck** modellre, ESP32-S3 processzorral, 16 MB flashmemóriával és 8 MB OPI PSRAM-mal, valamint egy USB-adatkábelre. A firmware a fő ESP32-S3 processzorra kerül. A billentyűzetnek külön vezérlője van.
-- **2,4 GHz-es Wi-Fi-re** az élő forgalomhoz és az időjáráshoz. A beépített térképen Magyarország részletesen, az időjárási nézet nagyobb léptékein Közép-Európa áttekintő térképpel látható.
-- **A GPS, az utólagos I²C-érzékelők és a microSD választhatók.** GPS-pozíció nélkül a kézzel beállított hely a térkép közepe, alapból Budapest belvárosa. A hiányzó mérések helyén `--` jelenik meg. Használható kártya nélkül a térkép a flashmemóriából töltődik be.
+- **2,4 GHz-es Wi-Fi-re** az élő forgalomhoz és az időjáráshoz. Az 1.5.0-s firmware első induláskor felajánlja a külön letölthető offline világtérképet. A **Később** gombbal előbb beállíthatod a Wi-Fi-t. A **Műszerek → SD újra [R]** újranyitja a letöltést, ha hiányzik a térkép.
+- **A GPS, az utólagos I²C-érzékelők és a microSD választhatók.** GPS-pozíció nélkül a kézzel beállított hely a térkép közepe, alapból Budapest belvárosa. A hiányzó mérések helyén `--` jelenik meg. Az offline térképhez írható microSD szükséges, kivéve, ha a készüléken külön előkészített belső térképtár van.
 
 ## Telepítés és frissítés
 
@@ -112,6 +112,12 @@ A [telepítőmappában](install/) két kész firmware található. Az alábbi pa
 2. GPS nélkül add meg a szélességet és a hosszúságot tizedes fokban, tizedesponttal. Időzónának a `Budapest`, az `UTC` vagy egy POSIX-időzóna adható meg. Wi-Fi-n az óra NTP-vel szinkronizál, induláskor érvényes GPS-idő is beállíthatja. Kézzel az UTC-időt `YYYY-MM-DD HH:MM` formában írd be.
 3. Az **1** gombbal nyisd meg a **Légtér** nézetet. Az alapbeállítás 40 tengeri mérföldes körzet és kétperces frissítés. Egy gépre koppintva láthatod a hívójelét, magasságát, sebességét és helyét.
 
+## Az offline térkép frissítése
+
+Az első indításkor válaszd a **Térkép letöltése** ablakban a **Letöltés** gombot. A T-Deck Wi-Fi-n tölti le az 5,84 MB-os első kiadást az írható microSD-kártyára. A fájl neve `/WORLD.FDM`. A letöltött térképet offline is használhatod.
+
+Induláskor, majd 24 óránként a készülék lekéri a GitHubról a kis verziófájlt. Naprakész térképnél ezzel végez. Új kiadásnál automatikusan letölti a csomagot, és aktiválás előtt SHA-256-tal ellenőrzi a tárolt fájlt. Sérülés vagy megszakadt letöltés után újrapróbálja, amikor van Wi-Fi és szinkronizált az óra.
+
 ## Mentett Wi-Fi és firmware-frissítés
 
 A **Beállítások → Mentett hálózatok** alatt legfeljebb nyolc hálózatot tárolhatsz. Az **Új hálózat** megkeresi a környékbeli hálózatokat. Válassz ki egy mentett nevet a csatlakozáshoz vagy a törléshez. A törlést meg kell erősíteni. Frissítéskor a készülék átveszi a korábban mentett hálózatot. Ha megszakad a kapcsolat, megkeresi az elérhető mentett hálózatokat és a mentett jelszóval próbálkozik.
@@ -144,7 +150,7 @@ Wi-Fi-szakadáskor a készülék újracsatlakozik. Tartósan gyenge jelnél azon
 | Wi-Fi-jel a felső sávban | A három folyamatos ív aktív Wi-Fi-kapcsolatot és kiosztott IP-címet jelez. Kapcsolódáskor az ívek egymás után jelennek meg. Újracsatlakozáskor környíl, megszakadt vagy hiányzó kapcsolatnál áthúzott Wi-Fi-jel látszik. |
 | Repülőikonok | A kitöltött ikon legfeljebb 90 másodperces pozíciót jelöl. Régebbi pozíciónál a gép körvonalként látszik. A **?** ismeretlen irányt, az állapot melletti **\*** a mozgásból becsült állapotot jelzi. |
 | Időjárás | Az esőradar legfeljebb három RainViewer-képkockát játszik le. Az alsó időpontra koppintva megállíthatod vagy folytathatod. A hőtérkép kilenc Open-Meteo mintát vagy közeli repülőterek METAR-észleléseit használja. Mindkét nézet körülbelül tízpercenként frissül. |
-| Hardver ellenőrzése | A **2** nyitja a **Műszerek** lapot. A **B** hangszórópróbát indít, az **R** újrapróbálja az SD csatolását. Az akkuikon akkuról becsült százalékot, felismert külső tápon **USB** feliratot mutat. A tényleges töltést a kék LED jelzi. |
+| Hardver ellenőrzése | A **2** nyitja a **Műszerek** lapot. A **microSD** sor a szabad és teljes kötetterületet mutatja. A **B** hangszórópróbát indít, az **R** újrapróbálja az SD csatolását. Az akkuikon akkuról becsült százalékot, felismert külső tápon **USB** feliratot mutat. A tényleges töltést a kék LED jelzi. |
 | Megjelenés | A Beállítások utolsó lapján választhatsz nyelvet, színtémát és képernyőpihenőt. Az alapérték 30 perc. A **0** kikapcsolja a pihenőt. Érintés vagy billentyű ébreszti fel a képernyőt. |
 | Számok és jelek | Szerkesztéskor a képernyő **SYM** gombjával válthatsz. Billentyűzetről az újabb, mátrixmódú vezérlőn nyomd meg a **SYM** gombot. Régebbi vezérlőn tartsd lenyomva a **SYM**-et és nyomj **Q**-t. Ismételd meg a kikapcsoláshoz. **SYM BE** mellett a **W E R** beírja az **1 2 3** számokat, a **szóköz** a **0**-t, a **Q** a **#** jelet. A kijelző külön **0** gombja mindkét módban működik. |
 | Billentyűvilágítás | Régebbi billentyűzeten tartsd lenyomva az **ALT** gombot, és nyomd meg a **B**-t a fény be- vagy kikapcsolásához. Ezeken a modelleken a fény pihenőben is bekapcsolva maradhat. Az újabb vezérlők fényereje a **Beállítások → Billentyűfény (%)** mezőben állítható. |
@@ -158,7 +164,7 @@ Telepítsd a Git for Windows programot, majd nyisd meg a PowerShellt a projekt m
 .\build.ps1
 ```
 
-A saját fordítású képek a `firmware/` mappába kerülnek. Feltöltésükhöz a telepítési parancsokban ennek a mappának az útvonalát használd. A fordítás beépíti a `maps/` mappa kész térképeit. Újragenerálásuk választható. [Térképforrások és újragenerálás](maps/README.md)
+A saját fordítású képek a `firmware/` mappába kerülnek. Feltöltésükhöz a telepítési parancsokban ennek a mappának az útvonalát használd. A térképet külön adatcsomagként kezeli. A készülék indításkor és utána 24 óránként lekéri a GitHubos térkép verzióját. Új kiadás vagy hibás helyi fájl esetén letölti a csomagot, és SHA-256-tal ellenőrzi. Megszakadás után automatikusan újrapróbálja. [Térképforrások és újragenerálás](maps/README.md)
 
 Új kiadás készítésekor töltsd le a címkéket (`git fetch --tags`), állítsd be az új verziót a `FlightDeck/firmware_version.h` fájlban, majd fordítás előtt futtasd a `py tools/prepare_rollback.py` parancsot. A generált katalógust és az `install/archive/` fájlokat a firmware-rel együtt tedd közzé. A régebbi készülékek ugyanezekről a címekről töltenek le. Az új binárisok, a `manifest.json` és a `SHA256SUMS.txt` telepítőmappába helyezése után futtasd a `py tools/prepare_rollback.py --usb` parancsot. Az így kapott `install/usb-releases.json` fájlt és az archív teljes képeket is tedd közzé.
 

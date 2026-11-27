@@ -372,6 +372,7 @@ struct EditorButton {
 };
 static constexpr EditorButton saveButton{8},cancelButton{164};
 #include "firmware_update.h"
+#include "map_update.h"
 #include "settings_network_ui.h"
 static void settings(){
   if(updateScreen){drawUpdateScreen();return;}
@@ -478,7 +479,7 @@ static void panMap(int dx,int dy){
   }
   float degPerPixel=halfLat/midY;
   center.lon=remainderf(lon-dx*degPerPixel/max(.01f,cosf(radians(lat))),360.f);
-  center.lat=constrain(lat+dy*degPerPixel,-85.f+halfLat,85.f-halfLat);
+  center.lat=weather?constrain(lat+dy*degPerPixel,-85.f+halfLat,85.f-halfLat):constrain(lat+dy*degPerPixel,-90.f,90.f);
   center.active=true;lastMapMotion=millis();dirty=true;
 }
 static void tapAircraft(int x,int y){
@@ -558,9 +559,11 @@ static void render(){
       chevron(152,y+14,i==menuIndex?mint:muted);
     }
   }
+  if(mapPrompt || mapUpdate::showProgress)mapUpdate::dialog();
   screen.pushSprite(0,0);
 }
 static void moveBy(int step){
+  if(mapPrompt){mapUpdate::later=!mapUpdate::later;dirty=true;return;}
   if(menuOpen){menuIndex=(menuIndex+step+6)%6;dirty=true;return;}
   if(wifiScreen!=WifiScreen::closed){
     if(wifiScreen==WifiScreen::list && wifiBook.count)savedIndex=(savedIndex+step+wifiBook.count)%wifiBook.count;
@@ -577,6 +580,8 @@ static void moveBy(int step){
   dirty=true;
 }
 static void activate(){
+  if(mapPrompt){mapUpdate::choose(!mapUpdate::later);return;}
+  if(mapUpdate::showProgress)return;
   if(menuOpen){goPage(menuPages[menuIndex]);return;}
   if(updateScreen){updateAction();dirty=true;return;}
   if(wifiScreen!=WifiScreen::closed){savedAction();dirty=true;return;}
@@ -617,6 +622,13 @@ static void activate(){
 }
 static void key(int c){
   if(!c || !interact()) return;
+  if(mapPrompt){
+    if(c==13 || c==10)activate();
+    else if(c=='j'||c=='k')moveBy(1);
+    else if(c==27 || c=='f')mapUpdate::choose(false);
+    return;
+  }
+  if(mapUpdate::showProgress)return;
   if(menuOpen){
     if(c=='m'||c=='M'||c==27)toggleMenu();else if(c=='j'||c=='k')moveBy(c=='j'?1:-1);
     else if(c==10||c==13)activate();
@@ -659,12 +671,16 @@ static void key(int c){
   else if(c==13 || c==10) activate();
   else if(page==1 && hardwareDetails && (c==27 || c=='f'))instrumentAction(0);
   else if(page==1 && (c=='b'||c=='B')) beep();
-  else if(page==1 && (c=='r'||c=='R')) {mountCard();loadMap(true);}
+  else if(page==1 && (c=='r'||c=='R') && !mapBusy) {mapUpdate::sdFailed=false;mountCard();loadMap(true);}
 }
 static void ballEvent(int pin,bool high){
   static uint32_t ignoreUntil,clickAt;
   if(!interact()){ignoreUntil=millis()+300;return;}
   if(!due(millis(),ignoreUntil))return;
+  if(mapPrompt || mapUpdate::showProgress){
+    if(mapPrompt && !high){if(pin==4)activate();else moveBy(1);}
+    return;
+  }
   if(pin==4){
     if(!high && millis()-clickAt>=150){clickAt=millis();activate();}
     return;
@@ -679,6 +695,13 @@ static void ballEvent(int pin,bool high){
 }
 static void touchInput(bool down,int x,int y){
   static bool pressed=false;
+  if(mapPrompt || mapUpdate::showProgress){
+    if(down && !pressed && interact() && mapPrompt && y>=146 && y<177){
+      if(x>=27 && x<157)mapUpdate::choose(true);
+      else if(x>=163 && x<293)mapUpdate::choose(false);
+    }
+    pressed=down;return;
+  }
   static bool dragCard=false,dragMap=false,scrolled=false;
   static int firstX,firstY,lastX,lastY,startPage;
   if(dragMap && (page!=startPage || menuOpen || sleeping))dragMap=false;
@@ -845,9 +868,12 @@ static void logEnvironment(){
   lastLog=millis();
   FsFile f=card.open("/flightdeck-env.csv",O_WRONLY|O_CREAT|O_APPEND);
   if(!f){Serial.println("SD naplo megnyitasi hiba");sdOK=false;return;}
-  if(!f.fileSize()) f.println("epoch,uptime_s,temperature_C,pressure_hPa,humidity_pct,battery_V");
+  auto before=f.fileSize();
+  if(!before) f.println("epoch,uptime_s,temperature_C,pressure_hPa,humidity_pct,battery_V");
   f.printf("%ld,%lu,%.2f,%.2f,%.2f,%.3f\n",(long)time(nullptr),millis()/1000,temperature,pressure,humidity,voltage);
   bool ok=!f.getWriteError();
+  auto clusterBytes=card.bytesPerCluster();
+  if(clusterBytes && (before+clusterBytes-1)/clusterBytes!=(f.fileSize()+clusterBytes-1)/clusterBytes)storageNeedsScan=true;
   if(!f.close() || !ok){sdOK=false;Serial.println("SD naplo irasi hiba");}
 }
 // Optional USB write test. Exclusive creation protects existing card files.
@@ -877,12 +903,11 @@ static void status(){
     Serial.printf("RES ram=%u/%u psram=%u/%u",(unsigned)ram.used,(unsigned)ram.total,(unsigned)psram.used,(unsigned)psram.total);
     for(unsigned i=0;i<portNUM_PROCESSORS;i++)Serial.printf(" cpu%u=%d",i,coreLoad[i].percent.load(std::memory_order_relaxed));
     Serial.println();
+    Serial.printf("SDSPACE mounted=%d total=%llu free=%lld\n",sdOK,(unsigned long long)volumeBytes,(long long)(sdOK?sdFreeBytes:-1));
   }
   Serial.printf("GUI page=%d menu=%d card=%d sleep=%d minutes=%ld theme=%ld lang=%s wxBusy=%d rain=%d heat=%d follow=%d solo=%d\n",page,int(menuOpen.load()),cardOpen,sleeping,cfg[SAVER].toInt(),cfg[THEME].toInt(),cfg[LANG].c_str(),wxBusy,wxCache[0].frames,wxCache[1].frames,followPlane,onlyPlane);
   MapView v=mapView();
-  Serial.printf("MapIO source=%s fat=%d wp=%d install=%d written=%u probe=%d reopenSize=%u read=%d err=%u/%u sdfat=%s fatfs=%s diff=%d actual=%d expected=%d\n",
-    mapFromSD?"SD":"flash",sdOK?card.fatType():0,writeProtect,installedMap,writtenLength,sameHandle,storedLength,mapReadCount,ioCode,ioData,probeStatus,nativeStatus,diffByte,actualByte,diffByte<0?-1:flightdeck_map_start[diffByte]);
-  Serial.printf("Map %s %s bytes=%u places=%u zoom=%.1f NM",mapStatus,mapFilename,mapProgress,atlas?atlas->places:0,weatherPage()?viewRadius(weatherZoomStep):v.nm);
+  Serial.printf("Map bytes=%u places=%u zoom=%.1f NM",installedRecord.size,atlas?atlas->places:0,weatherPage()?viewRadius(weatherZoomStep):v.nm);
   if(const Plane *plane=selectedPlane()){
     bool inside; float km;
     const Plane &p=*plane;
@@ -891,6 +916,8 @@ static void status(){
   }
   Serial.println();
   Serial.printf("FW version=%s ota=%d slot=%s profiles=%u manager=%d\n",FW_VERSION,int(otaState),esp_ota_get_running_partition()->label,wifiBook.count,int(wifiScreen));
+  Serial.printf("WorldMap source=%s rev=%u prompt=%d consent=%d busy=%d written=%u error=%d cache=%u\n",
+    world::offsets?(world::flash?"flash":"SD"):"none",installedRecord.revision,mapPrompt,mapConsent,mapBusy,unsigned(mapUpdate::written),mapUpdate::lastError,unsigned(world::cacheBytes));
   Serial.printf("Keyboard input=%s light=%ld symbolLock=%d\n",matrixKeyboard?"matrix":"char",cfg[KEY_LIGHT].toInt(),symbolLock);
   Serial.printf("Network configured=%d keySet=%d reason=%u scan=%d matchChannel=%d auth=%d clock=%d link=%u\n",
     !cfg[SSID].isEmpty(),!cfg[PASS].isEmpty(),disconnectReason,seenNetworks,matchingChannel,matchingAuth,time(nullptr)>1700000000,unsigned(currentWifiLink()));
@@ -943,7 +970,7 @@ void loop(){
   uint32_t now=millis();
   if(now-lastInput>=28){lastInput=now; if(bench.active)benchInput();else input();}
   if(menuOpen && millis()-lastActivity>=60000UL){menuOpen=false;dirty=true;}
-  otaTick();readGps(); readAht(); weatherTick(); handleTraffic(); networkProbe();
+  mapUpdate::tick();otaTick();readGps(); readAht(); weatherTick(); handleTraffic(); networkProbe();
   if(!bench.active && !sleeping && cfg[SAVER].toInt()>0 && millis()-lastActivity>=60000UL*cfg[SAVER].toInt())startSaver();
   if(now-lastSample>=1500){lastSample=now; sampleEnvironment(); sampleInputs();}
   static WifiLink lastDrawnLink=WifiLink::offline;
@@ -955,7 +982,26 @@ void loop(){
       if(c=='X') benchStart();
       if(c=='Y') benchReport();
       if(c=='E' && bench.active){benchReport();bench.active=false;dirty=true;}
-      if(c=='V') verifyCardWrite();
+      if(c=='V' && !mapBusy) verifyCardWrite();
+      if(c=='G' && !mapBusy && !internalEnabled){
+        // Local USB opt-in after auditing this board's partition layout.
+        auto part=world::partition();bool blank=part;uint8_t block[1024];
+        for(size_t pos=0;blank && pos<world::flashCapacity;pos+=sizeof(block)){
+          blank=esp_partition_read(part,world::flashBase+pos,block,sizeof(block))==ESP_OK;
+          for(uint8_t b:block)if(b!=255){blank=false;break;}
+          if(!(pos%65536))delay(1);
+        }
+        if(blank)internalEnabled=mapPrefs.putBool("reserve",true);
+        Serial.printf("WorldReserve enabled=%d\n",internalEnabled);
+      }
+      if(c=='@'){
+        char coords[48];size_t n=Serial.readBytesUntil('\n',coords,sizeof(coords)-1);coords[n]=0;
+        Plane p{};bool inside;float distance;
+        if(sscanf(coords,"%f,%f",&p.lat,&p.lon)==2 && fabsf(p.lat)<=90 && fabsf(p.lon)<=180){
+          auto name=placeBelow(p,inside,distance);
+          Serial.printf("WorldLookup town=%s km=%.2f municipality=%d urban=%s\n",name?name:"--",distance,inside,world::urban[0]?world::urban:"--");
+        }
+      }
       if((editing && field==SAVER && isDigit(c)) || strchr("12345+-ldufmsjk",c) || c==13)key(c);
       if(c=='!'){
         render();
