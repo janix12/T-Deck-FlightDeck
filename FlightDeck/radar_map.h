@@ -207,13 +207,27 @@ static void radar(){
     if(x>=-9 && x<mapWidth+9 && y>=mapTop-9 && y<mapTop+mapHeight+9) drawPlane(x,y,q.heading,i<0,now-q.observed>90);
   }
 
-  float scale=1;
-  for(int n:{1,2,5,10,20,50,100,200}) if(n*1.852f*v.pixelsPerDeg/111.195f<=54) scale=n;
-  int bar=lroundf(scale*1.852f*v.pixelsPerDeg/111.195f);
+  const float pixelsPerNm=(mapHeight/2.f)/v.nm;
+  // Prefer 1/2/5 distances. At close zoom a tenth of a mile is significant.
+  int tenths=2;
+  for(int n:{5,10,20,50,100,200,500,1000})
+    if(lroundf(n*pixelsPerNm/10)<=54)tenths=n;
+  auto caption=[](int n){return (n%10?String(n/10.f,1):String(n/10))+" NM";};
+  int bar=lroundf(tenths*pixelsPerNm/10);
+  String scaleText=caption(tenths);
+  if(bar<labelWidth(scaleText,1)+2){
+    // Use a longer measured distance when even the compact face would overhang.
+    for(int n:{3,4,7,15,30,40,70,150,300,400,700})
+      if(n>tenths && lroundf(n*pixelsPerNm/10)<=54)tenths=n;
+    bar=lroundf(tenths*pixelsPerNm/10);
+    scaleText=caption(tenths);
+  }
+  const int scaleFont=labelWidth(scaleText,2)+2<=bar?2:1;
   const int scaleWidth=max(bar+12,56);
   pill(5,mapButtonY,scaleWidth,mapButtonHeight);
-  centeredLabel(5,mapButtonY+5,scaleWidth,15,String(int(scale))+" NM",ink,2);
-  screen.drawFastHLine(5+(scaleWidth-bar)/2,mapButtonY+22,bar,ink);
+  const int barX=5+(scaleWidth-bar)/2;
+  centeredLabel(barX,mapButtonY+5,bar,15,scaleText,ink,scaleFont);
+  screen.drawFastHLine(barX,mapButtonY+22,bar,ink);
   pill(72,mapButtonY,29,mapButtonHeight);
   for(int i=0;i<3;i++){
     const int row=mapButtonY+10+i*4;
