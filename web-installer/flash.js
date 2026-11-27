@@ -38,7 +38,8 @@ export async function installFirmware(loader, release, mode, status, progress) {
     }
   });
   try {
-    await loader.after("hard_reset");
+    // In esptool-js 0.7.1 hard_reset only releases RTS. Pulse it to boot the app.
+    await loader.after("custom_reset", false, "D0|R1|W200|R0|W200");
     return "done";
   } catch {
     return "manualReset";

@@ -1,4 +1,4 @@
-import { installFirmware } from "./flash.js?v=versions-1";
+import { installFirmware } from "./flash.js?v=versions-2";
 
 const en = {
   title: "USB installer",
