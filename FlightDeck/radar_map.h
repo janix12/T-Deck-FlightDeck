@@ -112,12 +112,17 @@ static void drawPlane(int x,int y,float track,bool active,bool stale){
     }
   }
   if(active)screen.drawCircle(x,y,13,amber);
-  if(!isfinite(track)) mapLabel(x+8,y-11,"?",color,1);
+  if(!isfinite(track) && y>=41 && y<205){
+    int left=x+8;
+    if(left+6>mapWidth)left=x-14;
+    if(left>=0 && left+6<=mapWidth)mapLabel(left,y-11,"?",color,1);
+  }
 }
 static void cardField(int y,const char *title,const String &value){
   if(y+30<cardBodyY || y>=cardBodyY+cardBodyH) return;
   label(cardX+6,y,title,muted,1);
-  label(cardX+6,y+9,value,ink,2);
+  int font=labelWidth(value,2)<=116?2:1;
+  label(cardX+6,y+9,fitText(value,font,116),ink,font);
 }
 static void drawCard(const Plane *p,const char *town,bool inside,float distance){
   framedBox(cardX,cardTop,130,211,7,bg,grid);
@@ -133,24 +138,24 @@ static void drawCard(const Plane *p,const char *town,bool inside,float distance)
       if(y>=cardBodyY+cardBodyH) break;
       const Plane &q=traffic.planes[i];
       if(i==listCursor) screen.fillRoundRect(cardX+3,y,120,listRow-1,3,grid);
-      label(cardX+7,y,q.name,i==selected?amber:ink);
+      label(cardX+7,y,q.name,i==selected?amber:ink,labelWidth(q.name,2)<=115?2:1);
       label(cardX+7,y+16,number(q.km,1)+" km",muted,1);
       screen.drawFastHLine(cardX+6,y+listRow-1,110,grid);
     }
   } else{
     int y=cardBodyY+3-detailScroll;
-    int font=labelWidth(p->name,4)<=112?4:2;
+    int font=labelWidth(p->name,4)<=112?4:labelWidth(p->name,2)<=112?2:1;
     label(cardX+6,y,p->name,amber,font);
-    String name=town?town:atlas?tr("Csomagon kívül","Outside map"):mapStatus;
+    String name=town?town:atlas?tr("Csomagon kívül","Outside map"):tr("Nincs térkép","No map");
     label(cardX+6,y+32,inside?tr("TELEPÜLÉS","MUNICIPALITY"):town?tr("KÖZELÉBEN","NEAREST TOWN"):tr("TÉRKÉP","MAP"),muted,1);
     if(labelWidth(name,2)<=115) label(cardX+6,y+42,name,ink);
     else {
       const int split=labelPrefixBytes(name,1,115);
       label(cardX+6,y+42,name.substring(0,split),ink,1);
-      label(cardX+6,y+53,name.substring(split),ink,1);
+      label(cardX+6,y+53,fitText(name.substring(split),1,115),ink,1);
     }
     cardField(y+67,tr("ÁLLAPOT","STATUS"),selected<0?tr("Elveszett jel","Signal lost"):stateText(*p));
-    cardField(y+98,tr("MAGASSÁG","ALTITUDE"),p->ground?tr("Foldon","Ground"):number(p->altitude)+" m");
+    cardField(y+98,tr("MAGASSÁG","ALTITUDE"),p->ground?tr("Földön","Ground"):number(p->altitude)+" m");
     cardField(y+129,tr("SEBESSÉG","SPEED"),number(p->speed)+" km/h");
     cardField(y+160,tr("TÁVOLSÁG","DISTANCE"),number(p->km,1)+" km");
     cardField(y+191,tr("HALADÁSI IRÁNY","TRACK"),number(p->heading)+" deg");
@@ -209,9 +214,12 @@ static void drawGeography(const MapView &v,const char *selectedTown,const MapHea
     const MapPlace &p=towns[i]; int x=v.mapX(p.at.x),y=v.mapY(p.at.y);
     if(x<2 || y<mapTop+6 || x>=mapWidth-4 || y>=mapTop+mapHeight-6) continue;
     const char *name=names+p.name;
-    Box b{x+3,y-4,x+3+int(strlen(name))*6,y+5};
-    if(b.right>=mapWidth) {b.right=x-3;b.left=b.right-int(strlen(name))*6;}
+    const int width=screen.textWidth(name,1);
+    Box b{x+3,y-4,x+3+width,y+5};
+    if(b.right>=mapWidth) {b.right=x-3;b.left=b.right-width;}
     if(b.left<0) continue;
+    // Keep each town name entirely visible above the toolbar and below the HUD.
+    if(b.top<30 || b.bottom>=205)continue;
     bool free=true;
     for(int k=0;k<count;k++) if(b.left<=used[k].right+3 && b.right+3>=used[k].left &&
        b.top<=used[k].bottom+3 && b.bottom+3>=used[k].top){free=false;break;}
@@ -279,12 +287,16 @@ static void radar(){
   if(cardOpen)drawCard(p,town,inside,distance);
   else if(p){
     int x=v.x(p->lon),y=v.y(p->lat);
-    if(x>=0 && x<268 && y>34 && y<196){int w=screen.textWidth(p->name,1)+8;pill(x+13,y-9,w,16);mapLabel(x+17,y-5,p->name,amber,1);}
+    if(x>=0 && x<mapWidth && y>40 && y<178){
+      int w=screen.textWidth(p->name,1)+8,left=x+13;
+      if(left+w>mapWidth-2)left=x-13-w;
+      pill(left,y-9,w,16);mapLabel(left+4,y-5,p->name,amber,1);
+    }
   }
   if(!traffic.stamp || stale || apiCode!=200 || WiFi.status()!=WL_CONNECTED ||
      budget.usedToday(now)>=trafficDailyLimit || budget.retryAt>uint32_t(now)){
     constexpr int top=185,height=20;
-    String msg=feedStatus();
+    String msg=fitText(feedStatus(),1,mapWidth-18);
     int textWidth=labelWidth(msg,1),w=min(mapWidth-8,textWidth+10);
     pill(4,top,w,height);
     screen.setViewport(6,top+2,w-4,height-4,false);

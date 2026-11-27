@@ -22,6 +22,10 @@ Nézd meg, melyik település fölött jár egy repülő. A FlightDeck a LilyGO 
 
 A képek a v1.3.1-et futtató T-Deck kijelzőjéről származnak. A lapcím melletti három ív az aktív Wi-Fi-kapcsolatot mutatja. A radaron az ADS-B-lekéréskor észlelt 29 gép és a követésre kiválasztott DLH6CH járat látszik. A felület nyelve a **Beállítások → Nyelv** sorban váltható. [Korábbi példa az API-korlát jelzésére](docs/images/airspace.png)
 
+![A T-Deck Wi-Fi-jelzője bontáskor és újracsatlakozáskor](docs/images/wifi-reconnect-hu.gif)
+
+A felső sávban három ív jelzi az aktív kapcsolatot, áthúzott ikon a szakadást, környíl az újracsatlakozást. A képkockákat egy T-Decken rögzítettük.
+
 ## Mire van szükséged?
 
 - Az eredeti **LilyGO T-Deck** modellre, ESP32-S3 processzorral, 16 MB flashmemóriával és 8 MB OPI PSRAM-mal, valamint egy USB-adatkábelre. A firmware a fő ESP32-S3 processzorra kerül. A billentyűzetnek külön vezérlője van.

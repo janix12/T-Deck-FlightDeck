@@ -345,18 +345,20 @@ static String feedStatus(){
   if(traffic.stamp){
     long age=max(0L,long(time(nullptr)-traffic.stamp));
     String old=age>=120?String(age/60)+tr(" perc"," min"):String(age)+tr(" mp"," s");
-    if(WiFi.status()!=WL_CONNECTED) return tr("Offline  /  utolso adat: ","Offline  /  last data: ")+old;
-    if(apiCode!=200) return tr("Frissitesi hiba ","Update error ")+String(apiCode)+tr("  /  utolso adat: ","  /  last data: ")+old;
+    if(WiFi.status()!=WL_CONNECTED) return "Offline / "+old;
+    if(apiCode!=200) return "API "+String(apiCode)+" / "+old;
     return (age>cfg[PERIOD].toInt()+30?tr("Régi adat  /  ","Stale data  /  "):"adsb.lol  /  ")+old;
   }
-  if(time(nullptr)<1700000000) return tr("Varakozas az orara","Waiting for clock");
+  if(time(nullptr)<1700000000) return tr("Időszinkron...","Clock sync...");
   if(apiCode && apiCode!=200) return tr("API hiba ","API error ")+String(apiCode);
   return tr("Forgalom lekérése...","Loading flights...");
 }
 #include "radar_map.h"
 #include "weather.h"
 static void diagnostics(){
-  label(9,33,"I2C  "+busList,muted);
+  String buses="I2C  "+busList;
+  int busFont=labelWidth(buses,2)<=302?2:1;
+  label(9,33,fitText(buses,busFont,302),muted,busFont);
   label(9,55,sensor+(ahtOK?"+AHT2x":shtOK?"+SHT3x":"")+"   "+number(temperature,1)+" C   "+number(pressure,1)+" hPa");
   label(9,79,"GPS RX"+cfg[GPS_PIN]+"  "+String(activeRate)+"  "+(hasFix()?"FIX":(lastSentence?tr("NMEA / fixre vár","NMEA / waiting for fix"):tr("jelet keres","searching"))));
   label(9,102,"SD "+(sdOK?String(volumeMiB)+" MiB":(cardMiB?String(tr("FS hiba","FS error")):String("--")))+tr("    Akku ","    Battery ")+number(voltage,2)+" V");
@@ -394,7 +396,7 @@ static void settings(){
         int y=59+(i-top)*25;
         if(i==networkIndex) screen.fillRoundRect(5,y-2,310,23,4,grid);
         String name=WiFi.SSID(i);
-        label(10,y,name.length()?name.substring(0,labelPrefixBytes(name,2,240)):tr("(rejtett)","(hidden)"));
+        label(10,y,name.length()?fitText(name,2,240):tr("(rejtett)","(hidden)"));
         label(260,y,String(WiFi.RSSI(i)),muted);
       }
     }
@@ -404,7 +406,7 @@ static void settings(){
     label(10,45,fieldLabel(field),mint,4);
     String shown=edit;
     if(field==PASS){shown=""; for(size_t i=0;i<edit.length();i++) shown+="*";}
-    label(10,93,shown.substring(shown.length()>32?shown.length()-32:0)+"_");
+    label(10,93,editorLine(shown,300));
     const char *hint="";
     switch(field){
       case SAVER: hint=tr("0 = ki, 1 - 1440 perc","0 = off, 1 - 1440 minutes");break;
@@ -422,7 +424,7 @@ static void settings(){
       case PASS: hint=pickedAuth>=0?tr("Írd be a hálózat jelszavát","Enter the network password"):tr("Üres = nyílt Wi-Fi","Empty = open Wi-Fi");break;
     }
     label(10,131,field==SSID?tr("[ Hálózatok keresése ]","[ Scan networks ]"):hint,field==SSID?mint:muted);
-    label(10,166,notice.length()?notice.substring(0,labelPrefixBytes(notice,2,166)):(matrixKeyboard?"SYM":"SYM + Q"),notice.length()?amber:muted);
+    label(10,166,notice.length()?fitText(notice,2,166):(matrixKeyboard?"SYM":"SYM + Q"),notice.length()?amber:muted);
     pill(180,159,46,30);centeredLabel(180,159,46,30,"0",ink);
     framedBox(234,159,78,30,6,symbolLock?mint:bg,symbolLock?mint:grid);
     centeredLabel(234,159,78,30,symbolLock?tr("SYM BE","SYM ON"):"SYM",symbolLock?bg:ink);
@@ -435,7 +437,7 @@ static void settings(){
     int y=35+(i-top)*27;
     if(i==field) screen.fillRoundRect(5,y-2,310,25,4,grid);
     label(11,y,fieldLabel(i),i==field?mint:ink);
-    String value=valueFor(i);label(160,y,value.substring(0,labelPrefixBytes(value,2,150)));
+    String value=valueFor(i);label(160,y,fitText(value,2,150));
   }
   label(10,198,tr("Görgő: le/fel    Nyomás: szerkesztés","Scroll to browse    Press to edit"),muted);
   pill(7,218,46,20);centeredLabel(7,218,46,20,"<",mint);
@@ -528,7 +530,7 @@ static void render(){
   pill(221,3,95,26);
   drawBatteryIcon(224,8,batteryPercent(batteryEstimateV),externalPower);
   bool showUpdate=otaState==UpdateState::available && (millis()/4000)%2;
-  centeredLabel(268,3,38,26,showUpdate?String("FW+"):clockText(),showUpdate?mint:ink);screen.fillCircle(310,16,2,hasFix()?mint:muted);
+  centeredLabel(265,3,43,26,showUpdate?String("FW+"):clockText(),showUpdate?mint:ink);screen.fillCircle(310,16,2,hasFix()?mint:muted);
   if(page==0 && cardOpen && !menuOpen){
     pill(cardX,3,closeButtonWidth,26);
     for(int i=0;i<8;++i){
@@ -585,7 +587,7 @@ static void activate(){
       else if(field==SSID || field==PASS){
         const String &target=field==SSID?edit:(pickedSsid.length()?pickedSsid:cfg[SSID]);
         notice=wifiBook.count>=WifiBook::capacity && wifiBook.find(target.c_str())<0?
-          tr("A hálózatlista megtelt","Saved list is full"):tr("Ellenőrizd az adatokat","Check the entered details");
+          tr("Profilkeret betelt","Profile limit reached"):tr("Hibás paraméter","Invalid parameter");
       }else notice=tr("Érvénytelen érték","Invalid value");
     }
     else if(field==WIFI_LIST){wifiScreen=WifiScreen::list;savedIndex=wifiBook.preferred;notice="";}

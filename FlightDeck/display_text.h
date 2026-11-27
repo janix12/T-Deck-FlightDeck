@@ -79,6 +79,17 @@ static int labelPrefixBytes(const String &text,int font,int available){
   }
   return p-start;
 }
+static String fitText(const String &text,int font,int width){
+  if(labelWidth(text,font)<=width)return text;
+  const String dots="...";
+  return text.substring(0,labelPrefixBytes(text,font,width-labelWidth(dots,font)))+dots;
+}
+static String editorLine(const String &text,int width){
+  const uint8_t *first=(const uint8_t*)text.c_str();
+  int used=labelWidth(text,2)+labelWidth("_",2);
+  while(used>width && *first)used-=uiFace(2).glyphs[nextGlyph(first)].advance;
+  return String((const char*)first)+"_";
+}
 static void drawGlyph(int left,int top,const UiFace &face,const UiGlyph &g,uint16_t color){
   unsigned i=0;
   for(int row=0;row<g.height;++row)for(int col=0;col<g.width;++col,++i){

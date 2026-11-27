@@ -1,6 +1,7 @@
 import { installFirmware } from "./flash.js?v=versions-2";
 
 const en = {
+  wifiDemoCaption: "Wi-Fi disconnecting and reconnecting on the T-Deck", wifiDemoAlt: "Three Wi-Fi waves change to a crossed-out icon when disconnected, a circular arrow while reconnecting, then three waves again.",
   title: "USB installer",
   version: "Firmware version", latest: "latest", catalogError: "Could not load the firmware versions. Reload the page to try again.",
   intro: "Connect your original T-Deck to your computer with a USB data cable, switch it on and close any serial monitor.",

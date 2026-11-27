@@ -32,7 +32,7 @@ static void drawWifiBook(){
       if(i==savedIndex)screen.fillRoundRect(6,y-2,308,26,4,grid);
       String name=wifiBook.entries[i].ssid;
       if(WiFi.status()==WL_CONNECTED && WiFi.SSID()==name)screen.fillCircle(16,y+10,4,mint);
-      label(27,y+2,name.substring(0,labelPrefixBytes(name,2,278)));
+      label(27,y+2,fitText(name,2,278));
     }
     if(wifiBook.count>4){
       pill(8,173,50,24);centeredLabel(8,173,50,24,"<",ink);
@@ -42,7 +42,7 @@ static void drawWifiBook(){
     saveButton.draw(tr("Új hálózat","Add network"),mint,mint,bg);
   }else{
     String name=wifiBook.entries[savedIndex].ssid;
-    label(10,66,name.substring(0,labelPrefixBytes(name,2,300)),ink);
+    label(10,66,fitText(name,2,300),ink);
     if(wifiScreen==WifiScreen::forget)
       label(10,108,tr("Törlöd ezt a mentett hálózatot?","Forget this saved network?"),amber);
     else{

@@ -34,6 +34,7 @@ figure{margin:0;padding:13px 13px 0;background:#15282f;border:1px solid var(--li
 img{width:100%;height:auto;display:block;border-radius:6px;image-rendering:pixelated}
 figcaption{padding:14px 1px;display:flex;align-items:center;gap:10px;font-size:.76rem;color:var(--muted);letter-spacing:0}
 .dot{width:7px;height:7px;flex:none;border-radius:50%;background:var(--mint)}
+.wifi-demo{max-width:348px}
 details{border-block:1px solid var(--line);padding:16px 0}
 summary{cursor:pointer;font-weight:600}details p{color:var(--muted);margin-bottom:0}
 .manual{display:inline-block;margin:16px 0;font-size:.92rem}

@@ -44,9 +44,9 @@ static void pill(int x,int y,int w,int h){
 }
 static String stateText(const Plane &p){
  const char *state=flightState(p);
- if(!english())return state;
- const char *hu[]={"Leszallt*","Felszallt*","Foldon","All a foldon*","Foldon mozog*","Nincs adat","Korozes?*","Levegoben","Emelkedik*","Sullyed*","Szintrepules*"};
+ const char *keys[]={"Leszallt*","Felszallt*","Foldon","All a foldon*","Foldon mozog*","Nincs adat","Korozes?*","Levegoben","Emelkedik*","Sullyed*","Szintrepules*"};
+ const char *hu[]={"Leszállt*","Felszállt*","Földön","Áll a földön*","Földön mozog*","Nincs adat","Körözés?*","Levegőben","Emelkedik*","Süllyed*","Szintrepülés*"};
  const char *en[]={"Landed*","Took off*","On ground","Stopped*","Taxiing*","Unknown","Circling?*","Airborne","Climbing*","Descending*","Level flight*"};
- for(unsigned i=0;i<sizeof(hu)/sizeof(*hu);++i)if(!strcmp(hu[i],state))return en[i];
+ for(unsigned i=0;i<sizeof(keys)/sizeof(*keys);++i)if(!strcmp(keys[i],state))return tr(hu[i],en[i]);
  return state;
 }

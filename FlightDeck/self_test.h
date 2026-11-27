@@ -55,14 +55,15 @@ static void benchInput(){
   if(millis()-bench.since>=150000){benchReport();bench.active=false;dirty=true;}
 }
 static void benchScreen(){
-  screen.fillSprite(bg);label(9,7,"T-Deck hardverteszt",mint,4);
-  label(10,49,"Erintsd a kijelzot, nyomj B-t.");label(10,72,"Gorgess 4 iranyba, majd nyomd le.");
-  label(10,110,"Billentyu: "+String(bench.keys)+"     Erintes: "+String(bench.taps),amber);
-  label(10,138,"Gorgo: "+String(bench.ball[0])+" / "+String(bench.ball[1])+" / "+String(bench.ball[2])+" / "+String(bench.ball[3]));
-  label(10,164,"Lenyomas: "+String(bench.ball[4])+"     Mik.: "+String(bench.peak));
+  screen.fillSprite(bg);label(9,7,tr("T-Deck hardverteszt","T-Deck hardware test"),mint,4);
+  label(10,49,tr("Érintsd meg a kijelzőt, nyomj B-t.","Tap the screen and press B."));
+  label(10,72,tr("Görgess négy irányba, majd kattints.","Roll in four directions, then click."));
+  label(10,110,String(tr("Bill.: ","Keys: "))+String(bench.keys)+tr("     Érintés: ","     Touch: ")+String(bench.taps),amber);
+  label(10,138,String(tr("Görgő: ","Ball: "))+String(bench.ball[0])+" / "+String(bench.ball[1])+" / "+String(bench.ball[2])+" / "+String(bench.ball[3]));
+  label(10,164,String(tr("Kattintás: ","Clicks: "))+String(bench.ball[4])+tr("     Mik.: ","     Mic: ")+String(bench.peak));
   label(10,188,tr("Akkuikon-próba","Battery icon test"),muted,1);
   drawBatteryIcon(131,184,100,false);
   drawBatteryIcon(177,184,-1,true);
-  label(10,206,"A teszt automatikusan kilep.",muted);
+  label(10,206,tr("A teszt automatikusan kilép.","The test ends automatically."),muted);
   screen.pushSprite(0,0);
 }
