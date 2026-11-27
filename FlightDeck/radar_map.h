@@ -37,7 +37,7 @@ static void togglePlaneSwitch(int row){
     onlyPlane=!onlyPlane;
     if(onlyPlane)followPlane=true;
   }
-  if(followPlane && !wasFollowing){followZoom=max(1,zoomStep+1);lastWasLookup=false;}
+  if(followPlane && !wasFollowing){radarPan.active=false;followZoom=max(1,zoomStep+1);lastWasLookup=false;}
   if(!followPlane && !onlyPlane && selected<0)selected=0;
   dirty=true;
 }
@@ -49,8 +49,7 @@ static void cardBall(int direction){
     return;
   }
   listCursor=constrain(listCursor+direction,0,max(0,traffic.count-1));
-  if(listCursor*listRow<listScroll) listScroll=listCursor*listRow;
-  if((listCursor+1)*listRow>listScroll+cardBodyH) listScroll=(listCursor+1)*listRow-cardBodyH;
+  listScroll=constrain(listScroll,max(0,(listCursor+1)*listRow-cardBodyH),min(listCursor*listRow,scrollLimit()));
   dirty=true;
 }
 struct MapView {
@@ -69,7 +68,8 @@ static MapView mapView(){
   MapView v{};
   v.lat=area.lat; v.lon=area.lon;
   const Plane *p=selectedPlane();
-  if(followPlane && p){v.lat=p->lat;v.lon=p->lon;}
+  if(radarPan.active){v.lat=radarPan.lat;v.lon=radarPan.lon;}
+  else if(followPlane && p){v.lat=p->lat;v.lon=p->lon;}
   else if(zoomStep>0){v.lat=manualLat;v.lon=manualLon;}
   v.nm=viewRadius(followPlane?followZoom:zoomStep);
   v.pixelsPerDeg=111.195f*(mapHeight/2)/(1.852f*v.nm);

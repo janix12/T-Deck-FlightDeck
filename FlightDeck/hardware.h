@@ -18,7 +18,26 @@
 
 static TFT_eSPI panel;
 static TFT_eSprite screen(&panel);
-static TouchDrvGT911 touch;
+class TouchPanel : public TouchDrvGT911 {
+public:
+  // A quiet GT911 between reports is still the same gesture. Only a ready
+  // report with zero contacts marks the release. Read before acknowledging.
+  bool readReport(bool &down,int16_t &x,int16_t &y){
+    uint8_t reg[]={highByte(GT911_POINT_INFO),lowByte(GT911_POINT_INFO),0};
+    uint8_t data[6]; // status, first contact ID, X and Y (little-endian)
+    if(writeThenRead(reg,2,data,sizeof(data))!=DEV_WIRE_NONE || !GT911_GET_BUFFER_STATUS(data[0]))return false;
+    if(writeBuffer(reg,sizeof(reg))!=DEV_WIRE_NONE)return false;
+    unsigned count=GT911_GET_POINT(data[0]);
+    if(count>5)return false;
+    down=count!=0;
+    if(down){
+      x=data[2]|(data[3]<<8);y=data[4]|(data[5]<<8);
+      updateXY(1,&x,&y);x=constrain(x,0,319);y=constrain(y,0,239);
+    }
+    return true;
+  }
+};
+static TouchPanel touch;
 static SX1262 radio = new Module(RADIO_CS_PIN,RADIO_DIO1_PIN,RADIO_RST_PIN,RADIO_BUSY_PIN);
 static TinyGPSPlus gps;
 static Adafruit_BMP280 bmp;

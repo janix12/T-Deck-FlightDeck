@@ -44,6 +44,9 @@ static Traffic traffic,incoming;
 static bool followPlane,onlyPlane;
 static Plane pinnedPlane{};
 static int zoomStep,followZoom;
+struct PanCenter { bool active=false; float lat=0,lon=0; };
+static PanCenter radarPan,weatherPan;
+static uint32_t lastMapMotion;
 static bool lastWasLookup;
 static const Plane *selectedPlane(){
   if(selected>=0 && selected<traffic.count)return &traffic.planes[selected];
@@ -290,7 +293,7 @@ static bool applyField(){
   if(field==LIGHT) backlight(edit.toInt());
   if(field==KEY_LIGHT)keyboardLight(edit.toInt());
   if(field==BAUD || field==GPS_PIN) { rateIndex=0; startGps(); }
-  if(field==RANGE || field==LAT || field==LON){ free(traffic.planes);traffic={}; selected=zoomStep=0; followPlane=onlyPlane=false; nextFetch=millis(); }
+  if(field==RANGE || field==LAT || field==LON){ free(traffic.planes);traffic={}; selected=zoomStep=0; followPlane=onlyPlane=false; radarPan.active=weatherPan.active=false; nextFetch=millis(); }
   return true;
 }
 static String valueFor(int f){
@@ -470,6 +473,7 @@ static const char *pageTitle(int p){
   }
 }
 static const int menuPages[]={0,3,4,1,2,-1};
+static int titleRight;
 static const char *menuTitle(int i){return i==5?tr("Képernyőpihenő","Sleep now"):pageTitle(menuPages[i]);}
 static void goPage(int p){
   if(choosingNetwork){WiFi.scanDelete();choosingNetwork=false;}
@@ -478,6 +482,32 @@ static void goPage(int p){
   if(p==-1)startSaver();else page=p;
   if(page==0 && p==0){cardOpen=false;cardList=false;}
   dirty=true;
+}
+// dx/dy is the movement of the map under the finger, in screen pixels.
+static void panMap(int dx,int dy){
+  if(!dx && !dy)return;
+  const bool weather=weatherPage();
+  PanCenter &center=weather?weatherPan:radarPan;
+  float lat,lon,halfLat;
+  if(weather){
+    auto view=weatherView();lat=view.lat;lon=view.lon;halfLat=view.halfLat;
+  }else{
+    auto view=mapView();lat=view.lat;lon=view.lon;halfLat=midY/view.pixelsPerDeg;
+  }
+  float degPerPixel=halfLat/midY;
+  center.lon=remainderf(lon-dx*degPerPixel/max(.01f,cosf(radians(lat))),360.f);
+  center.lat=constrain(lat+dy*degPerPixel,-85.f+halfLat,85.f-halfLat);
+  center.active=true;lastMapMotion=millis();dirty=true;
+}
+static void tapAircraft(int x,int y){
+  float best=225;int hit=-1;auto view=mapView();
+  for(int i=0;i<traffic.count;i++){
+    const Plane &p=traffic.planes[i];
+    if(onlyPlane && i!=selected)continue;
+    float distance=sq(float(view.x(p.lon)-x))+sq(float(view.y(p.lat)-y));
+    if(distance<best){best=distance;hit=i;}
+  }
+  if(hit>=0)pickPlane(hit);
 }
 static void toggleMenu(){
   menuOpen=!menuOpen;
@@ -524,7 +554,7 @@ static void render(){
   String title=pageTitle(page);
   if(!page)title+="   "+String(traffic.count);
   if(page==3)title+="   "+number(viewRadius(weatherZoomStep))+" NM";
-  int titleW=labelWidth(title,2)+31;pill(38,3,titleW,26);
+  int titleW=labelWidth(title,2)+31;titleRight=38+titleW;pill(38,3,titleW,26);
   drawWifiIcon(43,8,currentWifiLink());
   centeredLabel(63,3,titleW-31,26,title,ink);
   pill(221,3,95,26);
@@ -645,27 +675,36 @@ static void key(int c){
   else if(page==1 && (c=='b'||c=='B')) beep();
   else if(page==1 && (c=='r'||c=='R')) {mountCard();loadMap(true);}
 }
-static void input(){
-  readKeyboard([](int ch){key(ch);},(editing && !choosingNetwork && !menuOpen)?&symbolLock:nullptr);
-  static uint32_t ignoreBallUntil;
-  static bool old[5]; static bool init=false;
-  for(int i=0;i<5;i++){
-    bool v=digitalRead(ballPins[i]);
-    if(init && old[i]!=v){
-      if(!interact())ignoreBallUntil=millis()+300;
-      else if(!due(millis(),ignoreBallUntil)){}
-      else if(i==4 && !v) activate();
-      else if(!menuOpen && page==0 && cardOpen && (i==1 || i==3)) cardBall(i==1?-1:1);
-      else if((choosingNetwork || !editing) && i<4) moveBy(i==1 || i==2?-1:1);
-    }
-    old[i]=v;
+static void ballEvent(int pin,bool high){
+  static uint32_t ignoreUntil,clickAt;
+  if(!interact()){ignoreUntil=millis()+300;return;}
+  if(!due(millis(),ignoreUntil))return;
+  if(pin==4){
+    if(!high && millis()-clickAt>=150){clickAt=millis();activate();}
+    return;
   }
-  init=true;
+  bool vertical=pin==1 || pin==3;
+  int step=pin==1?-1:1;
+  if(!menuOpen && page==0 && cardOpen){if(vertical)cardBall(step);return;}
+  if(!menuOpen && (page==0 || weatherPage())){
+    constexpr int pixels=12;
+    panMap(pin==0?-pixels:pin==2?pixels:0,pin==1?pixels:pin==3?-pixels:0);
+  }else if(vertical && (choosingNetwork || !editing || menuOpen))moveBy(step);
+}
+static void touchInput(bool down,int x,int y){
   static bool pressed=false;
-  static bool dragCard=false,scrolled=false;
-  static int firstX,firstY,lastY;
-  int16_t x,y;
-  bool down=touchOK && touch.isPressed() && touch.getPoint(&x,&y,1);
+  static bool dragCard=false,dragMap=false,scrolled=false;
+  static int firstX,firstY,lastX,lastY,startPage;
+  if(dragMap && (page!=startPage || menuOpen || sleeping))dragMap=false;
+  if(dragMap && pressed){
+    if(down){
+      if(abs(x-firstX)>4 || abs(y-firstY)>4)scrolled=true;
+      if(scrolled){panMap(x-lastX,y-lastY);lastX=x;lastY=y;}
+    }else{
+      if(!scrolled && page==0)tapAircraft(firstX,firstY);
+      dragMap=false;
+    }
+  }
   if(down && pressed && dragCard){
     if(abs(y-firstY)>4 || abs(x-firstX)>6) scrolled=true;
     if(scrolled){switchFocus=-1;scrollCard(lastY-y);lastY=y;}
@@ -682,12 +721,21 @@ static void input(){
   }
   if(down && !pressed){
     if(!interact()){pressed=true;return;}
+    auto startDrag=[&](){dragMap=true;scrolled=false;startPage=page;firstX=lastX=x;firstY=lastY=y;};
     if(x>=264 && y<31 && otaState==UpdateState::available){goPage(2);field=FW_UPDATE;updateScreen=true;}
     else if(x<38 && y<32)toggleMenu();
     else if(menuOpen){if(x<170 && y>=37 && y<231)goPage(menuPages[min(5,(y-37)/32)]);else menuOpen=false;}
+    else if((page==0 || weatherPage()) && x>=38 && x<titleRight && y>=3 && y<29){
+      if(weatherPage())weatherPan.active=false;
+      else{
+        radarPan.active=false;
+        Area a=currentArea();manualLat=a.lat;manualLon=a.lon;
+      }
+    }
     else if(weatherPage()){
       if(y>=206 && x>=253)zoomMap(x>=285?1:-1);
       else if(page==3 && y>=206 && x<200)activate();
+      else if(y>=30)startDrag();
     }
     else if(updateScreen)updateTouch(x,y);
     else if(wifiScreen!=WifiScreen::closed)savedTouch(x,y);
@@ -725,20 +773,23 @@ static void input(){
     else if(page==0 && y>=204 && x>=69 && x<=103){
       if(cardOpen){cardOpen=false;cardList=false;}else cardMode(true);
     }
-    else if(page==0 && traffic.count && y>=mapTop && y<mapTop+mapHeight) {
-      if(x<mapWidth){
-        float best=225; int hit=-1;MapView v=mapView();
-        for(int i=0;i<traffic.count;i++){const Plane &p=traffic.planes[i];
-          if(onlyPlane && i!=selected)continue;
-          float dist=sq(float(v.x(p.lon)-x))+sq(float(v.y(p.lat)-y));
-          if(dist<best){best=dist;hit=i;}
-        }
-        if(hit>=0)pickPlane(hit);
-      }
-    }
+    else if(page==0 && x<mapWidth && y>=30)startDrag();
     dirty=true;
   }
   pressed=down;
+}
+static void input(){
+  readKeyboard([](int ch){key(ch);},(editing && !choosingNetwork && !menuOpen)?&symbolLock:nullptr);
+  static bool old[5],initialized;
+  for(int i=0;i<5;i++){
+    bool high=digitalRead(ballPins[i]);
+    if(initialized && old[i]!=high)ballEvent(i,high);
+    old[i]=high;
+  }
+  initialized=true;
+  int16_t x=0,y=0;
+  bool down=false;
+  if(touchOK && touch.readReport(down,x,y))touchInput(down,x,y);
 }
 static void handleTraffic(){
   uint32_t now=millis();
@@ -755,10 +806,11 @@ static void handleTraffic(){
         free(incoming.planes);incoming.planes=nullptr;dirty=true;return;
       }
       const bool pinned=followPlane || onlyPlane;
-      int nextSelection=pinned?-1:0;
+      int nextSelection=pinned?-1:0,nextCursor=listCursor;
       for(int i=0;i<incoming.count;i++){
         Plane &p=incoming.planes[i];
         if(!p.id[0]) continue;
+        if(cardList && listCursor>=0 && listCursor<traffic.count && !strcmp(traffic.planes[listCursor].id,p.id))nextCursor=i;
         for(int j=0;j<traffic.count;j++) if(!strcmp(p.id,traffic.planes[j].id)){
           updateMotion(p,traffic.planes[j]);
           if(!pinned && j==selected) nextSelection=i;
@@ -767,7 +819,8 @@ static void handleTraffic(){
         if(pinned && !strcmp(p.id,pinnedPlane.id)){pinnedPlane=p;nextSelection=i;}
       }
       free(traffic.planes); traffic=incoming; incoming.planes=nullptr; selected=nextSelection;
-      listCursor=constrain(listCursor,0,max(0,traffic.count-1));
+      listCursor=constrain(nextCursor,0,max(0,traffic.count-1));
+      if(cardOpen && cardList)cardBall(0);
     }
     nextFetch=now+(apiCode==-104?60000UL:1000UL);dirty=true;
   }
@@ -784,6 +837,9 @@ static void handleTraffic(){
       // Allow room for a fast aircraft to travel between scheduled updates.
       request.area.radius=max(request.area.radius,int(period/5+10));
       if(selected<0 && !lastWasLookup)strcpy(request.lookupId,pinnedPlane.id);
+    }else if(radarPan.active){
+      if(now-lastMapMotion<700)return;
+      request.area.lat=radarPan.lat;request.area.lon=radarPan.lon;
     }
     busy=xQueueSend(requests,&request,0)==pdTRUE;
   }

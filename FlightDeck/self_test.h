@@ -43,9 +43,11 @@ static void benchStart(){
 }
 static void benchInput(){
   readKeyboard([](int ch){++bench.keys;if(ch=='b'||ch=='B')beep();});
-  bool down=touchOK && touch.isPressed();
-  if(down){int16_t x,y;if(touch.getPoint(&x,&y,1)){if(!bench.press)++bench.taps;bench.touchX=x;bench.touchY=y;}}
-  bench.press=down;
+  bool down;int16_t x,y;
+  if(touchOK && touch.readReport(down,x,y)){
+    if(down){if(!bench.press)++bench.taps;bench.touchX=x;bench.touchY=y;}
+    bench.press=down;
+  }
   for(int i=0;i<5;i++){
     bool state=digitalRead(ballPins[i]);
     if(state!=bench.oldBall[i] && (i!=4 || !state))++bench.ball[i];

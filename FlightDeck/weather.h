@@ -195,8 +195,8 @@ static bool weatherPage(){return page==3 || page==4;}
 static WxRequest weatherView(){
   Area a=currentArea();WxRequest q{};q.layer=page;
   q.halfLat=min(20.f,viewRadius(weatherZoomStep)*1.852f/111.195f);
-  q.lat=constrain((float)a.lat,-85.f+q.halfLat,85.f-q.halfLat);
-  q.lon=a.lon;q.halfLon=q.halfLat*320.f/240.f/cosf(radians(q.lat));
+  q.lat=constrain(weatherPan.active?weatherPan.lat:(float)a.lat,-85.f+q.halfLat,85.f-q.halfLat);
+  q.lon=weatherPan.active?weatherPan.lon:a.lon;q.halfLon=q.halfLat*320.f/240.f/cosf(radians(q.lat));
   float cy=mercY(q.lat);
   float vertical=max(mercY(q.lat+q.halfLat)-cy,cy-mercY(q.lat-q.halfLat));
   q.z=constrain(int(floorf(log2f(.99f/max(q.halfLon/180.f,vertical/float(PI))))),0,7);
@@ -227,7 +227,7 @@ static void weatherTick(){
   if(menuOpen || !weatherPage() || wxBusy || WiFi.status()!=WL_CONNECTED || time(nullptr)<1700000000)return;
   auto q=weatherView();auto &old=wxCache[page-3];
   if(!due(millis(),nextWx[page-3]) && (sameWx(old.at,q)||sameWx(lastWxJob,q)))return;
-  if(millis()-lastWxAttempt<1500)return;
+  if(millis()-lastWxAttempt<1500 || millis()-lastMapMotion<700)return;
   if(xQueueSend(wxJobs,&q,0)){wxBusy=true;lastWxJob=q;lastWxAttempt=millis();}
 }
 static uint16_t heatColor(float fraction){
@@ -241,7 +241,15 @@ static void weatherMap(){
   WxRequest q=weatherView();auto &w=wxCache[page-3];
   MapView v{};v.lat=q.lat;v.lon=q.lon;v.nm=viewRadius(weatherZoomStep);v.pixelsPerDeg=120.f/q.halfLat;v.lonFactor=v.pixelsPerDeg*cosf(radians(v.lat));
   screen.fillSprite(land);
-  bool show=w.frames && (page==3?rainFits(w.at,q):sameWx(w.at,q));
+  const float deltaLon=remainderf(q.lon-w.at.lon,360.f);
+  bool show=w.frames>0;
+  if(show && page==3){
+    const float halfTile=PI/(1<<w.at.z),cy=mercY(w.at.lat);
+    show=fabsf(deltaLon)<q.halfLon+180.f/(1<<w.at.z) &&
+         mercY(q.lat-q.halfLat)<cy+halfTile && mercY(q.lat+q.halfLat)>cy-halfTile;
+  }else if(show){
+    show=fabsf(deltaLon)<q.halfLon+w.at.halfLon && fabsf(q.lat-w.at.lat)<q.halfLat+w.at.halfLat;
+  }
   float low=INFINITY,high=-INFINITY;
   if(show && page==4){
     for(float t:w.temps)if(isfinite(t)){low=min(low,t);high=max(high,t);}
@@ -263,8 +271,10 @@ static void weatherMap(){
   }
   if(show && page==4){
     for(int y=0;y<240;y+=4)for(int x=0;x<320;x+=4){
-      float a=constrain(1+(q.lon-w.at.lon+(x-158)/v.lonFactor)/w.at.halfLon,0.f,1.9999f);
-      float b=constrain(1+(w.at.lat-q.lat+(y-118)/v.pixelsPerDeg)/w.at.halfLat,0.f,1.9999f);
+      float a=1+(deltaLon+(x-158)/v.lonFactor)/w.at.halfLon;
+      float b=1+(w.at.lat-q.lat+(y-118)/v.pixelsPerDeg)/w.at.halfLat;
+      if(a<0 || a>2 || b<0 || b>2)continue;
+      a=min(a,1.9999f);b=min(b,1.9999f);
       int i=int(b)*3+int(a);a-=int(a);b-=int(b);
       float temp=(1-b)*(w.temps[i]*(1-a)+w.temps[i+1]*a)+b*(w.temps[i+3]*(1-a)+w.temps[i+4]*a);
       if(isfinite(temp))screen.fillRect(x,y,4,4,heatColor((temp-low)/(high-low)));
@@ -278,8 +288,9 @@ static void weatherMap(){
   }else drawGeography(v,nullptr);
   if(show && page==4){
     for(int y=0;y<3;y++)for(int x=0;x<3;x++){
-      int px=constrain(v.x(w.at.lon+(x-1)*w.at.halfLon)-23,3,270);
-      int py=constrain(v.y(w.at.lat+(1-y)*w.at.halfLat)-8,38,188);
+      int sx=v.x(w.at.lon+(x-1)*w.at.halfLon),sy=v.y(w.at.lat+(1-y)*w.at.halfLat);
+      if(sx<0 || sx>320 || sy<0 || sy>240)continue;
+      int px=constrain(sx-23,3,270),py=constrain(sy-8,38,188);
       if(isfinite(w.temps[y*3+x])){pill(px,py,46,17);String value=String(w.temps[y*3+x],1)+" C";mapLabel(px+(46-screen.textWidth(value,1))/2,py+5,value,ink,1);}
     }
   }
