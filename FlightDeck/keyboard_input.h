@@ -5,6 +5,7 @@
 // Column/row order of LilyGO's Keyboard_ESP32C3 five-byte matrix.
 static const char keyLetters[5][8]={"qw\0a\0 \0","esdpxz\0","rgt\0vcf","uhy\rbnj","oli\b$mk"};
 static const char keySymbols[5][8]={"#1\0*\0 0","245@87\0","3/(\0?96","_:)\r!,;","+\x22-\b\0.'"};
+static constexpr int toggleSymbolKey=256;
 
 static char lockedSymbol(char ch){
   // Older keyboards send no event for the microphone key alone. Space gives 0.
@@ -16,15 +17,25 @@ static char lockedSymbol(char ch){
   return ch;
 }
 
+static int editorCharacter(int ch,bool locked){
+  // Character-only controllers send '#' for physical SYM+Q. With the
+  // latch on, Q by itself still types the literal '#'.
+  if(ch=='#')return toggleSymbolKey;
+  return locked?lockedSymbol(ch):ch;
+}
+
 template<typename Emit>
-static void decodeMatrix(const uint8_t matrix[5],uint8_t previous[5],Emit emit){
-  const bool symbol=matrix[0]&4,shift=(matrix[1]&64)||(matrix[2]&8),alt=matrix[0]&16;
+static void decodeMatrix(const uint8_t matrix[5],uint8_t previous[5],const bool *editorLatch,Emit emit){
+  if(editorLatch && (matrix[0]&4) && !(previous[0]&4))emit(toggleSymbolKey);
+  const bool symbol=editorLatch?*editorLatch:bool(matrix[0]&4);
+  const bool shift=(matrix[1]&64)||(matrix[2]&8),alt=matrix[0]&16;
   for(int col=0;col<5;col++){
     const uint8_t pressed=matrix[col]&~previous[col];
     previous[col]=matrix[col];
     for(int row=0;row<7;row++){
       if(!(pressed&(1<<row)))continue;
       char ch=(symbol?keySymbols:keyLetters)[col][row];
+      if(editorLatch && symbol && col==0 && row==5)ch='0';
       if(alt && col==3 && row==4)continue; // ALT+B is handled by the controller.
       if(alt && col==2 && row==5)ch=12;
       if(shift && ch>='a' && ch<='z')ch-=32;

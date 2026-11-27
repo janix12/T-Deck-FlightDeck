@@ -212,16 +212,19 @@ static void initKeyboard(){
   }
   if(!matrixKeyboard)keyboardCommand(4);
 }
-template<typename Emit> static void readKeyboard(Emit emit){
+template<typename Emit> static void readKeyboard(Emit emit,const bool *editorLatch=nullptr){
   if(!kbOK)return;
   if(!matrixKeyboard){
-    if(Wire.requestFrom(0x55,1)==1){int ch=Wire.read();if(ch>0)emit(ch);}
+    if(Wire.requestFrom(0x55,1)==1){
+      int ch=Wire.read();
+      if(ch>0)emit(editorLatch?editorCharacter(ch,*editorLatch):ch);
+    }
     return;
   }
   uint8_t keys[5];
   if(readKeyFrame(keys)){
     for(auto v:keys)if(v&0x80)return;
-    decodeMatrix(keys,previousKeys,emit);
+    decodeMatrix(keys,previousKeys,editorLatch,emit);
   }
 }
 static void backlight(int target) {

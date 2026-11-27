@@ -394,7 +394,9 @@ static void settings(){
         break;
       case PASS: hint=pickedAuth>=0?tr("Írd be a hálózat jelszavát","Enter the network password"):tr("Üres = nyílt Wi-Fi","Empty = open Wi-Fi");break;
     }
-    label(10,131,field==SSID?tr("[ Hálózatok keresése ]","[ Scan networks ]"):hint,field==SSID?mint:muted); label(10,159,notice,amber);
+    label(10,131,field==SSID?tr("[ Hálózatok keresése ]","[ Scan networks ]"):hint,field==SSID?mint:muted);
+    label(10,166,notice.length()?notice.substring(0,labelPrefixBytes(notice,2,166)):(matrixKeyboard?"SYM":"SYM + Q"),notice.length()?amber:muted);
+    pill(180,159,46,30);centeredLabel(180,159,46,30,"0",ink);
     framedBox(234,159,78,30,6,symbolLock?mint:bg,symbolLock?mint:grid);
     centeredLabel(234,159,78,30,symbolLock?tr("SYM BE","SYM ON"):"SYM",symbolLock?bg:ink);
     saveButton.draw(tr("Mentés","Save"),mint,mint,bg);
@@ -566,6 +568,7 @@ static void key(int c){
     return;
   }
   if(editing){
+    if(c==toggleSymbolKey){symbolLock=!symbolLock;return;}
     if(field==SSID && c!=13 && c!=10 && c!=27)pickedAuth=-1;
     if(c==13 || c==10) activate();
     else if(c==27) editing=false;
@@ -588,7 +591,7 @@ static void key(int c){
   else if(page==1 && (c=='r'||c=='R')) {mountCard();loadMap(true);}
 }
 static void input(){
-  readKeyboard([](int ch){key(editing && !choosingNetwork && symbolLock?lockedSymbol(ch):ch);});
+  readKeyboard([](int ch){key(ch);},(editing && !choosingNetwork && !menuOpen)?&symbolLock:nullptr);
   static uint32_t ignoreBallUntil;
   static bool old[5]; static bool init=false;
   for(int i=0;i<5;i++){
@@ -637,7 +640,7 @@ static void input(){
         if(i<WiFi.scanComplete()){networkIndex=i;activate();}
       }
     }
-    else if(page==2 && editing && field==SSID && y>=121 && y<160){
+    else if(page==2 && editing && field==SSID && y>=121 && y<159){
       probePending=false; WiFi.scanDelete(); startScan(); networkIndex=0;choosingNetwork=true;
     }
     else if(page==2 && !editing && y>=215 && (x<58 || x>262)){
@@ -646,6 +649,7 @@ static void input(){
     else if(page==2 && !editing && y>=33 && y<195){ int hit=field/6*6+(y-33)/27;if(hit<FIELDS){field=hit;activate();} }
     else if(page==2 && editing){
       if(x>=234 && x<312 && y>=159 && y<189)symbolLock=!symbolLock;
+      else if(x>=180 && x<226 && y>=159 && y<189)key('0');
       else if(saveButton.contains(x,y)) activate();
       else if(cancelButton.contains(x,y)) editing=false;
     }

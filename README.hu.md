@@ -89,7 +89,7 @@ Wi-Fi-szakadáskor a készülék újracsatlakozik. Tartósan gyenge jelnél azon
 | Időjárás | Az esőradar legfeljebb három RainViewer-képkockát játszik le. Az alsó időpontra koppintva megállíthatod vagy folytathatod. A hőtérkép kilenc Open-Meteo mintát vagy közeli repülőterek METAR-észleléseit használja. Mindkét nézet körülbelül tízpercenként frissül. |
 | Hardver ellenőrzése | A **2** nyitja a **Műszerek** lapot. A **B** hangszórópróbát indít, az **R** újrapróbálja az SD csatolását. Az akkuikon akkuról becsült százalékot, felismert külső tápon **USB** feliratot mutat. A tényleges töltést a kék LED jelzi. |
 | Megjelenés | A Beállítások utolsó lapján választhatsz nyelvet, színtémát és képernyőpihenőt. Az alapérték 30 perc. A **0** kikapcsolja a pihenőt. Érintés vagy billentyű ébreszti fel a képernyőt. |
-| Számok és jelek | Szerkesztéskor koppints a **SYM** gombra. A **SYM BE** jelzés alatt a billentyűk a rájuk írt számot vagy jelet adják, a szóköz **0**-t ír. Újabb koppintás visszavált betűkre. A kapcsoló a többi mező szerkesztésére is érvényes. |
+| Számok és jelek | Szerkesztéskor a képernyő **SYM** gombjával válthatsz. Billentyűzetről az újabb, mátrixmódú vezérlőn nyomd meg a **SYM** gombot. Régebbi vezérlőn tartsd lenyomva a **SYM**-et és nyomj **Q**-t. Ismételd meg a kikapcsoláshoz. **SYM BE** mellett a **W E R** beírja az **1 2 3** számokat, a **szóköz** a **0**-t, a **Q** a **#** jelet. A kijelző külön **0** gombja mindkét módban működik. |
 | Billentyűvilágítás | Régebbi billentyűzeten tartsd lenyomva az **ALT** gombot, és nyomd meg a **B**-t a fény be- vagy kikapcsolásához. Ezeken a modelleken a fény pihenőben is bekapcsolva maradhat. Az újabb vezérlők fényereje a **Beállítások → Billentyűfény (%)** mezőben állítható. |
 
 ## Fordítás forrásból
