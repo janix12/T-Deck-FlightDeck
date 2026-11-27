@@ -1,6 +1,8 @@
 import { installFirmware } from "./flash.js?v=versions-2";
 
 const en = {
+  touchMapCaption: "Touch controls · drag, zoom and recentre",
+  touchMapAlt: "A finger drags the map to the right, taps + to zoom in, then taps the Airspace title to centre the map again.",
   trackballCaption: "Using the trackball with recorded flight data",
   trackballAlt: "The trackball pans the map. A press opens the list, scrolling moves the highlight, and a second press opens the details for ELY361.",
   wifiDemoCaption: "Wi-Fi disconnecting and reconnecting on the T-Deck", wifiDemoAlt: "Three Wi-Fi waves change to a crossed-out icon when disconnected, a circular arrow while reconnecting, then three waves again.",
