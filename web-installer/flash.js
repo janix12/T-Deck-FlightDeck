@@ -2,13 +2,13 @@
 const images = {
   update: {
     filename: "FlightDeck.ino.bin", address: 0x10000,
-    sha256: "11575905b166b1e8f0c5f26f35dbdc082afc7f378557b344a56a96ddde48e56a",
-    md5: "91a134c40316628dfff0df5ed41e71c9"
+    sha256: "a8220b5b779f3494a8e833a31d040b083df1f811c0cb690f005a3ec1aa93395d",
+    md5: "1d07645f89ff990044384341f252a351"
   },
   full: {
     filename: "FlightDeck-full.bin", address: 0,
-    sha256: "9202d9b8ba135cc262d63bb3df4ff6526b18394886d30b2da99e94cb6d4854bf",
-    md5: "81fc15846d37c2e0d16225406ea32c94"
+    sha256: "00792e7ab01fb8b41f72cfb7b9cd82f2aab735a86121c6e7b7079e113be6f085",
+    md5: "e8aaac067530e76f0dae4fd6aed1ca08"
   }
 };
 
@@ -36,12 +36,16 @@ export async function installFirmware(loader, mode, status, progress) {
   }
 
   status("write");
+  const parts = [{ address: image.address, data }];
+  // An erased OTA selector boots app0. Write it only after app0 verifies.
+  if (mode === "update") parts.push({ address: 0xe000, data: new Uint8Array(0x2000).fill(255) });
   await loader.writeFlash({
-    fileArray: [{ address: image.address, data }],
+    fileArray: parts,
     flashSize: "keep", flashMode: "keep", flashFreq: "keep",
     compress: true, eraseAll: false,
-    calculateMD5Hash: () => image.md5,
-    reportProgress: (_index, sent, total) => {
+    calculateMD5Hash: bytes => bytes.length === 0x2000 ? "84d04c9d6cc8ef35bf825d51a5277699" : image.md5,
+    reportProgress: (index, sent, total) => {
+      if (index > 0) return;
       progress(Math.min(100, Math.floor(100 * sent / total)));
       if (sent >= total) status("verify");
     }

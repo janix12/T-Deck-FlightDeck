@@ -48,3 +48,14 @@ $esptool = "$env:ARDUINO_DIRECTORIES_DATA\packages\esp32\tools\esptool_py\4.5.1\
 $ota = "$env:ARDUINO_DIRECTORIES_DATA\packages\esp32\hardware\esp32\2.0.17\tools\partitions\boot_app0.bin"
 & $esptool --chip esp32s3 merge_bin -o firmware/FlightDeck-full.bin --flash_mode dio --flash_freq 80m --flash_size 16MB 0x0 firmware/FlightDeck.ino.bootloader.bin 0x8000 firmware/FlightDeck.ino.partitions.bin 0xe000 $ota 0x10000 firmware/FlightDeck.ino.bin
 Check-Result
+$versionSource = Get-Content -LiteralPath FlightDeck/firmware_version.h -Raw
+if ($versionSource -notmatch '#define FW_VERSION "([0-9]+\.[0-9]+\.[0-9]+)"') { throw 'Invalid firmware version' }
+$releaseVersion = $Matches[1]
+$appImage = Get-Item -LiteralPath firmware/FlightDeck.ino.bin
+$manifest = [ordered]@{
+    device = 'lilygo-t-deck-esp32s3'
+    version = $releaseVersion
+    size = $appImage.Length
+    sha256 = (Get-FileHash -LiteralPath $appImage.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+}
+[IO.File]::WriteAllText((Join-Path $appImage.DirectoryName 'manifest.json'), ($manifest | ConvertTo-Json) + [Environment]::NewLine, [Text.UTF8Encoding]::new($false))

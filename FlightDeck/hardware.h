@@ -180,6 +180,50 @@ static void sampleInputs() {
     radio.startReceive();
   }
 }
+#include "keyboard_input.h"
+static bool matrixKeyboard;
+static uint8_t previousKeys[5];
+static bool keyboardCommand(uint8_t command,int value=-1){
+  Wire.beginTransmission(0x55);
+  Wire.write(command);
+  if(value>=0)Wire.write(uint8_t(value));
+  return Wire.endTransmission()==0;
+}
+static void keyboardLight(int percent){
+  if(kbOK)keyboardCommand(1,(constrain(percent,0,100)*255+50)/100);
+}
+static bool readKeyFrame(uint8_t frame[5]){
+  return Wire.requestFrom(0x55,5)==5 && Wire.readBytes(frame,5)==5;
+}
+static void initKeyboard(){
+  if(!kbOK)return;
+  uint8_t legacy[5],raw[5];
+  keyboardCommand(4);delay(5);
+  const bool haveLegacy=readKeyFrame(legacy);
+  if(haveLegacy && keyboardCommand(3)){
+    delay(5);
+    if(readKeyFrame(raw)){
+      // A one-byte slave can ACK extra clocks. Only enable raw input when
+      // changing mode demonstrably changes the reply beyond the first byte.
+      matrixKeyboard=memcmp(raw+1,legacy+1,4)!=0;
+      for(auto v:raw)if(v&0x80)matrixKeyboard=false;
+      if(matrixKeyboard)memcpy(previousKeys,raw,5);
+    }
+  }
+  if(!matrixKeyboard)keyboardCommand(4);
+}
+template<typename Emit> static void readKeyboard(Emit emit){
+  if(!kbOK)return;
+  if(!matrixKeyboard){
+    if(Wire.requestFrom(0x55,1)==1){int ch=Wire.read();if(ch>0)emit(ch);}
+    return;
+  }
+  uint8_t keys[5];
+  if(readKeyFrame(keys)){
+    for(auto v:keys)if(v&0x80)return;
+    decodeMatrix(keys,previousKeys,emit);
+  }
+}
 static void backlight(int target) {
   digitalWrite(BOARD_BL_PIN,LOW); delay(3);
   digitalWrite(BOARD_BL_PIN,HIGH); delayMicroseconds(30);

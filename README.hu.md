@@ -51,16 +51,23 @@ A [telepítőmappában](install/) két kész firmware található. Az alábbi pa
    Ha **már FlightDeck fut azonos partíciókiosztással**, frissítéshez az alábbi parancsot használd. Így megmaradnak a mentett beállításaid.
 
    ```powershell
-   py -m esptool --chip esp32s3 --port $port --before no_reset write_flash 0x10000 install/FlightDeck.ino.bin
+   py -m esptool --chip esp32s3 --port $port --before no_reset --after no_reset write_flash 0x10000 install/FlightDeck.ino.bin
+   if ($LASTEXITCODE -eq 0) { py -m esptool --chip esp32s3 --port $port --before no_reset erase_region 0xe000 0x2000 }
    ```
 
 4. Várd meg az írás ellenőrzését, majd nyomd meg az **RST** gombot. Saját teljes mentés visszaállításához lépj betöltő módba, és az első telepítés parancsában a `backup/original-16MB.bin` fájlt írd a `0x0` címre. A letöltött fájlok ellenőrzéséhez futtasd a `Get-FileHash install/*.bin -Algorithm SHA256` parancsot, és hasonlítsd össze a [közzétett ellenőrzőösszegekkel](install/SHA256SUMS.txt).
 
 ## Első indítás
 
-1. Nyisd meg a **Beállítások** oldalt a **3** gombbal. Add meg a Wi-Fi nevét és jelszavát. A hálózatnév mezőből keresést is indíthatsz. Nyílt hálózatnál üres jelszót ments. A bal alsó **Mentés** elmenti, a jobb alsó **Mégse** elveti a beírt értéket.
+1. Nyisd meg a **Beállítások → Wi-Fi név → Hálózatok keresése** lehetőséget. Védett hálózat kiválasztása után írd be a jelszót, majd nyomj **Mentés**-t. Nyílt hálózatnál elég a nevet menteni. Mesh hálózathoz a 2,4 GHz-en is sugárzott közös nevet válaszd. A **Műszerek** oldalon látszik, ha a kapcsolat hitelesítésnél vagy az IP-cím kérésénél tart.
 2. GPS nélkül add meg a szélességet és a hosszúságot tizedes fokban, tizedesponttal. Időzónának a `Budapest`, az `UTC` vagy egy POSIX-időzóna adható meg. Wi-Fi-n az óra NTP-vel szinkronizál, induláskor érvényes GPS-idő is beállíthatja. Kézzel az UTC-időt `YYYY-MM-DD HH:MM` formában írd be.
 3. Az **1** gombbal nyisd meg a **Légtér** nézetet. Az alapbeállítás 40 tengeri mérföldes körzet és kétperces frissítés. Egy gépre koppintva láthatod a hívójelét, magasságát, sebességét és helyét.
+
+## Mentett Wi-Fi és firmware-frissítés
+
+A **Beállítások → Mentett hálózatok** alatt legfeljebb nyolc hálózatot tárolhatsz. Az **Új hálózat** megkeresi a környékbeli hálózatokat. Válassz ki egy mentett nevet a csatlakozáshoz vagy a törléshez. A törlést meg kell erősíteni. Frissítéskor a készülék átveszi a korábban mentett hálózatot. Ha megszakad a kapcsolat, megkeresi az elérhető mentett hálózatokat és a mentett jelszóval próbálkozik.
+
+A v1.1.0 az első Wi-Fi-n frissíthető kiadás. Ezt egyszer USB-n kell telepíteni. A **Beállítások → Firmware-frissítés** megmutatja a telepített verziót. A készülék Wi-Fi-kapcsolat és óraszinkron után induláskor, majd naponta ellenőriz. Új kiadásnál az óra mellett felváltva megjelenő **FW+** jelzésre koppintva megnyithatod a frissítést. A **Telepítés** gomb indítja a letöltést. A készülék HTTPS-en tölti le az alkalmazást a projekt GitHub Pages oldaláról, a másik alkalmazáspartícióra ír, és a SHA-256 ellenőrzés után újraindul. A hálózatok és a beállítások megmaradnak.
 
 ## Miért kétpercenként frissül a légtér?
 
@@ -82,6 +89,8 @@ Wi-Fi-szakadáskor a készülék újracsatlakozik. Tartósan gyenge jelnél azon
 | Időjárás | Az esőradar legfeljebb három RainViewer-képkockát játszik le. Az alsó időpontra koppintva megállíthatod vagy folytathatod. A hőtérkép kilenc Open-Meteo mintát vagy közeli repülőterek METAR-észleléseit használja. Mindkét nézet körülbelül tízpercenként frissül. |
 | Hardver ellenőrzése | A **2** nyitja a **Műszerek** lapot. A **B** hangszórópróbát indít, az **R** újrapróbálja az SD csatolását. Az akkuikon akkuról becsült százalékot, felismert külső tápon **USB** feliratot mutat. A tényleges töltést a kék LED jelzi. |
 | Megjelenés | A Beállítások utolsó lapján választhatsz nyelvet, színtémát és képernyőpihenőt. Az alapérték 30 perc. A **0** kikapcsolja a pihenőt. Érintés vagy billentyű ébreszti fel a képernyőt. |
+| Számok és jelek | Szerkesztéskor koppints a **SYM** gombra. A **SYM BE** jelzés alatt a billentyűk a rájuk írt számot vagy jelet adják, a szóköz **0**-t ír. Újabb koppintás visszavált betűkre. A kapcsoló a többi mező szerkesztésére is érvényes. |
+| Billentyűvilágítás | Régebbi billentyűzeten tartsd lenyomva az **ALT** gombot, és nyomd meg a **B**-t a fény be- vagy kikapcsolásához. Ezeken a modelleken a fény pihenőben is bekapcsolva maradhat. Az újabb vezérlők fényereje a **Beállítások → Billentyűfény (%)** mezőben állítható. |
 
 ## Fordítás forrásból
 

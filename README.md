@@ -51,16 +51,23 @@ The [installation folder](install/) contains two ready-to-flash images. The comm
    For an **update to an existing FlightDeck with the same partition layout**, use this command instead. It preserves saved settings.
 
    ```powershell
-   py -m esptool --chip esp32s3 --port $port --before no_reset write_flash 0x10000 install/FlightDeck.ino.bin
+   py -m esptool --chip esp32s3 --port $port --before no_reset --after no_reset write_flash 0x10000 install/FlightDeck.ino.bin
+   if ($LASTEXITCODE -eq 0) { py -m esptool --chip esp32s3 --port $port --before no_reset erase_region 0xe000 0x2000 }
    ```
 
 4. Wait for the hash verification, then press **RST** to start FlightDeck. To restore your own full backup later, enter download mode and use the first-install command with `backup/original-16MB.bin` at `0x0`. You can check the downloads with `Get-FileHash install/*.bin -Algorithm SHA256` against [the published checksums](install/SHA256SUMS.txt).
 
 ## First start
 
-1. Open **Settings** (key **3**). Enter your Wi-Fi name and password. You can scan for networks in the name field. For an open network, save an empty password. Tap **Save** at the lower left or **Cancel** at the lower right.
+1. Open **Settings → Wi-Fi name → Scan networks**. For a protected network, enter the password when prompted and tap **Save**. For an open network, save the name. On a mesh network, select the shared name that also broadcasts on 2.4 GHz. **Instruments** shows authentication failures and whether the device is waiting for an IP address.
 2. Set latitude and longitude in decimal degrees if you use the device without GPS. Choose `Budapest`, `UTC` or a POSIX time zone. Wi-Fi synchronises the clock using NTP. A valid GPS date and time can initialise it too. Manual UTC entry uses `YYYY-MM-DD HH:MM`.
 3. Open **Airspace** (key **1**). Defaults are a 40 nautical mile radius and a two-minute refresh. Tap an aircraft to see its callsign, altitude, speed and location.
+
+## Saved Wi-Fi networks and firmware updates
+
+Open **Settings → Saved networks** to browse up to eight profiles. **Add network** scans for nearby networks. Select a saved name to connect or forget it. Forgetting a network requires confirmation. Upgrading imports the previously saved network. After a lost connection FlightDeck looks for available saved networks and uses their stored credentials.
+
+Version 1.1.0 is the first release with Wi-Fi updates. Install it once over USB. **Settings → Firmware update** shows the installed version. Once Wi-Fi and the clock are ready, FlightDeck checks at startup and once a day. When an update is available, **FW+** alternates with the clock. Tap it to open the update screen and choose **Install**. The device downloads the application over HTTPS from the project’s GitHub Pages site, writes it to the other application slot, verifies its SHA-256 digest and restarts. Your networks and settings are preserved.
 
 ## Why does the flight map refresh every two minutes?
 
@@ -81,6 +88,8 @@ The device reconnects after losing Wi-Fi. When the signal stays weak, it looks f
 | Read aircraft symbols | A filled plane has a position at most 90 seconds old. An outline marks an older position. A **?** means the heading is unknown. States marked **\*** are estimates from movement. |
 | Read the weather | RainViewer supplies up to three recent frames. Tap the bottom time label to pause or resume. The heat map uses nine Open-Meteo samples or nearby METAR airport observations. Both weather views refresh about every ten minutes. |
 | Check hardware | Open **Instruments** (key **2**). Press **B** to test the speaker or **R** to retry mounting the card. The battery icon shows estimated charge on battery power or **USB** on detected external power. The blue LED indicates charging. |
+| Numbers and symbols | Tap **SYM** while editing. With **SYM ON** displayed, the letter keys type their printed numbers or symbols. Space types **0**. Tap again for letters. The switch also applies when editing other fields. |
+| Keyboard lighting | On older keyboards, hold **ALT** and press **B** to turn the light on or off. It can stay lit while the screen saver is active. On newer controllers, adjust the brightness under **Settings → Keyboard light (%)**. |
 | Change appearance | On the last Settings page, select a language, theme and sleep delay. The default is 30 minutes. Enter **0** to disable sleep. A touch or key wakes the screen. |
 
 ## Build from source

@@ -42,7 +42,7 @@ static void benchStart(){
   beep();dirty=true;
 }
 static void benchInput(){
-  if(kbOK && Wire.requestFrom(0x55,1)==1){int ch=Wire.read();if(ch>0){++bench.keys;if(ch=='b'||ch=='B')beep();}}
+  readKeyboard([](int ch){++bench.keys;if(ch=='b'||ch=='B')beep();});
   bool down=touchOK && touch.isPressed();
   if(down){int16_t x,y;if(touch.getPoint(&x,&y,1)){if(!bench.press)++bench.taps;bench.touchX=x;bench.touchY=y;}}
   bench.press=down;

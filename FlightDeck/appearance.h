@@ -3,7 +3,7 @@
 static bool english(){ return cfg[LANG]=="EN"; }
 static const char *tr(const char *hu,const char *en){ return english()?en:hu; }
 static const char *fieldLabel(int i){
-  static const char *en[]={"Wi-Fi name","Wi-Fi password","Time zone","Latitude","Longitude","Radius (NM)","Refresh (sec)","Brightness 1-16","GPS baud","GPS RX GPIO","SD logging 0/1","UTC clock","Language","Theme","Sleep (minutes)"};
+  static const char *en[]={"Wi-Fi name","Wi-Fi password","Time zone","Latitude","Longitude","Radius (NM)","Refresh (sec)","Brightness 1-16","GPS baud","GPS RX GPIO","SD logging 0/1","UTC clock","Language","Theme","Sleep (minutes)","Keyboard light (%)","Saved networks","Firmware update"};
   return english()?en[i]:labels[i];
 }
 static const char *themeName(){
@@ -32,9 +32,9 @@ static uint32_t lastActivity;
 static bool interact(){
  lastActivity=millis();
  if(!sleeping)return true;
- sleeping=false;backlight(cfg[LIGHT].toInt());dirty=true;return false;
+ sleeping=false;backlight(cfg[LIGHT].toInt());keyboardLight(cfg[KEY_LIGHT].toInt());dirty=true;return false;
 }
-static void startSaver(){sleeping=true;backlight(1);dirty=true;}
+static void startSaver(){sleeping=true;backlight(1);keyboardLight(0);dirty=true;}
 static void framedBox(int x,int y,int w,int h,int radius,uint16_t fill,uint16_t border){
  screen.fillRoundRect(x,y,w,h,radius,border);
  screen.fillRoundRect(x+2,y+2,w-4,h-4,radius-2,fill);
