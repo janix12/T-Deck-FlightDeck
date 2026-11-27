@@ -10,17 +10,17 @@ The **Firmware version** list selects the latest release by default. To restore 
 
 See which town an aircraft is flying over. FlightDeck turns the 320 × 240 display of a LilyGO T-Deck into a flight map with aircraft details, animated rain radar and a temperature map. Aircraft positions come from ADS-B reports over Wi-Fi. An optional GPS sets the map centre as you travel.
 
-| Follow and Solo aircraft | The tracked aircraft on the full map |
+| Live traffic · 29 aircraft around Budapest | Aircraft list · DLH6CH selected |
 |:---:|:---:|
-| ![Both switches are on at the bottom of the aircraft details](docs/images/follow-controls-en.png) | ![The aircraft icon and callsign TEST101 appear in the centre of the full map](docs/images/follow-map-en.png) |
-| **32 aircraft around Budapest** | **Aircraft list and 10 NM scale** |
-| ![32 aircraft on the Budapest radar with the 10 NM scale](https://janix12.github.io/T-Deck-FlightDeck/docs/images/airspace-traffic.png?v=1.1.2) | ![The selected flight and scrollable aircraft list](https://janix12.github.io/T-Deck-FlightDeck/docs/images/flights.png?v=1.1.2) |
+| ![The Airspace title shows active Wi-Fi and a count of 29 aircraft, with aircraft icons on the map.](docs/images/wifi131-traffic-en.png) | ![Flight DLH6CH selected in the list of aircraft around Budapest.](docs/images/wifi131-list-en.png) |
+| **Follow and Solo aircraft** | **Tracking DLH6CH on the full map** |
+| ![The Follow and Solo aircraft switches are both on in the aircraft details.](docs/images/wifi131-controls-en.png) | ![The icon and callsign of the tracked flight DLH6CH in the centre of the map.](docs/images/wifi131-map-en.png) |
 | **Rain radar over Central Europe** | **Surface air temperature** |
-| ![RainViewer precipitation overlay across Central Europe](https://janix12.github.io/T-Deck-FlightDeck/docs/images/rain.png?v=1.0.4) | ![Temperature map around Budapest](https://janix12.github.io/T-Deck-FlightDeck/docs/images/temperature.png?v=1.0.4) |
+| ![The RainViewer precipitation layer with the active Wi-Fi icon.](docs/images/wifi131-rain-en.png) | ![Temperature map around Budapest.](docs/images/wifi131-heat-en.png) |
 | **Main menu** | **Time zone settings** |
-| ![Main menu open over the flight map](https://janix12.github.io/T-Deck-FlightDeck/docs/images/menu.png?v=1.0.4) | ![Time zone editor with Save and Cancel buttons](https://janix12.github.io/T-Deck-FlightDeck/docs/images/time-zone.png?v=1.0.4) |
+| ![The main menu open over the flight map.](docs/images/wifi131-menu-en.png) | ![The time zone editor with Save and Cancel buttons.](docs/images/wifi131-zone-en.png) |
 
-The first pair shows v1.3.0 following the same demo flight, TEST101, before and after closing the details. The next pair shows live traffic captured with v1.1.2. Choose **Beállítások → Nyelv → English** for the English interface. [Earlier example of the API limit notice](docs/images/airspace.png)
+These screens were captured on a T-Deck running v1.3.1. The three waves beside the page title show an active Wi-Fi connection. The radar recorded 29 aircraft in one live ADS-B update, with DLH6CH selected for tracking. Choose **Beállítások → Nyelv → English** for the English interface. [Earlier example of the API limit notice](docs/images/airspace.png)
 
 ## What you need
 

@@ -10,17 +10,17 @@ A **Firmware-verzió** listában alapból a legfrissebb kiadás van kiválasztva
 
 Nézd meg, melyik település fölött jár egy repülő. A FlightDeck a LilyGO T-Deck 320 × 240 pixeles kijelzőjén repülőtérképet, gépadatlapot, mozgó esőradart és hőmérsékleti térképet jelenít meg. A repülők ADS-B helyzetjelentései Wi-Fi-n érkeznek. Opcionális GPS-szel a térkép utazás közben követi a helyzetedet.
 
-| Követés és Csak ez a gép | A követett gép a teljes térképen |
+| Élő forgalom · 29 gép Budapest körül | Repülőlista · DLH6CH kiválasztva |
 |:---:|:---:|
-| ![A gépadatlapon mindkét kapcsoló be van kapcsolva](docs/images/follow-controls-hu.png) | ![A teljes térkép közepén a TEST101 repülőikonja és hívójele látszik](docs/images/follow-map-hu.png) |
-| **32 repülő Budapest körül** | **Repülőlista és 10 NM-es lépték** |
-| ![32 gép a budapesti radaron, 10 NM-es léptékkel](https://janix12.github.io/T-Deck-FlightDeck/docs/images/airspace-traffic.png?v=1.1.2) | ![A kiválasztott járat és a görgethető repülőlista](https://janix12.github.io/T-Deck-FlightDeck/docs/images/flights.png?v=1.1.2) |
+| ![A Légtér cím mellett az aktív Wi-Fi jele és a 29-es gépszám, a térképen repülőikonok látszanak.](docs/images/wifi131-traffic-hu.png) | ![A budapesti forgalomból kiválasztott DLH6CH járat a géplistában.](docs/images/wifi131-list-hu.png) |
+| **Követés és Csak ez a gép** | **DLH6CH követése a teljes térképen** |
+| ![A gépadatlapon bekapcsolt Követés és Csak ez a gép kapcsolók.](docs/images/wifi131-controls-hu.png) | ![A térkép közepén a követett DLH6CH járat ikonja és hívójele.](docs/images/wifi131-map-hu.png) |
 | **Közép-európai esőradar** | **Felszínközeli léghőmérséklet** |
-| ![RainViewer csapadékréteg Közép-Európa felett](https://janix12.github.io/T-Deck-FlightDeck/docs/images/rain.png?v=1.0.4) | ![Budapest környéki hőmérsékleti térkép](https://janix12.github.io/T-Deck-FlightDeck/docs/images/temperature.png?v=1.0.4) |
+| ![A RainViewer csapadékrétege és az aktív Wi-Fi jele.](docs/images/wifi131-rain-hu.png) | ![Hőmérsékleti térkép Budapest körül.](docs/images/wifi131-heat-hu.png) |
 | **Főmenü** | **Időzóna beállítása** |
-| ![A főmenü a légtértérkép fölött](https://janix12.github.io/T-Deck-FlightDeck/docs/images/menu.png?v=1.0.4) | ![Időzóna szerkesztése a Mentés és Mégse gombokkal](https://janix12.github.io/T-Deck-FlightDeck/docs/images/time-zone.png?v=1.0.4) |
+| ![A megnyitott főmenü a légtértérkép fölött.](docs/images/wifi131-menu-hu.png) | ![Az időzóna szerkesztése a Mentés és Mégse gombokkal.](docs/images/wifi131-zone-hu.png) |
 
-Az első képpáron a v1.3.0 ugyanazt a TEST101 bemutatójáratot követi az adatlap bezárása előtt és után. A következő képpár a v1.1.2-vel rögzített élő forgalmat mutatja. A felület nyelve a **Beállítások → Nyelv** sorban váltható. [Korábbi példa az API-korlát jelzésére](docs/images/airspace.png)
+A képek a v1.3.1-et futtató T-Deck kijelzőjéről származnak. A lapcím melletti három ív az aktív Wi-Fi-kapcsolatot mutatja. A radaron az ADS-B-lekéréskor észlelt 29 gép és a követésre kiválasztott DLH6CH járat látszik. A felület nyelve a **Beállítások → Nyelv** sorban váltható. [Korábbi példa az API-korlát jelzésére](docs/images/airspace.png)
 
 ## Mire van szükséged?
 
