@@ -1,6 +1,10 @@
 import { installFirmware } from "./flash.js?v=versions-2";
 
 const en = {
+  instrumentCardsCaption: "Instruments · three sensor cards",
+  instrumentCardsAlt: "The v1.4.0 Instruments screen shows separate cards for temperature, humidity and air pressure.",
+  settingsPanelCaption: "Settings · Display and device",
+  settingsPanelAlt: "The Display and device settings. Icons at the end of each row indicate cycling, editing or toggling a value.",
   saverDemoCaption: "Screen saver · clock and tap to wake",
   saverDemoAlt: "Choosing Sleep now from the ☰ menu shows the clock. A single tap returns to Airspace.",
   instrumentsDemoCaption: "Instruments · temperature, humidity and air pressure",

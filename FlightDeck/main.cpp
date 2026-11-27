@@ -358,20 +358,7 @@ static String feedStatus(){
 }
 #include "radar_map.h"
 #include "weather.h"
-static void diagnostics(){
-  String buses="I2C  "+busList;
-  int busFont=labelWidth(buses,2)<=302?2:1;
-  label(9,33,fitText(buses,busFont,302),muted,busFont);
-  label(9,55,sensor+(ahtOK?"+AHT2x":shtOK?"+SHT3x":"")+"   "+number(temperature,1)+" C   "+number(pressure,1)+" hPa");
-  label(9,79,"GPS RX"+cfg[GPS_PIN]+"  "+String(activeRate)+"  "+(hasFix()?"FIX":(lastSentence?tr("NMEA / fixre vár","NMEA / waiting for fix"):tr("jelet keres","searching"))));
-  label(9,102,"SD "+(sdOK?String(volumeMiB)+" MiB":(cardMiB?String(tr("FS hiba","FS error")):String("--")))+tr("    Akku ","    Battery ")+number(voltage,2)+" V");
-  label(9,125,String("GT911 ")+(touchOK?"OK":"--")+tr("   Bill. ","   Keys ")+(kbOK?"OK":"--")+"   RH "+number(humidity)+"%");
-  label(9,148,String("LoRa RX ")+(radioOK?String(radioPackets)+tr(" csomag"," packets"):"--")+"   Mic "+(micOK?String(micPeak):"--"));
-  label(9,174,tr("Hangpróba [B]    SD újra [R]","Speaker [B]      Retry SD [R]"),speakerOK?mint:muted);
-  label(9,197,WiFi.status()==WL_CONNECTED?WiFi.localIP().toString():wifiStatusText(),muted);
-  label(9,219,String("ADS-B ")+String(budget.usedToday(time(nullptr)))+"/500 UTC  "+
-      (WiFi.status()==WL_CONNECTED?String(WiFi.RSSI())+" dBm":String("Wi-Fi --")),muted,1);
-}
+#include "panel_ui.h"
 struct EditorButton {
   int left;
   static constexpr int top=201,width=148,height=33;
@@ -397,10 +384,10 @@ static void settings(){
       int top=(networkIndex/5)*5;
       for(int i=top;i<min(top+5,count);i++){
         int y=59+(i-top)*25;
-        if(i==networkIndex) screen.fillRoundRect(5,y-2,310,23,4,grid);
+        screen.fillRoundRect(5,y-2,310,23,4,i==networkIndex?grid:land);
         String name=WiFi.SSID(i);
         label(10,y,name.length()?fitText(name,2,240):tr("(rejtett)","(hidden)"));
-        label(260,y,String(WiFi.RSSI(i)),muted);
+        label(254,y,String(WiFi.RSSI(i)),muted);chevron(298,y+9,mint);
       }
     }
     label(10,196,tr("Érintés: választ     Vissza","Tap to select     Back"),muted);return;
@@ -409,7 +396,8 @@ static void settings(){
     label(10,45,fieldLabel(field),mint,4);
     String shown=edit;
     if(field==PASS){shown=""; for(size_t i=0;i<edit.length();i++) shown+="*";}
-    label(10,93,editorLine(shown,300));
+    framedBox(7,76,306,35,7,land,grid);
+    label(15,85,editorLine(shown,290));
     const char *hint="";
     switch(field){
       case SAVER: hint=tr("0 = ki, 1 - 1440 perc","0 = off, 1 - 1440 minutes");break;
@@ -426,7 +414,10 @@ static void settings(){
         break;
       case PASS: hint=pickedAuth>=0?tr("Írd be a hálózat jelszavát","Enter the network password"):tr("Üres = nyílt Wi-Fi","Empty = open Wi-Fi");break;
     }
-    label(10,131,field==SSID?tr("[ Hálózatok keresése ]","[ Scan networks ]"):hint,field==SSID?mint:muted);
+    if(field==SSID){
+      framedBox(7,121,306,35,7,land,grid);
+      label(16,129,tr("Hálózatok keresése","Scan networks"),ink);chevron(297,138,mint);
+    }else label(10,131,hint,muted,labelWidth(hint,2)<=300?2:1);
     label(10,166,notice.length()?fitText(notice,2,166):(matrixKeyboard?"SYM":"SYM + Q"),notice.length()?amber:muted);
     pill(180,159,46,30);centeredLabel(180,159,46,30,"0",ink);
     framedBox(234,159,78,30,6,symbolLock?mint:bg,symbolLock?mint:grid);
@@ -435,17 +426,7 @@ static void settings(){
     cancelButton.draw(tr("Mégse","Cancel"),bg,muted,ink);
     return;
   }
-  int top=field/6*6;
-  for(int i=top;i<min(top+6,int(FIELDS));i++){
-    int y=35+(i-top)*27;
-    if(i==field) screen.fillRoundRect(5,y-2,310,25,4,grid);
-    label(11,y,fieldLabel(i),i==field?mint:ink);
-    String value=valueFor(i);label(160,y,fitText(value,2,150));
-  }
-  label(10,198,tr("Görgő: le/fel    Nyomás: szerkesztés","Scroll to browse    Press to edit"),muted);
-  pill(7,218,46,20);centeredLabel(7,218,46,20,"<",mint);
-  pill(267,218,46,20);centeredLabel(267,218,46,20,">",mint);
-  centeredLabel(53,218,214,20,String(top/6+1)+" / "+String((FIELDS+5)/6),muted,1);
+  settingsList();
 }
 static void drawBatteryIcon(int x,int y,int charge,bool usb){
   constexpr int width=35;
@@ -480,6 +461,7 @@ static void goPage(int p){
   editing=menuOpen=updateScreen=false;wifiScreen=WifiScreen::closed;
   updatePage=UpdatePage::status;historyFocus=false;
   if(p==-1)startSaver();else page=p;
+  if(p==1){hardwareDetails=false;instrumentFocus=0;}
   if(page==0 && p==0){cardOpen=false;cardList=false;}
   dirty=true;
 }
@@ -573,6 +555,7 @@ static void render(){
     for(int i=0;i<6;i++){
       int y=39+i*32;if(i==menuIndex)screen.fillRoundRect(8,y,158,29,5,grid);
       screen.fillCircle(17,y+14,3,i==menuIndex?mint:muted);label(28,y+6,menuTitle(i),i==menuIndex?mint:ink);
+      chevron(152,y+14,i==menuIndex?mint:muted);
     }
   }
   screen.pushSprite(0,0);
@@ -588,7 +571,8 @@ static void moveBy(int step){
     int count=WiFi.scanComplete(); if(count>0) networkIndex=(networkIndex+step+count)%count;
     dirty=true;return;
   }
-  if(page==2 && !editing) field=(field+step+FIELDS)%FIELDS;
+  if(page==2 && !editing)field=settingsOrder[(settingsPosition()+step+FIELDS)%FIELDS];
+  if(page==1 && !hardwareDetails)instrumentFocus=(instrumentFocus+step+3)%3;
   if(page==0 && traffic.count) pickPlane((selected+step+traffic.count)%traffic.count);
   dirty=true;
 }
@@ -622,11 +606,12 @@ static void activate(){
     }
     else if(field==WIFI_LIST){wifiScreen=WifiScreen::list;savedIndex=wifiBook.preferred;notice="";}
     else if(field==FW_UPDATE){updateScreen=true;}
+    else if(field==LOGGING){edit=cfg[LOGGING]=="1"?"0":"1";applyField();}
     else if(field==LANG || field==THEME){
       edit=field==LANG?(english()?"HU":"EN"):String((cfg[THEME].toInt()+1)%3);
       applyField();
     }else {editing=true; edit=""; notice="";pickedSsid=field==PASS?cfg[SSID]:String("");pickedAuth=-1;}
-  } else if(page==1) beep(); else if(page==0){if(cardOpen && cardList)pickPlane(listCursor);else if(!cardOpen)cardMode(true);else if(switchFocus>=0)togglePlaneSwitch(switchFocus);else cardOpen=false;}
+  } else if(page==1) instrumentAction(instrumentFocus); else if(page==0){if(cardOpen && cardList)pickPlane(listCursor);else if(!cardOpen)cardMode(true);else if(switchFocus>=0)togglePlaneSwitch(switchFocus);else cardOpen=false;}
   else if(page==3){playing=!playing;rainIndex=playing?-1:(wxCache[0].frames?int(millis()/1400%wxCache[0].frames):0);}
   dirty=true;
 }
@@ -672,6 +657,7 @@ static void key(int c){
   else if(c=='j' || c=='J' || c=='.') moveBy(1);
   else if(c=='k' || c=='K' || c==',') moveBy(-1);
   else if(c==13 || c==10) activate();
+  else if(page==1 && hardwareDetails && (c==27 || c=='f'))instrumentAction(0);
   else if(page==1 && (c=='b'||c=='B')) beep();
   else if(page==1 && (c=='r'||c=='R')) {mountCard();loadMap(true);}
 }
@@ -749,17 +735,27 @@ static void touchInput(bool down,int x,int y){
     else if(page==2 && editing && field==SSID && y>=121 && y<159){
       probePending=false; WiFi.scanDelete(); startScan(); networkIndex=0;choosingNetwork=true;
     }
-    else if(page==2 && !editing && y>=215 && (x<58 || x>262)){
-      int pages=(FIELDS+5)/6;field=((field/6+(x<58?-1:1)+pages)%pages)*6;
+    else if(page==2 && !editing && y>=212 && y<237 && ((x>=5 && x<55) || (x>=265 && x<315))){
+      int group=(settingsPosition()/6+(x<55?2:1))%3;
+      field=settingsOrder[group*6];
     }
-    else if(page==2 && !editing && y>=33 && y<195){ int hit=field/6*6+(y-33)/27;if(hit<FIELDS){field=hit;activate();} }
+    else if(page==2 && !editing && x>=5 && x<315 && y>=settingsRowTop && y<settingsRowTop+6*settingsPitch){
+      int offset=y-settingsRowTop;
+      if(offset%settingsPitch<24){field=settingsOrder[settingsPosition()/6*6+offset/settingsPitch];activate();}
+    }
     else if(page==2 && editing){
       if(x>=234 && x<312 && y>=159 && y<189)symbolLock=!symbolLock;
       else if(x>=180 && x<226 && y>=159 && y<189)key('0');
       else if(saveButton.contains(x,y)) activate();
       else if(cancelButton.contains(x,y)) editing=false;
     }
-    else if(page==1 && y>=165 && y<196) {if(x<150) beep(); else {mountCard();loadMap(true);}}
+    else if(page==1 && x>=5 && x<315){
+      if(hardwareDetails){if(y>=203 && y<235)instrumentAction(0);}
+      else if(y>=148 && y<194){instrumentFocus=0;instrumentAction(0);}
+      else if(y>=203 && y<235 && (x<156 || x>=162)){
+        instrumentFocus=x<156?1:2;instrumentAction(instrumentFocus);
+      }
+    }
     else if(page==0 && cardOpen && x>=cardX && x<cardX+closeButtonWidth && y<cardTop){
       cardOpen=false;cardList=false;
     }

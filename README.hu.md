@@ -17,10 +17,10 @@ Nézd meg, melyik település fölött jár egy repülő. A FlightDeck a LilyGO 
 | ![A gépadatlapon bekapcsolt Követés és Csak ez a gép kapcsolók.](docs/images/wifi131-controls-hu.png) | ![A térkép közepén a követett DLH6CH járat ikonja és hívójele.](docs/images/wifi131-map-hu.png) |
 | **Közép-európai esőradar** | **Felszínközeli léghőmérséklet** |
 | ![A RainViewer csapadékrétege és az aktív Wi-Fi jele.](docs/images/wifi131-rain-hu.png) | ![Hőmérsékleti térkép Budapest körül.](docs/images/wifi131-heat-hu.png) |
-| **Főmenü** | **Időzóna beállítása** |
-| ![A megnyitott főmenü a légtértérkép fölött.](docs/images/wifi131-menu-hu.png) | ![Az időzóna szerkesztése a Mentés és Mégse gombokkal.](docs/images/wifi131-zone-hu.png) |
+| **Műszerek · v1.4.0** | **Beállítások · v1.4.0** |
+| ![Hőmérséklet, páratartalom és légnyomás külön kártyákon.](docs/images/v140-instruments-hu.png) | ![A Kijelző és eszköz lap műveletikonjai.](docs/images/v140-settings-hu.png) |
 
-A képek a v1.3.1-et futtató T-Deck kijelzőjéről származnak. A lapcím melletti három ív az aktív Wi-Fi-kapcsolatot mutatja. A radaron az ADS-B-lekéréskor észlelt 29 gép és a követésre kiválasztott DLH6CH járat látszik. A felület nyelve a **Beállítások → Nyelv** sorban váltható. [Korábbi példa az API-korlát jelzésére](docs/images/airspace.png)
+A repülőforgalmi és időjárási képek a v1.3.1, a Műszerek és a Beállítások képei a v1.4.0 kijelzőjéről származnak. A lapcím melletti három ív az aktív Wi-Fi-kapcsolatot mutatja. A radaron az ADS-B-lekéréskor észlelt 29 gép és a követésre kiválasztott DLH6CH járat látszik. A felület nyelve a **Beállítások → Nyelv** sorban váltható. [Korábbi példa az API-korlát jelzésére](docs/images/airspace.png)
 
 | Térkép és géplista a trackballal | Térkép mozgatása érintéssel |
 |:---:|:---:|
@@ -51,7 +51,9 @@ A címkék a felszín felett két méterrel számított léghőmérsékletet mut
 
 ![A Légtér képernyőn megnyílik a hamburger menü, majd a Műszerek lapon megjelenik a hőmérséklet, a relatív páratartalom és a légnyomás.](docs/images/instruments-hu.gif)
 
-Koppints a bal felső **☰** gombra, majd válaszd a **Műszerek** menüpontot. A szenzor neve mellett a hőmérsékletet (°C) és a légnyomást (hPa) láthatod. Az **RH** a relatív páratartalmat jelzi százalékban. Az értékeket a felvételen a T-Deckhez csatlakoztatott szenzorok mérték.
+A **☰ → Műszerek** lapon külön kártyán látható a hőmérséklet (°C), a relatív páratartalom (%) és a légnyomás (hPa). A **Hardveradatok** alatt találod az eszközök és a hálózat állapotát. [A v1.4.0 főmenüje](docs/images/v140-menu-hu.png)
+
+A **Beállítások** három lapja a **Kapcsolat és rendszer**, a **Térkép és GPS**, valamint a **Kijelző és eszköz**. A sor végén a nyíl almenüt, a ceruza szerkesztést, a kettős nyíl értékváltást, a kapcsoló pedig ki- és bekapcsolást jelöl.
 
 ### Képernyőpihenő
 
@@ -104,7 +106,7 @@ A [telepítőmappában](install/) két kész firmware található. Az alábbi pa
 
 ## Első indítás
 
-1. Nyisd meg a **Beállítások → Wi-Fi név → Hálózatok keresése** lehetőséget. Védett hálózat kiválasztása után írd be a jelszót, majd nyomj **Mentés**-t. Nyílt hálózatnál elég a nevet menteni. Mesh hálózathoz a 2,4 GHz-en is sugárzott közös nevet válaszd. A **Műszerek** oldalon látszik, ha a kapcsolat hitelesítésnél vagy az IP-cím kérésénél tart.
+1. Nyisd meg a **Beállítások → Wi-Fi név → Hálózatok keresése** lehetőséget. Védett hálózat kiválasztása után írd be a jelszót, majd nyomj **Mentés**-t. Nyílt hálózatnál elég a nevet menteni. Mesh hálózathoz a 2,4 GHz-en is sugárzott közös nevet válaszd. A **Műszerek → Hardveradatok** lapon látszik, ha a kapcsolat hitelesítésnél vagy az IP-cím kérésénél tart.
 2. GPS nélkül add meg a szélességet és a hosszúságot tizedes fokban, tizedesponttal. Időzónának a `Budapest`, az `UTC` vagy egy POSIX-időzóna adható meg. Wi-Fi-n az óra NTP-vel szinkronizál, induláskor érvényes GPS-idő is beállíthatja. Kézzel az UTC-időt `YYYY-MM-DD HH:MM` formában írd be.
 3. Az **1** gombbal nyisd meg a **Légtér** nézetet. Az alapbeállítás 40 tengeri mérföldes körzet és kétperces frissítés. Egy gépre koppintva láthatod a hívójelét, magasságát, sebességét és helyét.
 
@@ -122,7 +124,7 @@ Az adsb.lol API-kulcs nélkül **500 lekérést enged naponta, nyilvános IP-cí
 
 A FlightDeck a v1.0.2-es verziótól alapból **120 másodpercenként** kér repülőadatot. Ez 16 órányi folyamatos légtérnézethez legfeljebb **480 kérés**. A **Beállítások → Frissítés (mp)** alatt 120–300 másodperc választható. A korábbi rövidebb beállítás frissítéskor 120 másodpercre vált. Másik oldalon és képernyőpihenő közben szünetel az új repülőlekérések indítása.
 
-A **Műszerek** lap az eszköz saját napi számlálóját mutatja. A készülék újraindítás után is megőrzi a felhasznált keretet. Ha a szerver **HTTP 429** választ ad, a radaron az **API-korlát** felirat és a következő próbálkozás helyi időpontja látszik. A készülék betartja a szolgáltató várakozási idejét (`Retry-After`). Ha ilyen fejléc nem érkezik, egyre ritkábban próbálkozik. Az időjárási rétegek külön szolgáltatásokból érkeznek.
+A **Műszerek → Hardveradatok** lap az eszköz saját napi számlálóját mutatja. A készülék újraindítás után is megőrzi a felhasznált keretet. Ha a szerver **HTTP 429** választ ad, a radaron az **API-korlát** felirat és a következő próbálkozás helyi időpontja látszik. A készülék betartja a szolgáltató várakozási idejét (`Retry-After`). Ha ilyen fejléc nem érkezik, egyre ritkábban próbálkozik. Az időjárási rétegek külön szolgáltatásokból érkeznek.
 
 Wi-Fi-szakadáskor a készülék újracsatlakozik. Tartósan gyenge jelnél azonos hálózatnévvel és biztonsági móddal működő, legalább 10 dB-lel erősebb hozzáférési pontot keres. A barangolás is megtartja a lekérdezések ütemezését.
 
@@ -160,9 +162,9 @@ A saját fordítású képek a `firmware/` mappába kerülnek. Feltöltésükhö
 
 ## Hibaelhárítás és adatkezelés
 
-- **Nincsenek gépek vagy időjárás:** ellenőrizd a Wi-Fi-t és az órát a Műszerek lapon. A HTTPS-kérésekhez érvényes dátum kell. GPS-pozíció híján ellenőrizd a kézi térképközéppontot.
+- **Nincsenek gépek vagy időjárás:** ellenőrizd a Wi-Fi-t és az órát a Műszerek → Hardveradatok lapon. A HTTPS-kérésekhez érvényes dátum kell. GPS-pozíció híján ellenőrizd a kézi térképközéppontot.
 - **Nincs GPS-adat:** a 3,3 V-os UART-modul TX kimenetét kösd a T-Deck beállított RX bemenetére, közös földdel. Alapból GPIO44, választható a GPIO43 is. A **0** baud érték automatikus keresést indít.
-- **SD-hiba:** helyezd vissza a kártyát, majd nyomj **R**-t a Műszerek lapon. A készülék betöltéskor ellenőrzi az alaptérképet. A percenkénti környezeti naplózáshoz írható kártya és **SD napló = 1** szükséges.
+- **SD-hiba:** helyezd vissza a kártyát, majd nyomj **R**-t a Műszerek lapon. A készülék betöltéskor ellenőrzi az alaptérképet. A percenkénti környezeti naplózáshoz írható kártya és bekapcsolt **SD-naplózás** szükséges.
 - **USB-diagnosztika:** a soros monitor sebessége 115200 baud. A `?` állapotjelentést kér, az `X` hardvertesztet indít, az `Y` kiírja a számlálókat, az `E` kilép a tesztből.
 - A Wi-Fi-beállítások a készüléken maradnak. Az online repülő- és időjárási lekérdezések a megadott térképközéppontot vagy a környező területet elküldik az adatszolgáltatóknak. A flashmentést, a konzolnaplókat és az SD-naplókat kezeld magánadatként. [adsb.lol](https://api.adsb.lol/docs) · [RainViewer](https://www.rainviewer.com/api/weather-maps-api.html) · [Open-Meteo](https://open-meteo.com/en/docs) · [Aviation Weather Center](https://aviationweather.gov/data/api/)
 

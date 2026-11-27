@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.4.0",
+    "update": {
+      "sha256": "4eb0949a1d08b274c1fa73369bbef01db612471522fe2913c901a89b1d2e7583",
+      "md5": "ef36206873fa7ce80b1e923d51cfc2ca"
+    },
+    "full": {
+      "sha256": "2aacf17d46064ccb3dda3586fc01b02c3b464209e54143304c61130cb9bea2f3",
+      "md5": "7e2d92524d3480363373b909fc6552c3"
+    }
+  },
+  {
     "version": "1.3.3",
     "update": {
       "sha256": "a6bd99f60b9d89322fe010ae9ed14fc27fd508ef9ba7ba7554a01e1678670ffe",
@@ -52,17 +63,6 @@
     "full": {
       "sha256": "8c6990bc55c065cd3eec73b05120b90f62960aced379834dfeac18570e7a28c8",
       "md5": "38f072401e9ad25f998850793494ad34"
-    }
-  },
-  {
-    "version": "1.1.2",
-    "update": {
-      "sha256": "e48f21e3663f6403efbdbaa364f3ffd2d83463bf2c8b32105bd2542039c9e1fc",
-      "md5": "7f830b4c577bd266cf7102de719a9e7e"
-    },
-    "full": {
-      "sha256": "b05468047592929aaaab36c816b6d742c78c3aa73f52e5f43e936c2db56b05f0",
-      "md5": "6793f38825a7e8a9a83ff3d5ca8ea081"
     }
   },
   {

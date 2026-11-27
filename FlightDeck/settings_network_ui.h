@@ -29,10 +29,11 @@ static void drawWifiBook(){
     if(!wifiBook.count)label(10,76,tr("Még nincs mentett hálózat.","No saved networks yet."),muted);
     for(int i=top;i<min(top+4,int(wifiBook.count));i++){
       int y=62+(i-top)*28;
-      if(i==savedIndex)screen.fillRoundRect(6,y-2,308,26,4,grid);
+      screen.fillRoundRect(6,y-2,308,26,4,i==savedIndex?grid:land);
       String name=wifiBook.entries[i].ssid;
       if(WiFi.status()==WL_CONNECTED && WiFi.SSID()==name)screen.fillCircle(16,y+10,4,mint);
-      label(27,y+2,fitText(name,2,278));
+      label(27,y+2,fitText(name,2,259));
+      chevron(298,y+11,i==savedIndex?mint:muted);
     }
     if(wifiBook.count>4){
       pill(8,173,50,24);centeredLabel(8,173,50,24,"<",ink);
@@ -49,6 +50,7 @@ static void drawWifiBook(){
       label(10,102,WiFi.status()==WL_CONNECTED && WiFi.SSID()==name?tr("Kapcsolódva","Connected"):
             tr("Mentve","Saved"),muted);
       pill(8,141,148,31);centeredLabel(8,141,148,31,tr("Törlés...","Forget..."),amber);
+      chevron(139,156,amber);
     }
     label(10,174,notice,amber);
     saveButton.draw(wifiScreen==WifiScreen::forget?tr("Törlés","Forget"):tr("Csatlakozás","Connect"),mint,mint,bg);

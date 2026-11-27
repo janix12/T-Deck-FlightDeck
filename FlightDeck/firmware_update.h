@@ -181,9 +181,10 @@ static void drawUpdateScreen(){
     label(10,36,tr("Korábbi verziók","Previous versions"),mint,4);
     for(int i=0;i<rollbackCount;i++){
       int top=61+i*22;
-      if(i==rollbackIndex)screen.fillRoundRect(8,top,304,22,4,grid);
+      screen.fillRoundRect(8,top,304,21,4,i==rollbackIndex?grid:land);
       label(17,top+2,String("v")+rollbackOffers[i].version,i==rollbackIndex?mint:ink);
-      if(i==rollbackCount-1)label(158,top+2,tr("Első Wi-Fi-s kiadás","First Wi-Fi release"),muted);
+      if(i==rollbackCount-1)label(150,top+2,tr("Első Wi-Fi-s kiadás","First Wi-Fi release"),muted);
+      chevron(295,top+10,i==rollbackIndex?mint:muted);
     }
     saveButton.draw(tr("Kiválasztás","Select"),mint,mint,bg);
     cancelButton.draw(tr("Vissza","Back"),bg,muted,ink);return;
@@ -217,6 +218,7 @@ static void drawUpdateScreen(){
   if(!updateBusy()){
     framedBox(8,149,304,34,6,historyFocus?grid:bg,historyFocus?mint:grid);
     centeredLabel(8,149,304,34,tr("Korábbi verziók","Previous versions"),ink);
+    chevron(294,166,mint);
   }
   saveButton.draw(otaState==UpdateState::available?tr("Telepítés","Install"):tr("Ellenőrzés","Check"),mint,mint,bg);
   cancelButton.draw(tr("Vissza","Back"),bg,muted,ink);

@@ -17,10 +17,10 @@ See which town an aircraft is flying over. FlightDeck turns the 320 × 240 displ
 | ![The Follow and Solo aircraft switches are both on in the aircraft details.](docs/images/wifi131-controls-en.png) | ![The icon and callsign of the tracked flight DLH6CH in the centre of the map.](docs/images/wifi131-map-en.png) |
 | **Rain radar over Central Europe** | **Surface air temperature** |
 | ![The RainViewer precipitation layer with the active Wi-Fi icon.](docs/images/wifi131-rain-en.png) | ![Temperature map around Budapest.](docs/images/wifi131-heat-en.png) |
-| **Main menu** | **Time zone settings** |
-| ![The main menu open over the flight map.](docs/images/wifi131-menu-en.png) | ![The time zone editor with Save and Cancel buttons.](docs/images/wifi131-zone-en.png) |
+| **Instruments · v1.4.0** | **Settings · v1.4.0** |
+| ![Separate cards for temperature, relative humidity and air pressure.](docs/images/v140-instruments-en.png) | ![Action icons on the Display and device settings page.](docs/images/v140-settings-en.png) |
 
-These screens were captured on a T-Deck running v1.3.1. The three waves beside the page title show an active Wi-Fi connection. The radar recorded 29 aircraft in one live ADS-B update, with DLH6CH selected for tracking. Choose **Beállítások → Nyelv → English** for the English interface. [Earlier example of the API limit notice](docs/images/airspace.png)
+The traffic and weather screens were captured on v1.3.1. The Instruments and Settings screens were captured on v1.4.0. The three waves beside the page title show an active Wi-Fi connection. The radar recorded 29 aircraft in one live ADS-B update, with DLH6CH selected for tracking. Choose **Beállítások → Nyelv → English** for the English interface. [Earlier example of the API limit notice](docs/images/airspace.png)
 
 | Using the trackball | Using the touchscreen |
 |:---:|:---:|
@@ -51,7 +51,9 @@ The labels show modelled air temperatures two metres above the ground. Tap **+**
 
 ![The hamburger menu opens from Airspace. The Instruments screen then shows temperature, relative humidity and air pressure.](docs/images/instruments-en.gif)
 
-Tap **☰** in the top left and choose **Instruments**. Temperature (°C) and air pressure (hPa) appear next to the sensor name. **RH** shows relative humidity as a percentage. The readings in the recording come from sensors connected to the T-Deck.
+Open **☰ → Instruments** to see separate cards for temperature (°C), relative humidity (%) and air pressure (hPa). Choose **Hardware details** for device and network status. [The v1.4.0 main menu](docs/images/v140-menu-en.png)
+
+**Settings** has three pages: **Network and system**, **Map and GPS**, and **Display and device**. A chevron opens a submenu, a pencil edits a value, two arrows cycle through options, and a switch turns a feature on or off.
 
 ### Screen saver
 
@@ -104,7 +106,7 @@ The [installation folder](install/) contains two ready-to-flash images. The comm
 
 ## First start
 
-1. Open **Settings → Wi-Fi name → Scan networks**. For a protected network, enter the password when prompted and tap **Save**. For an open network, save the name. On a mesh network, select the shared name that also broadcasts on 2.4 GHz. **Instruments** shows authentication failures and whether the device is waiting for an IP address.
+1. Open **Settings → Wi-Fi name → Scan networks**. For a protected network, enter the password when prompted and tap **Save**. For an open network, save the name. On a mesh network, select the shared name that also broadcasts on 2.4 GHz. **Instruments → Hardware details** shows authentication failures and whether the device is waiting for an IP address.
 2. Set latitude and longitude in decimal degrees if you use the device without GPS. Choose `Budapest`, `UTC` or a POSIX time zone. Wi-Fi synchronises the clock using NTP. A valid GPS date and time can initialise it too. Manual UTC entry uses `YYYY-MM-DD HH:MM`.
 3. Open **Airspace** (key **1**). Defaults are a 40 nautical mile radius and a two-minute refresh. Tap an aircraft to see its callsign, altitude, speed and location.
 
@@ -122,7 +124,7 @@ Without an API key, adsb.lol allows **500 requests per day per public IP address
 
 Starting with v1.0.2, FlightDeck requests flight data every **120 seconds** by default. This uses at most **480 requests in 16 hours** of continuous Airspace use. Select an interval from 120 to 300 seconds in **Settings → Refresh (sec)**. Upgrading raises older, shorter intervals to 120 seconds. The device pauses new flight requests on other pages and while the screen saver is active.
 
-**Instruments** shows this device’s daily request count, which survives a restart. If the server returns **HTTP 429**, the radar shows **API limit** and the next attempt in local time. FlightDeck honours the provider’s `Retry-After` header and backs off progressively if the header is missing. Weather layers use separate providers.
+**Instruments → Hardware details** shows this device’s daily request count, which survives a restart. If the server returns **HTTP 429**, the radar shows **API limit** and the next attempt in local time. FlightDeck honours the provider’s `Retry-After` header and backs off progressively if the header is missing. Weather layers use separate providers.
 
 The device reconnects after losing Wi-Fi. When the signal stays weak, it looks for an access point on the same network name and security mode with a signal at least 10 dB stronger. Roaming preserves the flight request schedule.
 
@@ -160,9 +162,9 @@ To prepare a release, fetch tags (`git fetch --tags`), set the new version in `F
 
 ## Troubleshooting and privacy
 
-- **No flights or weather:** check Wi-Fi and the clock in Instruments. The device requires a valid date for HTTPS. Confirm your manual map centre if GPS has no fix.
+- **No flights or weather:** check Wi-Fi and the clock in Instruments → Hardware details. The device requires a valid date for HTTPS. Confirm your manual map centre if GPS has no fix.
 - **No GPS data:** connect a 3.3 V UART module's TX to the configured T-Deck RX and share ground. GPIO44 is the default, GPIO43 is selectable. Baud rate **0** tries supported rates automatically.
-- **SD error:** reinsert the card and press **R** in Instruments. The firmware verifies the base map when loading it. Optional minute-by-minute environmental logging requires a writable card and **SD logging = 1**.
+- **SD error:** reinsert the card and press **R** in Instruments. The firmware verifies the base map when loading it. Optional minute-by-minute environmental logging requires a writable card and **SD logging** switched on.
 - **Serial diagnostics:** use 115200 baud. Send `?` for status, `X` for the input and hardware test, `Y` for its counters, and `E` to exit the test.
 - Wi-Fi settings stay on the device. Online flight and weather queries send the selected map centre or surrounding area to their providers. Keep flash backups, serial logs and SD logs private. [adsb.lol](https://api.adsb.lol/docs) · [RainViewer](https://www.rainviewer.com/api/weather-maps-api.html) · [Open-Meteo](https://open-meteo.com/en/docs) · [Aviation Weather Center](https://aviationweather.gov/data/api/)
 
