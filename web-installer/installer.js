@@ -1,6 +1,8 @@
 import { installFirmware } from "./flash.js?v=versions-2";
 
 const en = {
+  saverDemoCaption: "Screen saver · clock and tap to wake",
+  saverDemoAlt: "Choosing Sleep now from the ☰ menu shows the clock. A single tap returns to Airspace.",
   instrumentsDemoCaption: "Instruments · temperature, humidity and air pressure",
   instrumentsDemoAlt: "The hamburger menu opens the Instruments screen. The T-Deck sensors show temperature (°C), relative humidity (%) and air pressure (hPa).",
   heatDemoCaption: "Temperature map · regional temperatures and a closer look at Budapest",

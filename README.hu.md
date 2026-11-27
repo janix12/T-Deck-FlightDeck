@@ -53,6 +53,12 @@ A címkék a felszín felett két méterrel számított léghőmérsékletet mut
 
 Koppints a bal felső **☰** gombra, majd válaszd a **Műszerek** menüpontot. A szenzor neve mellett a hőmérsékletet (°C) és a légnyomást (hPa) láthatod. Az **RH** a relatív páratartalmat jelzi százalékban. Az értékeket a felvételen a T-Deckhez csatlakoztatott szenzorok mérték.
 
+### Képernyőpihenő
+
+![A Légtér képernyőről megnyílik a hamburger menü. A Képernyőpihenő kiválasztása után sötét háttéren látszik az óra, majd egy koppintás visszahozza a térképet.](docs/images/screen-saver-hu.gif)
+
+Koppints a bal felső **☰** gombra, majd válaszd a **Képernyőpihenő** menüpontot. Amikor az óra látszik, koppints egyszer bárhová a kijelzőn, és visszatérsz az előző képernyőre.
+
 ![A T-Deck Wi-Fi-jelzője bontáskor és újracsatlakozáskor](docs/images/wifi-reconnect-hu.gif)
 
 A felső sávban három ív jelzi az aktív kapcsolatot, áthúzott ikon a szakadást, környíl az újracsatlakozást. A képkockákat egy T-Decken rögzítettük.

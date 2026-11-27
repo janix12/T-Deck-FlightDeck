@@ -53,6 +53,12 @@ The labels show modelled air temperatures two metres above the ground. Tap **+**
 
 Tap **☰** in the top left and choose **Instruments**. Temperature (°C) and air pressure (hPa) appear next to the sensor name. **RH** shows relative humidity as a percentage. The readings in the recording come from sensors connected to the T-Deck.
 
+### Screen saver
+
+![The hamburger menu opens from Airspace. Choosing Sleep now shows the clock on a dark background. A single tap brings the map back.](docs/images/screen-saver-en.gif)
+
+Tap **☰** in the top left and choose **Sleep now**. When the clock appears, tap anywhere on the display once to return to the previous screen.
+
 ![Wi-Fi status on the T-Deck as the connection drops and returns](docs/images/wifi-reconnect-en.gif)
 
 The top bar shows three arcs when connected, a crossed-out icon when offline, and a circular arrow while reconnecting. The animation uses frames captured on a T-Deck.
