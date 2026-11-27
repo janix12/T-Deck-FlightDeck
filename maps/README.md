@@ -2,6 +2,22 @@
 
 [English guide](../README.md) · [Magyar útmutató](../README.hu.md)
 
+### Offline world map · Offline világtérkép
+
+**EN** · FlightDeck clients with FDW2 support download the world map independently of firmware. Revision 1 is 5,835,336 bytes and includes 226,439 settlement points, coastlines, national borders, rivers, lakes, the Hungarian municipal atlas and the Central European weather overview. The flight card shows a containing Hungarian municipality where available. Abroad it distinguishes the nearest named settlement within 30 km from the containing built-up urban area. One urban area can span several towns. A point over open ocean can have no nearby settlement. To install with a card reader, place `WORLD.FDM` in the card root.
+
+**HU** · Az FDW2 formátumot támogató FlightDeck a firmware-től külön tölti le a térképet. Az 1. térképkiadás 5 835 336 bájt, benne 226 439 településpont, partvonalak, országhatárok, folyók, tavak, a részletes magyar településhatárok és a közép-európai időjárási alaptérkép. A gép adatlapján Magyarországon a befoglaló település jelenik meg, ahol a határ ismert. Külföldön a 30 km-en belüli legközelebbi település és a befoglaló beépített várostérség külön adat. Egy várostérség több településre is kiterjedhet. Nyílt tengeren előfordul, hogy nincs közeli település. Kártyaolvasós telepítéshez a `WORLD.FDM` fájlt a kártya gyökerébe másold.
+
+[Map file · Térképfájl](WORLD.FDM) · [Revision and SHA-256 · Verzió és SHA-256](world.json)
+
+**Data credits · Adatforrások** — Settlement points are a subset of GeoNames cities500, licensed under CC BY 4.0. Coastlines and hydrography use Natural Earth public-domain vectors. Urban footprints were simplified, tiled and quantised from Florczyk et al. (2019), GHS Urban Centre Database 2015 R2019A v1.2, European Commission, Joint Research Centre. The footprints refer to 2015. A várostérségek a JRC 2015-ös állapotot leíró adatbázisából származnak, egyszerűsítve és térképszelvényekre osztva. [GeoNames](https://www.geonames.org/export/) · [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) · [Natural Earth](https://www.naturalearthdata.com/about/terms-of-use/) · [JRC dataset and citation](https://data.jrc.ec.europa.eu/dataset/53473144-b88c-44bc-b4a3-4583ed1f547e)
+
+**Build · Előállítás** — Install Python and Shapely 2. Add the Natural Earth 1:10m coastline as `coastline.json` to the input directory below. Extract the full polygon GeoPackage from the JRC v1.2 archive there as `world-urban.gpkg`. Futtasd a következő parancsot a projekt gyökeréből a bemeneti adatok és a két regionális térképfájl előkészítése után. [Coastline source](https://raw.githubusercontent.com/nvkelso/natural-earth-vector/ca96624a56bd078437bca8184e78163e5039ad19/geojson/ne_10m_coastline.geojson) · [JRC archive](https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_STAT_UCDB2015MT_GLOBE_R2019A/V1-2/)
+
+```powershell
+py maps/build_world.py map-input maps/WORLD.FDM
+```
+
 **EN** · `hungary.fdm` contains simplified Hungarian municipal boundaries, settlement names, water and country borders. `central-europe.fdm` is the weather overview, covering 5–33° E and 39–57° N. Both are built into the firmware. On a writable card the firmware can install and verify a copy of the detailed map. The weather frames are downloaded separately.
 
 **HU** · A `hungary.fdm` egyszerűsített magyar településhatárokat, helységneveket, vízrajzot és országhatárokat tartalmaz. A `central-europe.fdm` az időjárási áttekintőtérkép, az 5–33° keleti hosszúság és 39–57° északi szélesség közötti területre. Mindkettő beépül a firmware-be. Írható kártyára a részletes térkép másolatát a készülék telepíti és ellenőrzi. Az időjárási képkockákat külön tölti le.
