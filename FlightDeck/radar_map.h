@@ -31,10 +31,13 @@ static void togglePlaneSwitch(int row){
   const Plane *p=selectedPlane();
   if(!p || !p->id[0])return;
   pinnedPlane=*p;
-  if(row==0){
-    followPlane=!followPlane;
-    if(followPlane){followZoom=max(1,zoomStep+1);lastWasLookup=false;}
-  }else onlyPlane=!onlyPlane;
+  bool wasFollowing=followPlane;
+  if(row==0)followPlane=!followPlane;
+  else{
+    onlyPlane=!onlyPlane;
+    if(onlyPlane)followPlane=true;
+  }
+  if(followPlane && !wasFollowing){followZoom=max(1,zoomStep+1);lastWasLookup=false;}
   if(!followPlane && !onlyPlane && selected<0)selected=0;
   dirty=true;
 }

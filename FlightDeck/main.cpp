@@ -55,6 +55,26 @@ static uint32_t lastNetAttempt,lastSignalCheck,weakSince,lastRoamScan;
 static volatile uint8_t disconnectReason;
 static volatile bool associated;
 static volatile uint32_t associatedAt;
+enum class WifiLink : uint32_t { offline, connecting, retrying, online };
+static std::atomic<WifiLink> wifiLink{WifiLink::offline};
+static bool wifiAttempted;
+static WifiLink currentWifiLink(){
+  if(cfg[SSID].isEmpty())return WifiLink::offline;
+  WifiLink phase=wifiLink.load();
+  if(phase==WifiLink::online)return WiFi.status()==WL_CONNECTED?phase:WifiLink::offline;
+  if(associated && phase==WifiLink::offline)return WifiLink::retrying;
+  // A synchronous begin() failure can have no corresponding disconnect event.
+  if(!associated && millis()-lastNetAttempt>=25000)return WifiLink::offline;
+  return phase;
+}
+static void connectWifi(int channel=0,const uint8_t *bssid=nullptr){
+  lastNetAttempt=millis();
+  wifiLink.store(wifiAttempted?WifiLink::retrying:WifiLink::connecting);
+  wifiAttempted=true;
+  const auto status=WiFi.begin(cfg[SSID].c_str(),cfg[PASS].isEmpty()?nullptr:cfg[PASS].c_str(),channel,bssid);
+  // Re-selecting the current AP may return immediately without a new GOT_IP.
+  if(status==WL_CONNECTED && !bssid && WiFi.SSID()==cfg[SSID])wifiLink.store(WifiLink::online);
+}
 static bool haveCandidate,securityMismatch;
 static uint8_t lastCandidate[6];
 static bool probePending;
@@ -72,9 +92,9 @@ static Area currentArea(){
 static void network(bool newProfile=false){
   if(probePending){WiFi.scanDelete();probePending=false;}
   weakSince=0;
-  if(newProfile){disconnectReason=0;haveCandidate=false;securityMismatch=false;}
-  if(cfg[SSID].length()) WiFi.begin(cfg[SSID].c_str(),cfg[PASS].isEmpty()?nullptr:cfg[PASS].c_str());
-  else WiFi.disconnect(false,false);
+  if(newProfile){disconnectReason=0;haveCandidate=false;securityMismatch=false;wifiAttempted=false;}
+  if(cfg[SSID].length())connectWifi();
+  else {wifiLink.store(WifiLink::offline);WiFi.disconnect(false,false);}
   seenNetworks=-1; matchingChannel=0; matchingAuth=-1;
   lastNetAttempt=millis();
 }
@@ -141,8 +161,7 @@ static void networkProbe(){
     memcpy(lastCandidate,bssid,6);haveCandidate=true;
     matchingChannel=WiFi.channel(best); matchingAuth=WiFi.encryptionType(best);
     if(connected)Serial.printf("WiFi roam RSSI %d -> %d channel %d\n",current.rssi,WiFi.RSSI(best),matchingChannel);
-    WiFi.begin(cfg[SSID].c_str(),cfg[PASS].isEmpty()?nullptr:cfg[PASS].c_str(),matchingChannel,bssid);
-    lastNetAttempt=millis();
+    connectWifi(matchingChannel,bssid);
   }
   WiFi.scanDelete();
 }
@@ -463,6 +482,31 @@ static void toggleMenu(){
   for(int i=0;i<5;i++)if(menuPages[i]==page)menuIndex=i;
   dirty=true;
 }
+static void drawWifiIcon(int x,int y,WifiLink state){
+  if(state==WifiLink::retrying){
+    // Open circular arrow, distinct from the expanding Wi-Fi waves.
+    screen.drawCircle(x+8,y+8,6,amber);screen.drawCircle(x+8,y+8,5,amber);
+    screen.fillRect(x+9,y+7,7,5,bg);
+    screen.fillTriangle(x+10,y+6,x+16,y+5,x+14,y+10,amber);
+    return;
+  }
+  const uint16_t color=state==WifiLink::online?mint:state==WifiLink::connecting?amber:muted;
+  const int waves=state==WifiLink::connecting?1+(millis()/1000)%3:3;
+  screen.fillCircle(x+8,y+13,1,color);
+  for(int i=1;i<=waves;i++){
+    const int half=i*2+1,top=y+11-i*3,flat=i;
+    for(int d=0;d<2;d++){
+      screen.drawLine(x+8-half,top+2+d,x+8-flat,top+d,color);
+      screen.drawFastHLine(x+8-flat,top+d,2*flat+1,color);
+      screen.drawLine(x+8+flat,top+d,x+8+half,top+2+d,color);
+    }
+  }
+  if(state==WifiLink::offline){
+    screen.drawLine(x+1,y+1,x+15,y+15,bg);
+    screen.drawLine(x,y+1,x+14,y+15,ink);
+    screen.drawLine(x,y+2,x+13,y+15,ink);
+  }
+}
 static void render(){
   if(bench.active){benchScreen();return;}
   if(sleeping){
@@ -478,9 +522,9 @@ static void render(){
   String title=pageTitle(page);
   if(!page)title+="   "+String(traffic.count);
   if(page==3)title+="   "+number(viewRadius(weatherZoomStep))+" NM";
-  int titleW=labelWidth(title,2)+23;pill(38,3,titleW,26);
-  screen.fillCircle(47,16,3,WiFi.status()==WL_CONNECTED?mint:amber);
-  centeredLabel(55,3,titleW-23,26,title,ink);
+  int titleW=labelWidth(title,2)+31;pill(38,3,titleW,26);
+  drawWifiIcon(43,8,currentWifiLink());
+  centeredLabel(63,3,titleW-31,26,title,ink);
   pill(221,3,95,26);
   drawBatteryIcon(224,8,batteryPercent(batteryEstimateV),externalPower);
   bool showUpdate=otaState==UpdateState::available && (millis()/4000)%2;
@@ -788,8 +832,8 @@ static void status(){
   Serial.println();
   Serial.printf("FW version=%s ota=%d slot=%s profiles=%u manager=%d\n",FW_VERSION,int(otaState),esp_ota_get_running_partition()->label,wifiBook.count,int(wifiScreen));
   Serial.printf("Keyboard input=%s light=%ld symbolLock=%d\n",matrixKeyboard?"matrix":"char",cfg[KEY_LIGHT].toInt(),symbolLock);
-  Serial.printf("Network configured=%d keySet=%d reason=%u scan=%d matchChannel=%d auth=%d clock=%d\n",
-    !cfg[SSID].isEmpty(),!cfg[PASS].isEmpty(),disconnectReason,seenNetworks,matchingChannel,matchingAuth,time(nullptr)>1700000000);
+  Serial.printf("Network configured=%d keySet=%d reason=%u scan=%d matchChannel=%d auth=%d clock=%d link=%u\n",
+    !cfg[SSID].isEmpty(),!cfg[PASS].isEmpty(),disconnectReason,seenNetworks,matchingChannel,matchingAuth,time(nullptr)>1700000000,unsigned(currentWifiLink()));
   Serial.printf("ADS-B period=%ld used=%u/500 last=%u retryAt=%u next=%u busy=%d storage=%d\n",
     cfg[PERIOD].toInt(),budget.usedToday(time(nullptr)),budget.last,budget.retryAt,
     budget.nextAllowed(cfg[PERIOD].toInt()),busy,budgetReady);
@@ -810,10 +854,16 @@ void setup(){
   WiFi.persistent(false); WiFi.mode(WIFI_STA);
   WiFi.onEvent([](WiFiEvent_t,WiFiEventInfo_t info){
     associated=false;uint8_t r=info.wifi_sta_disconnected.reason;
-    if(r!=WIFI_REASON_ASSOC_LEAVE)disconnectReason=r;
+    if(r!=WIFI_REASON_ASSOC_LEAVE){disconnectReason=r;wifiLink.store(WifiLink::offline);}
+    else{
+      // A deliberate leave can precede a pending mesh or profile handover.
+      WifiLink active=WifiLink::online;
+      wifiLink.compare_exchange_strong(active,WifiLink::offline);
+    }
   },ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
   WiFi.onEvent([](WiFiEvent_t){associatedAt=millis();associated=true;},ARDUINO_EVENT_WIFI_STA_CONNECTED);
-  WiFi.onEvent([](WiFiEvent_t){disconnectReason=0;},ARDUINO_EVENT_WIFI_STA_GOT_IP);
+  WiFi.onEvent([](WiFiEvent_t){disconnectReason=0;wifiLink.store(WifiLink::online);},ARDUINO_EVENT_WIFI_STA_GOT_IP);
+  WiFi.onEvent([](WiFiEvent_t){if(associated)wifiLink.store(WifiLink::retrying);},ARDUINO_EVENT_WIFI_STA_LOST_IP);
   if(cfg[ZONE]=="Budapest") esp_wifi_set_country_code("HU",true);
   WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
   WiFi.setAutoReconnect(false); network(); zone();
@@ -835,7 +885,9 @@ void loop(){
   otaTick();readGps(); readAht(); weatherTick(); handleTraffic(); networkProbe();
   if(!bench.active && !sleeping && cfg[SAVER].toInt()>0 && millis()-lastActivity>=60000UL*cfg[SAVER].toInt())startSaver();
   if(now-lastSample>=1500){lastSample=now; sampleEnvironment(); sampleInputs();}
-  if(dirty || now-lastFrame>=1000){dirty=false;lastFrame=now; render();}
+  static WifiLink lastDrawnLink=WifiLink::offline;
+  const WifiLink link=wifiLink.load();
+  if(dirty || link!=lastDrawnLink || now-lastFrame>=1000){dirty=false;lastFrame=now;lastDrawnLink=link;render();}
   if(now-lastStatus>=10000 || Serial.available()){
     while(Serial.available()){
       int c=Serial.read();
