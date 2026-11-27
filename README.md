@@ -4,6 +4,8 @@
 
 Open the installer in desktop Chrome or Edge and connect your original T-Deck with a USB data cable. Choose **First installation** for a new device or to replace another system. If it already runs FlightDeck, choose **Update FlightDeck** to keep your settings. Click **Connect and install** and select the device’s USB port.
 
+The **Firmware version** list selects the latest release by default. To restore an older version over USB, choose it, keep **Update FlightDeck** selected to preserve settings, then click **Connect and install**. **First installation** also installs the selected version and replaces the previous settings.
+
 **[Magyar útmutató](README.hu.md)** · [Hardware and schematics](docs/hardware.md) · [Map data and credits](maps/README.md)
 
 See which town an aircraft is flying over. FlightDeck turns the 320 × 240 display of a LilyGO T-Deck into a flight map with aircraft details, animated rain radar and a temperature map. Aircraft positions come from ADS-B reports over Wi-Fi. An optional GPS sets the map centre as you travel.
@@ -105,7 +107,7 @@ Install Git for Windows and open PowerShell in the project folder. The first com
 
 Your new images are in `firmware/`. Use those paths in the flashing commands to install your own build. The map packs in `maps/` are included at build time. Regeneration is optional. [Map sources and regeneration](maps/README.md)
 
-To prepare a release, fetch tags (`git fetch --tags`), set the new version in `FlightDeck/firmware_version.h`, then run `py tools/prepare_rollback.py` before building. Publish the generated catalog and `install/archive/` files with the firmware. Older devices use the same permanent archive URLs.
+To prepare a release, fetch tags (`git fetch --tags`), set the new version in `FlightDeck/firmware_version.h`, then run `py tools/prepare_rollback.py` before building. Publish the generated catalog and `install/archive/` files with the firmware. Older devices use the same permanent archive URLs. After packaging the new binaries, manifest.json and SHA256SUMS.txt in the install directory, run `py tools/prepare_rollback.py --usb`. Publish the resulting `install/usb-releases.json` and the archived full images as well.
 
 ## Troubleshooting and privacy
 

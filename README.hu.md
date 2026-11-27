@@ -4,6 +4,8 @@
 
 Nyisd meg a telepítőt számítógépen Chrome-ban vagy Edge-ben, és csatlakoztasd az eredeti T-Decket USB-adatkábellel. Új eszköznél vagy másik rendszerről váltva válaszd az **Első telepítés** lehetőséget. Ha már FlightDeck fut rajta, a **FlightDeck frissítése** megtartja a beállításaidat. Kattints a **Csatlakozás és telepítés** gombra, majd válaszd ki az eszköz USB-portját.
 
+A **Firmware-verzió** listában alapból a legfrissebb kiadás van kiválasztva. USB-s visszaállításhoz válassz egy korábbi verziót, hagyd bejelölve a **FlightDeck frissítése** módot, majd kattints a **Csatlakozás és telepítés** gombra. Az **Első telepítés** is a kiválasztott verziót írja fel, és felülírja a korábbi beállításokat.
+
 **[English guide](README.md)** · [Hardver és kapcsolási rajzok](docs/hardware.md) · [Térképadatok és források](maps/README.md)
 
 Nézd meg, melyik település fölött jár egy repülő. A FlightDeck a LilyGO T-Deck 320 × 240 pixeles kijelzőjén repülőtérképet, gépadatlapot, mozgó esőradart és hőmérsékleti térképet jelenít meg. A repülők ADS-B helyzetjelentései Wi-Fi-n érkeznek. Opcionális GPS-szel a térkép utazás közben követi a helyzetedet.
@@ -105,7 +107,7 @@ Telepítsd a Git for Windows programot, majd nyisd meg a PowerShellt a projekt m
 
 A saját fordítású képek a `firmware/` mappába kerülnek. Feltöltésükhöz a telepítési parancsokban ennek a mappának az útvonalát használd. A fordítás beépíti a `maps/` mappa kész térképeit. Újragenerálásuk választható. [Térképforrások és újragenerálás](maps/README.md)
 
-Új kiadás készítésekor töltsd le a címkéket (`git fetch --tags`), állítsd be az új verziót a `FlightDeck/firmware_version.h` fájlban, majd fordítás előtt futtasd a `py tools/prepare_rollback.py` parancsot. A generált katalógust és az `install/archive/` fájlokat a firmware-rel együtt tedd közzé. A régebbi készülékek ugyanezekről a címekről töltenek le.
+Új kiadás készítésekor töltsd le a címkéket (`git fetch --tags`), állítsd be az új verziót a `FlightDeck/firmware_version.h` fájlban, majd fordítás előtt futtasd a `py tools/prepare_rollback.py` parancsot. A generált katalógust és az `install/archive/` fájlokat a firmware-rel együtt tedd közzé. A régebbi készülékek ugyanezekről a címekről töltenek le. Az új binárisok, a `manifest.json` és a `SHA256SUMS.txt` telepítőmappába helyezése után futtasd a `py tools/prepare_rollback.py --usb` parancsot. Az így kapott `install/usb-releases.json` fájlt és az archív teljes képeket is tedd közzé.
 
 ## Hibaelhárítás és adatkezelés
 

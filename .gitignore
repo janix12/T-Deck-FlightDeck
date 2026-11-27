@@ -19,3 +19,4 @@
 !/install/FlightDeck-full.bin
 !/install/FlightDeck.ino.bin
 !/install/archive/*/FlightDeck.ino.bin
+!/install/archive/*/FlightDeck-full.bin

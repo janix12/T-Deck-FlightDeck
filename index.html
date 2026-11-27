@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0d1c22">
   <title>FlightDeck · USB-telepítő</title>
-  <link rel="stylesheet" href="./web-installer/style.css?v=traffic-gallery">
+  <link rel="stylesheet" href="./web-installer/style.css?v=versions">
 </head>
 <body>
   <header>
@@ -14,9 +14,11 @@
   </header>
   <main>
     <section aria-labelledby="title">
-      <p class="model">LILYGO T-DECK <span>/</span> v1.2.0</p>
+      <p class="model">LILYGO T-DECK</p>
       <h1 id="title" data-t="title">USB-telepítő</h1>
       <p class="intro" data-t="intro">Csatlakoztasd az eredeti T-Decket USB-adatkábellel a számítógéphez, kapcsold be, majd zárd be a soros monitort.</p>
+      <label for="firmware-version" class="version-label" data-t="version">Firmware-verzió</label>
+      <select id="firmware-version" disabled autocomplete="off"></select>
       <fieldset id="modes" disabled>
         <legend data-t="mode">Telepítési mód</legend>
         <label><input type="radio" name="mode" value="update" checked><span><strong data-t="update">FlightDeck frissítése</strong><small data-t="updateHelp">A már telepített FlightDeck beállításai megmaradnak.</small></span></label>
@@ -41,9 +43,9 @@
       </div>
       <a class="manual" href="./docs/images/airspace.png" data-t="limitExample">Korábbi példa az API-korlát jelzésére ↗</a>
       <details><summary data-t="help">Nem csatlakozik a T-Deck?</summary><p data-t="boot">Tartsd lenyomva a trackball közepét, nyomd meg és engedd el az RST gombot, majd engedd el a trackballt. Próbáld meg újra a csatlakozást. Ha a port nem jelenik meg, ellenőrizd az adatkábelt, és zárd be a portot használó többi alkalmazást.</p></details>
-      <a class="manual" href="https://github.com/janix12/T-Deck-FlightDeck/releases/tag/v1.2.0" data-t="manual">Firmware letöltése és kézi telepítés ↗</a>
+      <a id="manual" class="manual" href="https://github.com/janix12/T-Deck-FlightDeck/releases/latest" data-t="manual">Firmware letöltése és kézi telepítés ↗</a>
     </aside>
   </main>
-  <script type="module" src="./web-installer/installer.js?v=1.2.0"></script>
+  <script type="module" src="./web-installer/installer.js?v=versions-1"></script>
 </body>
 </html>

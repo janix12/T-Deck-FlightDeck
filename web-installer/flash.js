@@ -1,21 +1,8 @@
-// Digests for the firmware files offered by this installer.
-const images = {
-  update: {
-    filename: "FlightDeck.ino.bin", address: 0x10000,
-    sha256: "78c48bd2a3d5e2e2026a078e4e87637837a29f967ee8fb56041688117450f69e",
-    md5: "550d9d975eaae2b5235e51f9efd9fbda"
-  },
-  full: {
-    filename: "FlightDeck-full.bin", address: 0,
-    sha256: "8c6990bc55c065cd3eec73b05120b90f62960aced379834dfeac18570e7a28c8",
-    md5: "38f072401e9ad25f998850793494ad34"
-  }
-};
-
-export async function installFirmware(loader, mode, status, progress) {
-  const image = images[mode];
+export async function installFirmware(loader, release, mode, status, progress) {
+  const image = release[mode];
+  const filename = mode === "update" ? "FlightDeck.ino.bin" : "FlightDeck-full.bin";
   status("download");
-  const url = new URL("../install/" + image.filename, import.meta.url);
+  const url = new URL("../install/" + release.directory + filename, import.meta.url);
   url.searchParams.set("sha256", image.sha256);
   const response = await fetch(url);
   if (!response.ok) throw new Error("downloadError");
@@ -36,7 +23,7 @@ export async function installFirmware(loader, mode, status, progress) {
   }
 
   status("write");
-  const parts = [{ address: image.address, data }];
+  const parts = [{ address: mode === "update" ? 0x10000 : 0, data }];
   // An erased OTA selector boots app0. Write it only after app0 verifies.
   if (mode === "update") parts.push({ address: 0xe000, data: new Uint8Array(0x2000).fill(255) });
   await loader.writeFlash({
