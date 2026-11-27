@@ -445,6 +445,7 @@ static const char *menuTitle(int i){return i==5?tr("Képernyőpihenő","Sleep no
 static void goPage(int p){
   if(choosingNetwork){WiFi.scanDelete();choosingNetwork=false;}
   editing=menuOpen=updateScreen=false;wifiScreen=WifiScreen::closed;
+  updatePage=UpdatePage::status;historyFocus=false;
   if(p==-1)startSaver();else page=p;
   if(page==0 && p==0){cardOpen=false;cardList=false;}
   dirty=true;
@@ -498,7 +499,7 @@ static void moveBy(int step){
     if(wifiScreen==WifiScreen::list && wifiBook.count)savedIndex=(savedIndex+step+wifiBook.count)%wifiBook.count;
     dirty=true;return;
   }
-  if(updateScreen)return;
+  if(updateScreen){updateMove(step);return;}
   if(choosingNetwork){
     int count=WiFi.scanComplete(); if(count>0) networkIndex=(networkIndex+step+count)%count;
     dirty=true;return;
@@ -555,7 +556,7 @@ static void key(int c){
   dirty=true;
   if(wifiScreen!=WifiScreen::closed || updateScreen){
     if(c==27 || c=='f'){
-      if(updateScreen)updateScreen=false;else savedBack();
+      if(updateScreen)updateBack();else savedBack();
     }else if(c=='j' || c=='k')moveBy(c=='j'?1:-1);
     else if(c==13 || c==10)activate();
     else if(c=='d' && wifiScreen==WifiScreen::detail)wifiScreen=WifiScreen::forget;
@@ -628,10 +629,7 @@ static void input(){
       if(y>=206 && x>=253)zoomMap(x>=285?1:-1);
       else if(page==3 && y>=206 && x<200)activate();
     }
-    else if(updateScreen){
-      if(saveButton.contains(x,y))updateAction();
-      else if(cancelButton.contains(x,y))updateScreen=false;
-    }
+    else if(updateScreen)updateTouch(x,y);
     else if(wifiScreen!=WifiScreen::closed)savedTouch(x,y);
     else if(choosingNetwork){
       if(y>=190){choosingNetwork=false; WiFi.scanDelete();}

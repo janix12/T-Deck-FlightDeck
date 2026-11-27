@@ -8,15 +8,15 @@ Open the installer in desktop Chrome or Edge and connect your original T-Deck wi
 
 See which town an aircraft is flying over. FlightDeck turns the 320 × 240 display of a LilyGO T-Deck into a flight map with aircraft details, animated rain radar and a temperature map. Aircraft positions come from ADS-B reports over Wi-Fi. An optional GPS sets the map centre as you travel.
 
-| 18 aircraft around Budapest | Airspace during an API limit |
+| 32 aircraft around Budapest | Aircraft list and 10 NM scale |
 |:---:|:---:|
-| ![Aircraft around Budapest with the selected flight’s callsign on the map](https://janix12.github.io/T-Deck-FlightDeck/docs/images/airspace-traffic.png) | ![Budapest map with the USB indicator, bold 10 NM scale and API limit notice](https://janix12.github.io/T-Deck-FlightDeck/docs/images/airspace.png?v=1.0.4) |
+| ![32 aircraft on the Budapest radar with the 10 NM scale](https://janix12.github.io/T-Deck-FlightDeck/docs/images/airspace-traffic.png?v=1.1.2) | ![The selected flight and scrollable aircraft list](https://janix12.github.io/T-Deck-FlightDeck/docs/images/flights.png?v=1.1.2) |
 | **Rain radar over Central Europe** | **Surface air temperature** |
 | ![RainViewer precipitation overlay across Central Europe](https://janix12.github.io/T-Deck-FlightDeck/docs/images/rain.png?v=1.0.4) | ![Temperature map around Budapest](https://janix12.github.io/T-Deck-FlightDeck/docs/images/temperature.png?v=1.0.4) |
 | **Main menu** | **Time zone settings** |
 | ![Main menu open over the flight map](https://janix12.github.io/T-Deck-FlightDeck/docs/images/menu.png?v=1.0.4) | ![Time zone editor with Save and Cancel buttons](https://janix12.github.io/T-Deck-FlightDeck/docs/images/time-zone.png?v=1.0.4) |
 
-These images were captured on a T-Deck. The aircraft screenshot was taken on v1.0.1 and the others on v1.0.4. The API limit notice shows the local time of the next retry. Select **Beállítások → Nyelv → English** for the English interface.
+Both radar screenshots were captured on a T-Deck running v1.1.2 with live traffic. Choose **Beállítások → Nyelv → English** for the English interface. [Earlier example of the API limit notice](docs/images/airspace.png)
 
 ## What you need
 
@@ -69,6 +69,8 @@ Open **Settings → Saved networks** to browse up to eight profiles. **Add netwo
 
 Version 1.1.0 is the first release with Wi-Fi updates. Install it once over USB. **Settings → Firmware update** shows the installed version. Once Wi-Fi and the clock are ready, FlightDeck checks at startup and once a day. When an update is available, **FW+** alternates with the clock. Tap it to open the update screen and choose **Install**. The device downloads the application over HTTPS from the project’s GitHub Pages site, writes it to the other application slot, verifies its SHA-256 digest and restarts. Your networks and settings are preserved.
 
+From v1.2.0, open **Settings → Firmware update → Previous versions** to see up to five releases preceding the installed version. The first Wi-Fi release, v1.1.0, is always included. Select a version, review the installed and selected version numbers, then tap **Restore**. FlightDeck downloads and verifies the original release over Wi-Fi. After restoring v1.1.x, use **Check → Install** to return to the latest release. [Version list on the T-Deck](docs/images/firmware-versions.png)
+
 ## Why does the flight map refresh every two minutes?
 
 Without an API key, adsb.lol allows **500 requests per day per public IP address**. Devices sharing an internet connection share this allowance. The provider resets its daily counter at **00:00 UTC**. [Official adsb.lol API limits](https://www.adsb.lol/docs/open-data/api)
@@ -102,6 +104,8 @@ Install Git for Windows and open PowerShell in the project folder. The first com
 ```
 
 Your new images are in `firmware/`. Use those paths in the flashing commands to install your own build. The map packs in `maps/` are included at build time. Regeneration is optional. [Map sources and regeneration](maps/README.md)
+
+To prepare a release, fetch tags (`git fetch --tags`), set the new version in `FlightDeck/firmware_version.h`, then run `py tools/prepare_rollback.py` before building. Publish the generated catalog and `install/archive/` files with the firmware. Older devices use the same permanent archive URLs.
 
 ## Troubleshooting and privacy
 

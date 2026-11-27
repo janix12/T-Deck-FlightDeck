@@ -8,15 +8,15 @@ Nyisd meg a telepítőt számítógépen Chrome-ban vagy Edge-ben, és csatlakoz
 
 Nézd meg, melyik település fölött jár egy repülő. A FlightDeck a LilyGO T-Deck 320 × 240 pixeles kijelzőjén repülőtérképet, gépadatlapot, mozgó esőradart és hőmérsékleti térképet jelenít meg. A repülők ADS-B helyzetjelentései Wi-Fi-n érkeznek. Opcionális GPS-szel a térkép utazás közben követi a helyzetedet.
 
-| 18 repülő Budapest körül | Légtér az API-korlát idején |
+| 32 repülő Budapest körül | Repülőlista és 10 NM-es lépték |
 |:---:|:---:|
-| ![Repülőikonok Budapest körül, a kiválasztott gép mellett a hívójelével](https://janix12.github.io/T-Deck-FlightDeck/docs/images/airspace-traffic.png) | ![Budapest térképe USB-jelzéssel, félkövér 10 NM léptékkel és az API-korlát buborékjával](https://janix12.github.io/T-Deck-FlightDeck/docs/images/airspace.png?v=1.0.4) |
+| ![32 gép a budapesti radaron, 10 NM-es léptékkel](https://janix12.github.io/T-Deck-FlightDeck/docs/images/airspace-traffic.png?v=1.1.2) | ![A kiválasztott járat és a görgethető repülőlista](https://janix12.github.io/T-Deck-FlightDeck/docs/images/flights.png?v=1.1.2) |
 | **Közép-európai esőradar** | **Felszínközeli léghőmérséklet** |
 | ![RainViewer csapadékréteg Közép-Európa felett](https://janix12.github.io/T-Deck-FlightDeck/docs/images/rain.png?v=1.0.4) | ![Budapest környéki hőmérsékleti térkép](https://janix12.github.io/T-Deck-FlightDeck/docs/images/temperature.png?v=1.0.4) |
 | **Főmenü** | **Időzóna beállítása** |
 | ![A főmenü a légtértérkép fölött](https://janix12.github.io/T-Deck-FlightDeck/docs/images/menu.png?v=1.0.4) | ![Időzóna szerkesztése a Mentés és Mégse gombokkal](https://janix12.github.io/T-Deck-FlightDeck/docs/images/time-zone.png?v=1.0.4) |
 
-A képek a T-Deck kijelzőjéről származnak. A repülős felvétel a v1.0.1-en készült, a többi a v1.0.4-en. Az API-korlát mellett a következő próbálkozás helyi ideje látható. A felület nyelve a **Beállítások → Nyelv** sorban váltható.
+A két radarkép ugyanarról a T-Deckről készült v1.1.2-vel, élő forgalommal. A felület nyelve a **Beállítások → Nyelv** sorban váltható. [Korábbi példa az API-korlát jelzésére](docs/images/airspace.png)
 
 ## Mire van szükséged?
 
@@ -69,6 +69,8 @@ A **Beállítások → Mentett hálózatok** alatt legfeljebb nyolc hálózatot 
 
 A v1.1.0 az első Wi-Fi-n frissíthető kiadás. Ezt egyszer USB-n kell telepíteni. A **Beállítások → Firmware-frissítés** megmutatja a telepített verziót. A készülék Wi-Fi-kapcsolat és óraszinkron után induláskor, majd naponta ellenőriz. Új kiadásnál az óra mellett felváltva megjelenő **FW+** jelzésre koppintva megnyithatod a frissítést. A **Telepítés** gomb indítja a letöltést. A készülék HTTPS-en tölti le az alkalmazást a projekt GitHub Pages oldaláról, a másik alkalmazáspartícióra ír, és a SHA-256 ellenőrzés után újraindul. A hálózatok és a beállítások megmaradnak.
 
+A v1.2.0-tól a **Beállítások → Firmware-frissítés → Korábbi verziók** menüben választhatsz a telepített kiadást megelőző öt verzióból. A v1.1.0, az első Wi-Fi-s kiadás mindig szerepel. Válassz egy verziót, ellenőrizd a két verziószámot, majd koppints a **Visszaállítás** gombra. A készülék Wi-Fi-n tölti le és ellenőrzi az eredeti kiadást. A v1.1.x-re visszatérve az **Ellenőrzés → Telepítés** gombokkal újra felteheted a legfrissebb verziót. [A verziólista a T-Decken](docs/images/firmware-versions.png)
+
 ## Miért kétpercenként frissül a légtér?
 
 Az adsb.lol API-kulcs nélkül **500 lekérést enged naponta, nyilvános IP-címenként**. Az azonos internetkapcsolatot használó készülékek ezen a kereten osztoznak. A szolgáltató éjfélkor (00:00 UTC) indít új napot. Ez Magyarországon télen 01:00, nyáron 02:00. [Az adsb.lol hivatalos korlátai](https://www.adsb.lol/docs/open-data/api)
@@ -102,6 +104,8 @@ Telepítsd a Git for Windows programot, majd nyisd meg a PowerShellt a projekt m
 ```
 
 A saját fordítású képek a `firmware/` mappába kerülnek. Feltöltésükhöz a telepítési parancsokban ennek a mappának az útvonalát használd. A fordítás beépíti a `maps/` mappa kész térképeit. Újragenerálásuk választható. [Térképforrások és újragenerálás](maps/README.md)
+
+Új kiadás készítésekor töltsd le a címkéket (`git fetch --tags`), állítsd be az új verziót a `FlightDeck/firmware_version.h` fájlban, majd fordítás előtt futtasd a `py tools/prepare_rollback.py` parancsot. A generált katalógust és az `install/archive/` fájlokat a firmware-rel együtt tedd közzé. A régebbi készülékek ugyanezekről a címekről töltenek le.
 
 ## Hibaelhárítás és adatkezelés
 

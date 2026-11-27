@@ -8,7 +8,14 @@
 extern "C" bool verifyRollbackLater(){return true;}
 enum class UpdateState { idle,checking,current,available,downloading,rebooting,error };
 struct FirmwareOffer {char version[20],sha[65];uint32_t size;};
-struct UpdateJob {bool install;FirmwareOffer offer;};
+#include "rollback_catalog.h"
+static constexpr int rollbackCount=sizeof(rollbackOffers)/sizeof(rollbackOffers[0]);
+static_assert(rollbackCount>=1 && rollbackCount<=6,"Expected five prior releases plus the OTA baseline");
+enum class UpdatePage { status,versions,confirm };
+static UpdatePage updatePage=UpdatePage::status;
+static int rollbackIndex;
+static bool historyFocus;
+struct UpdateJob {bool install,archived;FirmwareOffer offer;};
 struct UpdateReply {UpdateState state;FirmwareOffer offer;int error;};
 static UpdateState otaState=UpdateState::idle;
 static FirmwareOffer offer{};
@@ -45,7 +52,10 @@ static bool readOffer(const char *json,FirmwareOffer &out,bool &newer){
   return true;
 }
 static int fetchUpdate(UpdateJob &job,UpdateReply &reply){
-  String url=String(updateBase)+(job.install?String("FlightDeck.ino.bin?sha256=")+job.offer.sha:"manifest.json");
+  String url=updateBase;
+  if(job.archived)url+=String("archive/")+job.offer.version+"/FlightDeck.ino.bin";
+  else if(job.install)url+=String("FlightDeck.ino.bin?sha256=")+job.offer.sha;
+  else url+="manifest.json";
   esp_http_client_config_t cfgHttp{};
   cfgHttp.url=url.c_str();cfgHttp.cert_pem=weatherRoots;cfgHttp.timeout_ms=12000;
   cfgHttp.disable_auto_redirect=true;cfgHttp.buffer_size=4096;
@@ -103,12 +113,12 @@ static void updateWorker(void *arg){
   xSemaphoreGive(networkGate);
   xQueueSend(otaReplies,&reply,portMAX_DELAY);vTaskDelete(nullptr);
 }
-static void beginUpdate(bool install){
+static void beginUpdate(bool install,const FirmwareOffer *archived=nullptr){
   if(otaState==UpdateState::checking || otaState==UpdateState::downloading || otaState==UpdateState::rebooting)return;
   if(WiFi.status()!=WL_CONNECTED || time(nullptr)<1700000000)return;
   otaTried=true;lastOtaTry=millis();otaDelay=30UL*60000;
   if(!otaReplies)otaReplies=xQueueCreate(1,sizeof(UpdateReply));
-  auto job=new(std::nothrow) UpdateJob{install,offer};
+  auto job=new(std::nothrow) UpdateJob{install,archived!=nullptr,archived?*archived:offer};
   if(!otaReplies || !job || xTaskCreatePinnedToCore(updateWorker,"fw-update",14336,job,1,nullptr,0)!=pdPASS){
     delete job;otaState=UpdateState::error;otaError=-12;return;
   }
@@ -125,10 +135,69 @@ static void otaTick(){
     if(millis()-lastOtaTry>1200)ESP.restart();
     return;
   }
-  if(!otaTried || millis()-lastOtaTry>=otaDelay)beginUpdate(false);
+  if((!updateScreen || updatePage==UpdatePage::status) && (!otaTried || millis()-lastOtaTry>=otaDelay))beginUpdate(false);
 }
-static void updateAction(){beginUpdate(otaState==UpdateState::available);}
+static bool updateBusy(){
+  return otaState==UpdateState::checking || otaState==UpdateState::downloading || otaState==UpdateState::rebooting;
+}
+static void updateBack(){
+  if(updatePage==UpdatePage::confirm)updatePage=UpdatePage::versions;
+  else if(updatePage==UpdatePage::versions)updatePage=UpdatePage::status;
+  else {historyFocus=false;updateScreen=false;}
+}
+static void updateMove(int step){
+  if(updatePage==UpdatePage::versions)rollbackIndex=(rollbackIndex+step+rollbackCount)%rollbackCount;
+  else if(updatePage==UpdatePage::status && !updateBusy())historyFocus=!historyFocus;
+  dirty=true;
+}
+static void updateAction(){
+  if(updateBusy())return;
+  if(updatePage==UpdatePage::versions){updatePage=UpdatePage::confirm;return;}
+  if(updatePage==UpdatePage::confirm){
+    if(WiFi.status()!=WL_CONNECTED || time(nullptr)<1700000000)return;
+    beginUpdate(true,&rollbackOffers[rollbackIndex]);
+    updatePage=UpdatePage::status;historyFocus=false;return;
+  }
+  if(historyFocus){rollbackIndex=0;updatePage=UpdatePage::versions;return;}
+  beginUpdate(otaState==UpdateState::available);
+}
+static void updateTouch(int x,int y){
+  if(cancelButton.contains(x,y)){updateBack();return;}
+  if(updateBusy())return;
+  if(updatePage==UpdatePage::versions && x>=8 && x<312 && y>=61 && y<61+rollbackCount*22){
+    rollbackIndex=(y-61)/22;updateAction();return;
+  }
+  if(updatePage==UpdatePage::status && x>=8 && x<312 && y>=149 && y<183){
+    historyFocus=true;updateAction();return;
+  }
+  if(saveButton.contains(x,y)){
+    if(updatePage==UpdatePage::status)historyFocus=false;
+    updateAction();
+  }
+}
 static void drawUpdateScreen(){
+  if(updatePage==UpdatePage::versions){
+    label(10,36,tr("Korábbi verziók","Previous versions"),mint,4);
+    for(int i=0;i<rollbackCount;i++){
+      int top=61+i*22;
+      if(i==rollbackIndex)screen.fillRoundRect(8,top,304,22,4,grid);
+      label(17,top+2,String("v")+rollbackOffers[i].version,i==rollbackIndex?mint:ink);
+      if(i==rollbackCount-1)label(158,top+2,tr("Első Wi-Fi-s kiadás","First Wi-Fi release"),muted);
+    }
+    saveButton.draw(tr("Kiválasztás","Select"),mint,mint,bg);
+    cancelButton.draw(tr("Vissza","Back"),bg,muted,ink);return;
+  }
+  if(updatePage==UpdatePage::confirm){
+    label(10,39,tr("Visszaállítás","Restore firmware"),mint,4);
+    label(10,86,String(tr("Jelenlegi: v","Installed: v"))+FW_VERSION,muted);
+    label(10,114,String(tr("Kiválasztva: v","Selected: v"))+rollbackOffers[rollbackIndex].version,ink);
+    const char *prompt=tr("Telepíted ezt a verziót?","Install this version?");
+    if(WiFi.status()!=WL_CONNECTED)prompt=tr("Wi-Fi kapcsolatra vár","Waiting for Wi-Fi");
+    else if(time(nullptr)<1700000000)prompt=tr("Pontos időre vár","Waiting for clock sync");
+    label(10,153,prompt,amber);
+    saveButton.draw(tr("Visszaállítás","Restore"),mint,mint,bg);
+    cancelButton.draw(tr("Mégse","Cancel"),bg,muted,ink);return;
+  }
   label(10,39,tr("Firmware-frissítés","Firmware update"),mint,4);
   label(10,86,String(tr("Telepítve: v","Installed: v"))+FW_VERSION,ink);
   String msg;
@@ -144,7 +213,10 @@ static void drawUpdateScreen(){
   if(WiFi.status()!=WL_CONNECTED)msg=tr("Wi-Fi kapcsolatra vár","Waiting for Wi-Fi");
   else if(time(nullptr)<1700000000)msg=tr("Pontos időre vár","Waiting for clock sync");
   label(10,117,msg,otaState==UpdateState::error?amber:ink);
-  label(10,159,tr("Ellenőrzés induláskor és naponta.","Checks at startup and daily."),muted);
+  if(!updateBusy()){
+    framedBox(8,149,304,34,6,historyFocus?grid:bg,historyFocus?mint:grid);
+    centeredLabel(8,149,304,34,tr("Korábbi verziók","Previous versions"),ink);
+  }
   saveButton.draw(otaState==UpdateState::available?tr("Telepítés","Install"):tr("Ellenőrzés","Check"),mint,mint,bg);
   cancelButton.draw(tr("Vissza","Back"),bg,muted,ink);
 }
