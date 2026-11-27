@@ -19,24 +19,33 @@ static bool sdWriteFailed,internalEnabled,mapConsent,mapPrompt,mapBusy,mapRechec
 static uint32_t mapNext;
 static Preferences mapPrefs;
 static bool mapPrefsOpen;
+enum class MapStorage { automatic,internal,sd };
+static MapStorage mapStorage;
+static bool reloadStorage,copyToInternal;
 
 static void closeAtlas(){
   free(atlas);free(overviewAtlas);atlas=overviewAtlas=nullptr;
   world::clear();installedRecord={};
 }
+static bool digestMatches(mbedtls_sha256_context &ctx,const MapRecord &r){
+  uint8_t sum[32];char hex[65];
+  bool ok=mbedtls_sha256_finish_ret(&ctx,sum)==0;
+  mbedtls_sha256_free(&ctx);
+  if(!ok)return false;
+  for(int i=0;i<32;i++)snprintf(hex+2*i,3,"%02x",sum[i]);
+  return !strncmp(hex,r.sha,sizeof(hex));
+}
 static bool mapHash(FsFile *f,const esp_partition_t *part,const MapRecord &r){
   if(!r.size || (!f && (!part || r.size>world::flashCapacity)) || (f && f->fileSize()!=r.size))return false;
   mbedtls_sha256_context ctx;mbedtls_sha256_init(&ctx);mbedtls_sha256_starts_ret(&ctx,0);
-  uint8_t block[1024],sum[32];char hex[65];bool ok=true;
+  uint8_t block[1024];bool ok=true;
   for(size_t at=0;at<r.size && ok;){
     size_t n=std::min(sizeof(block),size_t(r.size-at));
-    ok=f?f->read(block,n)==int(n):esp_partition_read(part,world::flashBase+at,block,n)==ESP_OK;
+    ok=f?f->read(block,n)==int(n):esp_partition_read(part,world::flashBase(part)+at,block,n)==ESP_OK;
     if(ok)mbedtls_sha256_update_ret(&ctx,block,n);
     at+=n;if(at%65536==0)delay(1);
   }
-  mbedtls_sha256_finish_ret(&ctx,sum);mbedtls_sha256_free(&ctx);
-  for(int i=0;i<32;i++)snprintf(hex+2*i,3,"%02x",sum[i]);
-  return ok && !strncmp(hex,r.sha,sizeof(hex));
+  return digestMatches(ctx,r) && ok;
 }
 static bool activateMap(const MapRecord &r,const esp_partition_t *part){
   closeAtlas();world::flash=part;
@@ -51,6 +60,11 @@ static bool activateMap(const MapRecord &r,const esp_partition_t *part){
   mapNames=reinterpret_cast<const char*>(vertices+atlas->points);
   installedRecord=r;return true;
 }
+static bool matchesInternal(const esp_partition_t *part,const MapRecord &record){
+  char magic[4];
+  return part && esp_partition_read(part,world::flashBase(part),magic,sizeof(magic))==ESP_OK &&
+         !memcmp(magic,"FDW2",4) && mapHash(nullptr,part,record);
+}
 static void loadMap(bool retry){
   if(mapBusy)return;
   if(!mapPrefsOpen)mapPrefsOpen=mapPrefs.begin("fdworld",false);
@@ -62,19 +76,42 @@ static void loadMap(bool retry){
   MapRecord pending{};
   if(mapPrefs.getBytesLength("pending")==sizeof(pending))mapPrefs.getBytes("pending",&pending,sizeof(pending));
   pending.sha[64]=0;
+  auto part=world::partition();
+  if(part && part->subtype==world::mapSubtype)internalEnabled=true;
+  if(!internalEnabled && part){
+    // A fresh USB install may retain another firmware's FAT volume. Claim a
+    // blank partition, or reclaim an independently verified previous map.
+    bool available=world::erased(part,0,part->size);
+    if(!available && matchesInternal(part,r))
+      available=world::erased(part,world::legacyBase+r.size,world::legacyBase+world::flashCapacity);
+    if(available)internalEnabled=mapPrefs.putBool("reserve",true);
+  }
   closeAtlas();
+  bool sdValid=false;
   if(sdOK){
     if(!card.exists(world::filename) && card.exists("/WORLD.BAK"))card.rename("/WORLD.BAK",world::filename);
     for(const MapRecord *record:{&r,&pending}){
       if(!record->size)continue;
       FsFile f=card.open(world::filename,O_RDONLY);
-      if(f && mapHash(&f,nullptr,*record)){f.close();if(activateMap(*record,nullptr))break;}
+      if(f && mapHash(&f,nullptr,*record)){f.close();if(activateMap(*record,nullptr)){sdValid=true;break;}}
     }
   }
-  if(!atlas && internalEnabled){
-    auto part=world::partition();
-    for(const MapRecord *record:{&r,&pending})
-      if(part && record->size && mapHash(nullptr,part,*record) && activateMap(*record,part))break;
+  if(internalEnabled && (!sdValid || mapStorage==MapStorage::internal)){
+    MapRecord savedFlash{};
+    if(mapPrefs.getBytesLength("flashMap")==sizeof(savedFlash))
+      mapPrefs.getBytes("flashMap",&savedFlash,sizeof(savedFlash));
+    savedFlash.sha[64]=0;
+    MapRecord sdRecord=installedRecord;
+    for(const MapRecord *record:{&r,&pending,&savedFlash}){
+      if(!record->size || (sdValid && strcmp(sdRecord.sha,record->sha)))continue;
+      if(matchesInternal(part,*record)){
+        if(activateMap(*record,part)){
+          if(strcmp(savedFlash.sha,record->sha))mapPrefs.putBytes("flashMap",record,sizeof(*record));
+          break;
+        }
+        if(sdValid)activateMap(sdRecord,nullptr);
+      }
+    }
   }
   if(atlas){
     if(!mapConsent){mapConsent=true;mapPrefs.putBool("consent",true);}
@@ -82,7 +119,9 @@ static void loadMap(bool retry){
        mapPrefs.putBytes("record",&installedRecord,sizeof(r))==sizeof(r))mapPrefs.remove("pending");
   }
   mapPrompt=!atlas && (!mapConsent || retry);
-  checkSdCopy=sdOK && world::flash;
+  checkSdCopy=sdOK && world::flash && !sdValid;
+  copyToInternal=sdValid && atlas && !world::flash && mapStorage==MapStorage::internal &&
+                 internalEnabled && installedRecord.size<=world::flashCapacity;
   mapNext=0;mapRecheck=true;
 }
 

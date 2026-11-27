@@ -133,16 +133,23 @@ static void diagnostics(){
 
 // Visual order is independent of the preference keys stored on existing devices.
 static constexpr Field settingsOrder[]={SSID,PASS,WIFI_LIST,ZONE,CLOCK,FW_UPDATE,
-  LAT,LON,RANGE,PERIOD,BAUD,GPS_PIN,LANG,THEME,LIGHT,KEY_LIGHT,SAVER,LOGGING};
+  LAT,LON,RANGE,PERIOD,BAUD,GPS_PIN,LANG,THEME,LIGHT,KEY_LIGHT,SAVER,MAP_STORAGE,LOGGING};
 static_assert(sizeof(settingsOrder)/sizeof(*settingsOrder)==FIELDS,"Missing settings row");
 static int settingsPosition(){
   for(int i=0;i<FIELDS;i++)if(settingsOrder[i]==field)return i;
   return 0;
 }
+static constexpr int settingsStart[]={0,6,12,17,FIELDS};
+static constexpr int settingsGroups=sizeof(settingsStart)/sizeof(*settingsStart)-1;
+static int settingsGroup(){
+  int pos=settingsPosition(),group=0;
+  while(group+1<settingsGroups && pos>=settingsStart[group+1])++group;
+  return group;
+}
 static constexpr int settingsRowTop=52,settingsPitch=26;
 static void settingIcon(int f,int x,int y,uint16_t color){
   if(f==WIFI_LIST || f==FW_UPDATE){chevron(x-2,y,color);return;}
-  if(f==LANG || f==THEME){
+  if(f==LANG || f==THEME || f==MAP_STORAGE){
     screen.drawFastHLine(x-5,y-3,10,color);screen.drawFastHLine(x-5,y+3,10,color);
     screen.fillTriangle(x+5,y-6,x+5,y,x+8,y-3,color);
     screen.fillTriangle(x-5,y,x-5,y+6,x-8,y+3,color);return;
@@ -155,12 +162,12 @@ static void settingIcon(int f,int x,int y,uint16_t color){
   screen.fillTriangle(x-5,y+2,x-2,y+5,x-6,y+6,color);screen.drawLine(x+4,y-6,x+6,y-4,color);
 }
 static void settingsList(){
-  int group=settingsPosition()/6;
+  int group=settingsGroup();
   const char *title=group==0?tr("Kapcsolat és rendszer","Network and system"):
-                    group==1?tr("Térkép és GPS","Map and GPS"):tr("Kijelző és eszköz","Display and device");
+                    group==1?tr("Térkép és GPS","Map and GPS"):group==2?tr("Kijelző és eszköz","Display and device"):tr("Tárhely","Storage");
   label(10,32,title,mint);
-  for(int row=0;row<6;row++){
-    Field f=settingsOrder[group*6+row];int y=settingsRowTop+row*settingsPitch;
+  for(int row=0;settingsStart[group]+row<settingsStart[group+1];row++){
+    Field f=settingsOrder[settingsStart[group]+row];int y=settingsRowTop+row*settingsPitch;
     bool current=field==f;
     screen.fillRoundRect(5,y,310,24,5,current?grid:land);
     if(current)screen.fillRoundRect(8,y+5,3,14,1,mint);
@@ -174,6 +181,6 @@ static void settingsList(){
     settingIcon(f,301,y+12,current?mint:muted);
   }
   pill(5,212,50,25);chevron(31,224,mint,-1);
-  centeredLabel(55,212,210,25,String(group+1)+" / 3",muted);
+  centeredLabel(55,212,210,25,String(group+1)+" / "+String(settingsGroups),muted);
   pill(265,212,50,25);chevron(286,224,mint);
 }

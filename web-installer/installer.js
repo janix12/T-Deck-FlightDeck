@@ -1,8 +1,12 @@
-import { installFirmware } from "./flash.js?v=versions-2";
+import { installFirmware } from "./flash.js?v=storage151";
 
 const en = {
-  mapTitle: "How does the offline map update?",
-  mapFirst: "On first boot, choose Download in the Download map dialog. The T-Deck downloads the 5.84 MB first edition over Wi-Fi to /WORLD.FDM on a writable microSD card. The downloaded map is available offline.",
+  storageAlt: "The Storage settings page with Map storage set to Automatic.",
+  storageCaption: "Map storage · Automatic mode",
+  mapModes: "Internal keeps reading from flash after copying. SD prefers the card for downloads. Wi-Fi updates preserve the partition layout on older installations. If the legacy data partition holds unrelated files, use a writable card.",
+  mapCopy: "Open Settings → Storage → Map storage. In Automatic mode, insert a writable microSD while the device is running. FlightDeck copies the internal map offline, reads it back and checks its SHA-256. It uses /WORLD.FDM only after verification succeeds. Removing the card switches back to a valid internal copy.",
+  mapTitle: "How is the map copied to SD and updated?",
+  mapFirst: "After a first USB installation, choose Download. Version 1.5.1 downloads the 5.84 MB map to internal storage over Wi-Fi, even with the card slot empty. Choose Later to set up Wi-Fi first.",
   mapCheck: "At startup and every 24 hours, the device checks a small revision file on GitHub. If the map is current, that is the only download. For a new edition it downloads the package automatically and verifies the stored file with SHA-256 before activating it. After corruption or an interrupted download, it retries when Wi-Fi and a synchronised clock are available.",
   instrumentCardsCaption: "Instruments · sensors, memory, CPU and microSD",
   instrumentCardsAlt: "The v1.5.0 Instruments screen shows free and total microSD space below the memory and CPU gauges.",
@@ -44,7 +48,7 @@ const en = {
   digestError: "The download does not match the firmware for this release. Reload the page before trying again.",
   chipError: "This firmware requires the ESP32-S3 in the original LilyGO T-Deck.", sizeError: "Expected a T-Deck with 16 MB of flash. Installation stopped.",
   securityError: "This device’s flash protection or loader is incompatible with this installer.",
-  layoutError: "The partition table differs from FlightDeck v1.0. To replace the existing system and its settings, choose First installation.",
+  layoutError: "The partition table does not match a supported FlightDeck layout. To replace the existing system and its settings, choose First installation.",
   connectError: "Could not connect. Close any serial monitor and follow the bootloader steps under “T-Deck won’t connect?”.",
   writeError: "Installation could not be verified. Keep the USB cable connected, enter bootloader mode and retry the same installation.",
   loadError: "Could not load the USB installer. Reload the page and try again."
@@ -60,7 +64,7 @@ const hu = {
   digestError: "A letöltött fájl eltér a kiadáshoz tartozó firmware-től. Töltsd újra az oldalt, majd próbáld újra.",
   chipError: "Ez a firmware az eredeti LilyGO T-Deck ESP32-S3 chipjéhez készült.", sizeError: "A telepítéshez 16 MB flashmemóriás T-Deck szükséges. Az írás leállt.",
   securityError: "Az eszköz flashvédelme vagy betöltője nem kompatibilis ezzel a telepítővel.",
-  layoutError: "A partíciók eltérnek a FlightDeck v1.0 kiosztásától. Ha felül szeretnéd írni a meglévő rendszert és a beállításait, válaszd az Első telepítést.",
+  layoutError: "A partíciókiosztást a FlightDeck frissítője nem ismeri fel. Ha felül szeretnéd írni a meglévő rendszert és a beállításait, válaszd az Első telepítést.",
   connectError: "Sikertelen csatlakozás. Zárd be a soros monitort, majd kövesd a „Nem csatlakozik a T-Deck?” alatt a betöltő mód lépéseit.",
   writeError: "A telepítést nem sikerült igazolni. Hagyd az USB-kábelt csatlakoztatva, lépj betöltő módba, majd ismételd meg ugyanazt a telepítést.",
   loadError: "Az USB-telepítőt nem sikerült betölteni. Töltsd újra az oldalt, majd próbáld újra."

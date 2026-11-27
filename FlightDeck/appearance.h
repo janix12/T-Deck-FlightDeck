@@ -3,7 +3,7 @@
 static bool english(){ return cfg[LANG]=="EN"; }
 static const char *tr(const char *hu,const char *en){ return english()?en:hu; }
 static const char *fieldLabel(int i){
-  static const char *en[]={"Wi-Fi name","Wi-Fi password","Time zone","Latitude","Longitude","Radius (NM)","Refresh (sec)","Brightness 1-16","GPS baud","GPS RX GPIO","SD logging 0/1","UTC clock","Language","Theme","Sleep (minutes)","Keyboard light (%)","Saved networks","Firmware update"};
+  static const char *en[]={"Wi-Fi name","Wi-Fi password","Time zone","Latitude","Longitude","Radius (NM)","Refresh (sec)","Brightness 1-16","GPS baud","GPS RX GPIO","SD logging 0/1","UTC clock","Language","Theme","Sleep (minutes)","Keyboard light (%)","Saved networks","Firmware update","Map storage"};
   return english()?en[i]:labels[i];
 }
 static const char *themeName(){

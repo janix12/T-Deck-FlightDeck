@@ -10,9 +10,9 @@
 #include "saved_wifi.h"
 #include "firmware_version.h"
 
-enum Field {SSID, PASS, ZONE, LAT, LON, RANGE, PERIOD, LIGHT, BAUD, GPS_PIN, LOGGING, CLOCK, LANG, THEME, SAVER, KEY_LIGHT, WIFI_LIST, FW_UPDATE, FIELDS};
-static const char *labels[]={"Wi-Fi név","Wi-Fi jelszó","Időzóna","Kézi szélesség","Kézi hosszúság","Sugár (NM)","Frissítés (mp)","Fényerő 1-16","GPS baud","GPS RX GPIO","SD napló 0/1","UTC óra","Nyelv","Téma","Pihenő (perc)","Billentyűfény (%)","Mentett hálózatok","Firmware-frissítés"};
-static const char *defaults[]={"","","Budapest","47.4979","19.0402","40","120","10","0","44","0","","HU","0","30","40","",""};
+enum Field {SSID, PASS, ZONE, LAT, LON, RANGE, PERIOD, LIGHT, BAUD, GPS_PIN, LOGGING, CLOCK, LANG, THEME, SAVER, KEY_LIGHT, WIFI_LIST, FW_UPDATE, MAP_STORAGE, FIELDS};
+static const char *labels[]={"Wi-Fi név","Wi-Fi jelszó","Időzóna","Kézi szélesség","Kézi hosszúság","Sugár (NM)","Frissítés (mp)","Fényerő 1-16","GPS baud","GPS RX GPIO","SD napló 0/1","UTC óra","Nyelv","Téma","Pihenő (perc)","Billentyűfény (%)","Mentett hálózatok","Firmware-frissítés","Térkép tárhelye"};
+static const char *defaults[]={"","","Budapest","47.4979","19.0402","40","120","10","0","44","0","","HU","0","30","40","","","0"};
 static String cfg[FIELDS],edit,notice;
 static Preferences prefs;
 static int page,field,selected;
@@ -271,6 +271,7 @@ static bool applyField(){
     case GPS_PIN: if(edit!="43" && edit!="44") return false; break;
     case LOGGING: if(edit!="0" && edit!="1") return false; break;
     case LANG: if(edit!="HU" && edit!="EN") return false; break;
+    case MAP_STORAGE:
     case THEME: if(!numeric(edit,0,2,true)) return false; break;
     case SAVER: if(!numeric(edit,0,1440,true)) return false; break;
     case ZONE: if(edit.isEmpty() || edit.length()>64) return false; break;
@@ -288,6 +289,7 @@ static bool applyField(){
   String k="v"+String(field);
   if(!prefs.putString(k.c_str(),edit) && edit.length()) return false;
   cfg[field]=edit;
+  if(field==MAP_STORAGE){mapStorage=static_cast<MapStorage>(edit.toInt());reloadStorage=true;}
   if(field==THEME) setPalette();
   if(field==ZONE) zone();
   if(field==LIGHT) backlight(edit.toInt());
@@ -299,6 +301,8 @@ static bool applyField(){
 static String valueFor(int f){
   if(f==WIFI_LIST)return String(wifiBook.count)+" / "+String(WifiBook::capacity);
   if(f==FW_UPDATE)return FW_VERSION;
+  if(f==MAP_STORAGE)return mapStorage==MapStorage::internal?tr("Belső","Internal"):
+    mapStorage==MapStorage::sd?"SD":tr("Automatikus","Automatic");
   if(f==THEME) return themeName();
   if(f==LANG) return english()?"English":"Magyar";
   if(f==PASS) return cfg[f].length()?"********":tr("(üres)","(empty)");
@@ -611,6 +615,7 @@ static void activate(){
     }
     else if(field==WIFI_LIST){wifiScreen=WifiScreen::list;savedIndex=wifiBook.preferred;notice="";}
     else if(field==FW_UPDATE){updateScreen=true;}
+    else if(field==MAP_STORAGE){edit=String((int(mapStorage)+1)%3);applyField();}
     else if(field==LOGGING){edit=cfg[LOGGING]=="1"?"0":"1";applyField();}
     else if(field==LANG || field==THEME){
       edit=field==LANG?(english()?"HU":"EN"):String((cfg[THEME].toInt()+1)%3);
@@ -759,12 +764,13 @@ static void touchInput(bool down,int x,int y){
       probePending=false; WiFi.scanDelete(); startScan(); networkIndex=0;choosingNetwork=true;
     }
     else if(page==2 && !editing && y>=212 && y<237 && ((x>=5 && x<55) || (x>=265 && x<315))){
-      int group=(settingsPosition()/6+(x<55?2:1))%3;
-      field=settingsOrder[group*6];
+      int group=(settingsGroup()+(x<55?settingsGroups-1:1))%settingsGroups;
+      field=settingsOrder[settingsStart[group]];
     }
     else if(page==2 && !editing && x>=5 && x<315 && y>=settingsRowTop && y<settingsRowTop+6*settingsPitch){
       int offset=y-settingsRowTop;
-      if(offset%settingsPitch<24){field=settingsOrder[settingsPosition()/6*6+offset/settingsPitch];activate();}
+      int group=settingsGroup(), pos=settingsStart[group]+offset/settingsPitch;
+      if(offset%settingsPitch<24 && pos<settingsStart[group+1]){field=settingsOrder[pos];activate();}
     }
     else if(page==2 && editing){
       if(x>=234 && x<312 && y>=159 && y<189)symbolLock=!symbolLock;
@@ -864,7 +870,7 @@ static void handleTraffic(){
   }
 }
 static void logEnvironment(){
-  if(!sdOK || sdWriteFailed || cfg[LOGGING]!="1" || millis()-lastLog<60000) return;
+  if(mapBusy || !sdOK || sdWriteFailed || cfg[LOGGING]!="1" || millis()-lastLog<60000) return;
   lastLog=millis();
   FsFile f=card.open("/flightdeck-env.csv",O_WRONLY|O_CREAT|O_APPEND);
   if(!f){Serial.println("SD naplo megnyitasi hiba");sdOK=false;return;}
@@ -938,6 +944,7 @@ void setup(){
   if(cfg[PERIOD].toInt()<trafficMinPeriod || cfg[PERIOD].toInt()>300)cfg[PERIOD]=defaults[PERIOD];
   loadBudget();
   setPalette();lastActivity=millis();
+  mapStorage=static_cast<MapStorage>(constrain(cfg[MAP_STORAGE].toInt(),0L,2L));
   startBoard(cfg[LIGHT].toInt());initKeyboard();keyboardLight(cfg[KEY_LIGHT].toInt());startGps();
   WiFi.persistent(false); WiFi.mode(WIFI_STA);
   WiFi.onEvent([](WiFiEvent_t,WiFiEventInfo_t info){
@@ -983,17 +990,6 @@ void loop(){
       if(c=='Y') benchReport();
       if(c=='E' && bench.active){benchReport();bench.active=false;dirty=true;}
       if(c=='V' && !mapBusy) verifyCardWrite();
-      if(c=='G' && !mapBusy && !internalEnabled){
-        // Local USB opt-in after auditing this board's partition layout.
-        auto part=world::partition();bool blank=part;uint8_t block[1024];
-        for(size_t pos=0;blank && pos<world::flashCapacity;pos+=sizeof(block)){
-          blank=esp_partition_read(part,world::flashBase+pos,block,sizeof(block))==ESP_OK;
-          for(uint8_t b:block)if(b!=255){blank=false;break;}
-          if(!(pos%65536))delay(1);
-        }
-        if(blank)internalEnabled=mapPrefs.putBool("reserve",true);
-        Serial.printf("WorldReserve enabled=%d\n",internalEnabled);
-      }
       if(c=='@'){
         char coords[48];size_t n=Serial.readBytesUntil('\n',coords,sizeof(coords)-1);coords[n]=0;
         Plane p{};bool inside;float distance;

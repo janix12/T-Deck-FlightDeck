@@ -18,7 +18,9 @@ export async function installFirmware(loader, release, mode, status, progress) {
   const security = await loader.getSecurityInfo();
   if (security.parsedFlags.SECURE_BOOT_EN || security.flashCryptCnt !== 0) throw new Error("securityError");
   if (await loader.detectFlashSize() !== "16MB") throw new Error("sizeError");
-  if (mode === "update" && await loader.flashMd5sum(0x8000, 0xc00) !== "ba686c6c6fdf2b963448683d5bbd8380") {
+  // Both FlightDeck layouts use the same NVS, otadata and application slots.
+  const layouts = ["ba686c6c6fdf2b963448683d5bbd8380", "9d8b6596b256cdbaf0668c1221120b70"];
+  if (mode === "update" && !layouts.includes(await loader.flashMd5sum(0x8000, 0xc00))) {
     throw new Error("layoutError");
   }
 

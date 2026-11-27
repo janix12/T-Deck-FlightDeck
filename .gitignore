@@ -9,6 +9,7 @@
 /.env*
 *.log
 *.csv
+!/FlightDeck/partitions.csv
 *.elf
 *.map
 *.pem

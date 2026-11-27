@@ -11,6 +11,9 @@ static MapRecord offer;
 static unsigned failures;
 static int lastError;
 static const esp_partition_t *copySource;
+static FsFile sdSource;
+static cid_t transferCid;
+static bool transferHasCid;
 static constexpr char temp[]="/WORLD.PRT",backup[]="/WORLD.BAK";
 
 static bool notify(Event event,const MapRecord &r,const uint8_t *p=nullptr,size_t n=0,int err=0){
@@ -88,12 +91,17 @@ static bool sdStage(){
     stage.close();
   }
   if(ok)stage=card.open(temp,O_RDWR|O_TRUNC);
+  if(ok && stage){transferHasCid=haveMountedCid;transferCid=mountedCid;}
   sdFailed=!ok || !stage;return !sdFailed;
 }
 static bool begin(const MapRecord &r){
   offer=r;written=erased=0;
-  flashTarget=!sdStage();
-  if(flashTarget && (!internalEnabled || !world::partition() || r.size>world::flashCapacity))return false;
+  bool canUseFlash=internalEnabled && world::partition() && r.size<=world::flashCapacity;
+  flashTarget=canUseFlash && mapStorage!=MapStorage::sd;
+  if(!flashTarget && !sdStage()){
+    if(!canUseFlash)return false;
+    flashTarget=true;
+  }
   if(mapPrefs.putBytes("pending",&r,sizeof(r))!=sizeof(r))return false;
   if(flashTarget && world::flash)closeAtlas();
   mapPrompt=false;showProgress=!atlas;dirty=true;return true;
@@ -102,21 +110,28 @@ static bool writeBlock(const uint8_t *p,size_t n){
   if(n>offer.size-written)return false;
   if(flashTarget){
     auto part=world::partition();size_t end=(written+n+4095)&~size_t(4095);
-    if(end>erased && esp_partition_erase_range(part,world::flashBase+erased,end-erased)!=ESP_OK)return false;
+    if(end>erased && esp_partition_erase_range(part,world::flashBase(part)+erased,end-erased)!=ESP_OK)return false;
     erased=end;
-    if(esp_partition_write(part,world::flashBase+written,p,n)!=ESP_OK)return false;
+    if(esp_partition_write(part,world::flashBase(part)+written,p,n)!=ESP_OK)return false;
   }else if(stage.write(p,n)!=n){sdFailed=true;return false;}
   written+=n;return true;
 }
-static bool commit(){
+static bool reopenStage(FsFile &file){
+  bool flushed=stage.sync();stage.close();if(!flushed)return false;
+  mountCard();
+  if(!sdOK || (transferHasCid && (!haveMountedCid || memcmp(&mountedCid,&transferCid,sizeof(cid_t)))))return false;
+  file=card.open(temp,O_RDONLY);
+  return file && file.fileSize()==offer.size;
+}
+static bool commit(bool sdVerified=false){
   if(written!=offer.size)return false;
   auto part=flashTarget?world::partition():nullptr;
   if(!flashTarget){
-    bool flushed=stage.sync();stage.close();if(!flushed)return false;
-    mountCard();
-    FsFile f=card.open(temp,O_RDONLY);
-    if(!sdOK || !f || !mapHash(&f,nullptr,offer)){sdFailed=true;return false;}
-    f.close();
+    if(!sdVerified){
+      FsFile f;
+      if(!reopenStage(f) || !mapHash(&f,nullptr,offer)){sdFailed=true;return false;}
+      f.close();
+    }
     if(card.exists(backup) && card.exists(world::filename) && !card.remove(backup))return false;
     if(card.exists(world::filename) && !card.rename(world::filename,backup))return false;
     if(!card.rename(temp,world::filename)){
@@ -124,29 +139,86 @@ static bool commit(){
       return false;
     }
   }else if(!mapHash(nullptr,part,offer))return false;
-  if(!activateMap(offer,part))return false;
+  bool keepInternal=!flashTarget && mapStorage==MapStorage::internal && world::flash &&
+                    !strcmp(offer.sha,installedRecord.sha);
+  if(!keepInternal && !activateMap(offer,part))return false;
+  if(flashTarget){
+    mapPrefs.putBytes("flashMap",&offer,sizeof(offer));
+    checkSdCopy=sdOK && !sdSource && !sdFailed;
+  }
   if(mapPrefs.putBytes("record",&offer,sizeof(offer))!=sizeof(offer))return false;
   mapPrefs.remove("pending");
   if(!flashTarget && card.exists(backup))card.remove(backup);
+  if(!flashTarget)storageNeedsScan=true;
   return true;
 }
-static void copyToSd(){
+static void copyLocalMap(){
+  static FsFile readback;
+  static mbedtls_sha256_context digest;
+  static size_t verified;
+  if(copyToInternal && !mapBusy){
+    copyToInternal=false;
+    sdSource=card.open(world::filename,O_RDONLY);
+    if(!sdSource)return;
+    offer=installedRecord;written=erased=0;flashTarget=true;
+    if(mapPrefs.putBytes("pending",&offer,sizeof(offer))!=sizeof(offer)){sdSource.close();return;}
+    mapBusy=true;
+  }
   if(checkSdCopy && !mapBusy){
     checkSdCopy=false;sdFailed=false;
     if(!world::flash || !sdStage())return;
     copySource=world::flash;offer=installedRecord;written=0;flashTarget=false;mapBusy=true;
   }
-  if(!copySource)return;
+  if(!copySource && !sdSource)return;
   static uint8_t block[4096];
   size_t n=std::min(sizeof(block),size_t(offer.size-written));
-  bool ok=esp_partition_read(copySource,world::flashBase+written,block,n)==ESP_OK && writeBlock(block,n);
-  if(ok && written<offer.size)return;
-  ok=ok && commit();
-  stage.close();copySource=nullptr;mapBusy=false;sdFailed=!ok;
-  Serial.printf("WorldCopy SD verified=%d\n",ok);
+  bool ok=true;
+  if(written<offer.size){
+    ok=copySource?esp_partition_read(copySource,world::flashBase(copySource)+written,block,n)==ESP_OK:
+                  sdSource.read(block,n)==int(n);
+    ok=ok && writeBlock(block,n);
+    if(ok && written<offer.size)return;
+    if(ok && copySource){
+      ok=reopenStage(readback);
+      if(ok){verified=0;mbedtls_sha256_init(&digest);mbedtls_sha256_starts_ret(&digest,0);return;}
+    }
+  }else if(copySource){
+    size_t chunk=std::min(sizeof(block),size_t(offer.size-verified));
+    ok=readback.read(block,chunk)==int(chunk) && !mbedtls_sha256_update_ret(&digest,block,chunk);
+    if(ok){verified+=chunk;if(verified<offer.size)return;}
+    ok=digestMatches(digest,offer) && ok;
+  }
+  readback.close();
+  ok=ok && commit(copySource!=nullptr);
+  Serial.printf("WorldCopy %s verified=%d\n",flashTarget?"flash":"SD",ok);
+  sdSource.close();stage.close();copySource=nullptr;mapBusy=false;sdFailed=!ok;
+  dirty=true;
+}
+static void pollStorage(){
+  static uint32_t nextProbe;
+  if(mapBusy)return;
+  if(reloadStorage){reloadStorage=false;loadMap(false);dirty=true;}
+  if(!due(millis(),nextProbe))return;
+  nextProbe=millis()+2500;
+  if(sdOK){
+    cid_t id;
+    if(card.card()->readCID(&id) && (!haveMountedCid || !memcmp(&id,&mountedCid,sizeof(id)))){
+      mountedCid=id;haveMountedCid=true;return;
+    }
+    sdOK=false;haveMountedCid=false;cardMiB=volumeMiB=volumeBytes=0;sdFreeBytes=-1;
+    loadMap(false);dirty=true;
+    Serial.println("WorldCard removed");
+  }else{
+    if(world::offsets && !world::flash){loadMap(false);dirty=true;}
+    if(!cardResponds())return;
+    mountCard();
+    if(!sdOK){nextProbe=millis()+10000;return;}
+    sdFailed=sdWriteFailed=false;loadMap(false);dirty=true;
+    Serial.println("WorldCard inserted");
+  }
 }
 static void tick(){
-  copyToSd();
+  pollStorage();copyLocalMap();
   if(!queue)queue=xQueueCreate(1,sizeof(Message));
   Message m;
   while(queue && xQueueReceive(queue,&m,0)==pdTRUE){
@@ -184,7 +256,9 @@ static void dialog(){
   centeredLabel(23,60,274,24,tr("Térkép letöltése","Download map"),ink,2);
   if(mapPrompt){
     centeredLabel(24,92,272,19,lastError?tr("Letöltési hiba","Download failed"):tr("Offline világtérkép a GitHubról","Offline world map from GitHub"),muted,1);
-    centeredLabel(24,112,272,19,lastError?tr("Automatikus újrapróbálás","Retrying automatically"):tr("Wi-Fi szükséges","Wi-Fi required"),muted,1);
+    const char *target=internalEnabled && (!sdOK || mapStorage!=MapStorage::sd)?
+      tr("Belső tárhely · Wi-Fi","Internal storage · Wi-Fi"):tr("microSD · Wi-Fi","microSD · Wi-Fi");
+    centeredLabel(24,112,272,19,lastError?tr("Automatikus újrapróbálás","Retrying automatically"):target,muted,1);
     framedBox(27,146,130,31,5,land,later?grid:mint);
     framedBox(163,146,130,31,5,land,later?mint:grid);
     centeredLabel(27,146,130,31,tr("Letöltés","Download"),ink);

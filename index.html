@@ -26,13 +26,17 @@
       </fieldset>
       <button id="install" disabled data-t="button">Csatlakozás és telepítés</button>
       <p class="support" data-t="support">Asztali Chrome vagy Edge szükséges. A gomb után válaszd ki a T-Deck USB-portját.</p>
-      <details><summary data-t="mapTitle">Hogyan frissül az offline térkép?</summary><p data-t="mapFirst">Az első indításkor válaszd a Térkép letöltése ablakban a Letöltés gombot. A T-Deck Wi-Fi-n tölti le az 5,84 MB-os első kiadást az írható microSD-kártyára. A fájl neve /WORLD.FDM. A letöltött térképet offline is használhatod.</p><p data-t="mapCheck">Induláskor, majd 24 óránként a készülék lekéri a GitHubról a kis verziófájlt. Naprakész térképnél ezzel végez. Új kiadásnál automatikusan letölti a csomagot, és aktiválás előtt SHA-256-tal ellenőrzi a tárolt fájlt. Sérülés vagy megszakadt letöltés után újrapróbálja, amikor van Wi-Fi és szinkronizált az óra.</p></details>
+      <details><summary data-t="mapTitle">Hogyan kerül a térkép az SD-re, és hogyan frissül?</summary><p data-t="mapFirst">Friss USB-telepítés után válaszd a Letöltés gombot. A v1.5.1 Wi-Fi-n a belső tárra tölti az 5,84 MB-os térképet, SD nélkül is. Ha előbb a Wi-Fi-t állítanád be, válaszd a Később gombot.</p><p data-t="mapCopy">Beállítások → Tárhely → Térkép tárhelye. Automatikus módban helyezz be egy írható microSD-t a bekapcsolt készülékbe. A T-Deck a belső példányt internet nélkül átmásolja, visszaolvassa, majd ellenőrzi az SHA-256-ot. Csak egyezés után használja a /WORLD.FDM fájlt. Ha kiveszed a kártyát, visszatér az érvényes belső példányhoz.</p><p data-t="mapModes">Belső módban a térkép olvasása másolás után is a belső tárból folytatódik. SD módban a letöltés elsődleges célja a kártya. Régebbi készüléken a Wi-Fi-s frissítés megtartja a partíciókat. Ha a régi adatpartíciót más adatok foglalják, használj írható SD-t.</p><p data-t="mapCheck">Induláskor, majd 24 óránként a készülék lekéri a GitHubról a kis verziófájlt. Naprakész térképnél ezzel végez. Új kiadásnál automatikusan letölti a csomagot, és aktiválás előtt SHA-256-tal ellenőrzi a tárolt fájlt. Sérülés vagy megszakadt letöltés után újrapróbálja, amikor van Wi-Fi és szinkronizált az óra.</p></details>
       <div id="feedback" aria-live="polite" role="status"><span id="status"></span> <span id="percent"></span></div>
       <progress hidden id="progress" max="100" value="0" aria-label="USB"></progress>
       <noscript>A telepítéshez engedélyezd a JavaScriptet. / Enable JavaScript to install via USB.</noscript>
     </section>
     <aside>
       <div class="screens">
+        <figure id="map-storage">
+          <img src="./docs/images/v151-storage-hu.png" data-en-src="./docs/images/v151-storage-en.png" width="320" height="240" alt="A Tárhely lapon a Térkép tárhelye sor Automatikus állásban van." data-alt="storageAlt">
+          <figcaption data-t="storageCaption">Térkép tárhelye · Automatikus mód</figcaption>
+        </figure>
         <figure id="instrument-cards">
           <img src="./docs/images/v150-instruments-hu.png" data-en-src="./docs/images/v150-instruments-en.png" width="320" height="240" alt="A v1.5.0 Műszerek lapján a microSD sor a szabad és a teljes kapacitást mutatja a RAM és a két CPU-mag alatt." data-alt="instrumentCardsAlt">
           <figcaption data-t="instrumentCardsCaption">Műszerek · szenzorok, memória, CPU és microSD</figcaption>
@@ -95,6 +99,6 @@
       <a id="manual" class="manual" href="https://github.com/janix12/T-Deck-FlightDeck/releases/latest" data-t="manual">Firmware letöltése és kézi telepítés ↗</a>
     </aside>
   </main>
-  <script type="module" src="./web-installer/installer.js?v=world150"></script>
+  <script type="module" src="./web-installer/installer.js?v=storage151"></script>
 </body>
 </html>

@@ -70,8 +70,8 @@ A felső sávban három ív jelzi az aktív kapcsolatot, áthúzott ikon a szaka
 ## Mire van szükséged?
 
 - Az eredeti **LilyGO T-Deck** modellre, ESP32-S3 processzorral, 16 MB flashmemóriával és 8 MB OPI PSRAM-mal, valamint egy USB-adatkábelre. A firmware a fő ESP32-S3 processzorra kerül. A billentyűzetnek külön vezérlője van.
-- **2,4 GHz-es Wi-Fi-re** az élő forgalomhoz és az időjáráshoz. Az 1.5.0-s firmware első induláskor felajánlja a külön letölthető offline világtérképet. A **Később** gombbal előbb beállíthatod a Wi-Fi-t. A **Műszerek → SD újra [R]** újranyitja a letöltést, ha hiányzik a térkép.
-- **A GPS, az utólagos I²C-érzékelők és a microSD választhatók.** GPS-pozíció nélkül a kézzel beállított hely a térkép közepe, alapból Budapest belvárosa. A hiányzó mérések helyén `--` jelenik meg. Az offline térképhez írható microSD szükséges, kivéve, ha a készüléken külön előkészített belső térképtár van.
+- **2,4 GHz-es Wi-Fi-re** az élő forgalomhoz és az időjáráshoz. A firmware első induláskor felajánlja a külön letölthető offline világtérképet. A **Később** gombbal előbb beállíthatod a Wi-Fi-t. A **Műszerek → SD újra [R]** újranyitja a letöltést, ha hiányzik a térkép.
+- **A GPS, az utólagos I²C-érzékelők és a microSD választhatók.** GPS-pozíció nélkül a kézzel beállított hely a térkép közepe, alapból Budapest belvárosa. A hiányzó mérések helyén `--` jelenik meg. A v1.5.0-ban a térképhez írható microSD vagy előkészített belső térképtár kell. A v1.5.1 első USB-telepítése saját belső tárhelyet biztosít.
 
 ## Telepítés és frissítés
 
@@ -114,7 +114,13 @@ A [telepítőmappában](install/) két kész firmware található. Az alábbi pa
 
 ## Az offline térkép frissítése
 
-Az első indításkor válaszd a **Térkép letöltése** ablakban a **Letöltés** gombot. A T-Deck Wi-Fi-n tölti le az 5,84 MB-os első kiadást az írható microSD-kártyára. A fájl neve `/WORLD.FDM`. A letöltött térképet offline is használhatod.
+Az első indításkor válaszd a **Térkép letöltése** ablakban a **Letöltés** gombot. A jelenlegi csomag 5,84 MB. A v1.5.1 első USB-telepítése SD nélkül is felajánlja a belső tárhelyet. Válaszd a **Később** gombot, ha még be kell állítanod a Wi-Fi-t. Letöltés után a térkép offline használható.
+
+![A Tárhely lapon a Térkép tárhelye sor Automatikus állásban van.](docs/images/v151-storage-hu.png)
+
+**Beállítások → Tárhely → Térkép tárhelye.** Az **Automatikus** mód először a belső tárra tölti le a térképet, ha ott elfér. Menet közben is felismeri az írható kártyát, rámásolja a térképet `/WORLD.FDM` néven, visszaolvassa, ellenőrzi az SHA-256-ot, majd a kártyáról olvas. A másoláshoz nem kell internet vagy gombnyomás. Ha az ellenőrzés hibát jelez, a belső példány használható tovább. **Belső** módban a térképet továbbra is a flashből olvassa, a kártyára másolat kerül. **SD** módban a letöltés elsődleges célja a kártya. A kártya kivételekor a készülék használja a meglévő, érvényes belső másolatot. A választás újraindítás után is megmarad.
+
+A korábbról Wi-Fi-n frissített készülék megtartja a partícióit. A v1.5.1 a már előkészített vagy teljesen üres régi adatpartíciót is tudja használni. Ha azon idegen adatok vannak, írható SD-re tölts. A térkép céljára kijelölt belső hely 5,75 MiB.
 
 [microSD-kártya és partíció választása · kapacitás, formázás, szabad hely](docs/microsd.md#magyar)
 

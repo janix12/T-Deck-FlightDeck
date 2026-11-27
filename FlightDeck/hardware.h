@@ -255,11 +255,28 @@ static void backlight(int target) {
   digitalWrite(BOARD_BL_PIN,HIGH); delayMicroseconds(30);
   for(int i=target;i<16;i++){ digitalWrite(BOARD_BL_PIN,LOW); digitalWrite(BOARD_BL_PIN,HIGH); }
 }
+static cid_t mountedCid;
+static bool haveMountedCid;
+// No card-detect GPIO is wired on the T-Deck. A short CMD0 probe avoids
+// running SdFat's full initialization timeout on every poll of an empty slot.
+static bool cardResponds(){
+  SPI.beginTransaction(SPISettings(400000,MSBFIRST,SPI_MODE0));
+  digitalWrite(BOARD_SDCARD_CS,HIGH);
+  for(int i=0;i<10;i++)SPI.transfer(0xff);
+  digitalWrite(BOARD_SDCARD_CS,LOW);
+  const uint8_t idle[]={0x40,0,0,0,0,0x95};
+  for(uint8_t b:idle)SPI.transfer(b);
+  uint8_t reply=0xff;
+  for(int i=0;i<16 && (reply&0x80);i++)reply=SPI.transfer(0xff);
+  digitalWrite(BOARD_SDCARD_CS,HIGH);SPI.transfer(0xff);SPI.endTransaction();
+  return reply==1;
+}
 static void mountCard(){
   digitalWrite(BOARD_TFT_CS,HIGH); digitalWrite(RADIO_CS_PIN,HIGH); digitalWrite(BOARD_SDCARD_CS,HIGH);
   bool ready=card.cardBegin(SdSpiConfig(BOARD_SDCARD_CS,SHARED_SPI,800000,&SPI));
   cardMiB=ready?card.card()->sectorCount()/2048:0;
   sdOK=ready && card.volumeBegin();
+  haveMountedCid=sdOK && card.card()->readCID(&mountedCid);
   volumeBytes=sdOK?uint64_t(card.clusterCount())*card.bytesPerCluster():0;
   volumeMiB=volumeBytes/(1024*1024);
   sdFreeBytes=-1;storageNeedsScan=sdOK;lastStorageProbe=0;

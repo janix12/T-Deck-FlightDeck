@@ -70,8 +70,8 @@ The top bar shows three arcs when connected, a crossed-out icon when offline, an
 ## What you need
 
 - The original **LilyGO T-Deck**, ESP32-S3, 16 MB flash, 8 MB OPI PSRAM, and a USB data cable. The firmware targets the main ESP32-S3. The keyboard has its own controller.
-- A **2.4 GHz Wi-Fi network** for live flights and weather. Firmware 1.5.0 offers a separate offline world map on first boot. Choose **Later** to configure Wi-Fi first. Use **Instruments → Retry SD [R]** to reopen the download prompt if the map is missing.
-- **GPS, external I²C environmental sensors and microSD are optional.** Without a GPS fix the map uses the coordinates in Settings. The default is central Budapest. Missing sensor readings appear as `--`. The offline map requires a writable microSD unless the device has separately provisioned internal map storage.
+- A **2.4 GHz Wi-Fi network** for live flights and weather. The firmware offers a separate offline world map on first boot. Choose **Later** to configure Wi-Fi first. Use **Instruments → Retry SD [R]** to reopen the download prompt if the map is missing.
+- **GPS, external I²C environmental sensors and microSD are optional.** Without a GPS fix the map uses the coordinates in Settings. The default is central Budapest. Missing sensor readings appear as `--`. Version 1.5.0 needs a writable microSD or provisioned internal storage for the map. A first USB installation of v1.5.1 provides its own internal map storage.
 
 ## Install or update
 
@@ -114,7 +114,13 @@ The [installation folder](install/) contains two ready-to-flash images. The comm
 
 ## Offline map updates
 
-On first boot, choose **Download** in the **Download map** dialog. The T-Deck downloads the 5.84 MB first edition over Wi-Fi to `/WORLD.FDM` on a writable microSD card. The downloaded map is available offline.
+On first boot, choose **Download** in the **Download map** dialog. The current package is 5.84 MB. A first USB installation of v1.5.1 offers internal storage even with an empty card slot. Choose **Later** if you need to configure Wi-Fi first. The downloaded map works offline.
+
+![The Storage settings page with Map storage set to Automatic.](docs/images/v151-storage-en.png)
+
+**Settings → Storage → Map storage.** **Automatic** downloads to internal flash first when the map fits. Insert a writable card at any time and FlightDeck copies the map to `/WORLD.FDM`, reads it back, verifies its SHA-256 and reads from the card. Copying works offline without pressing a button. If verification fails, the internal map remains available. **Internal** keeps reading from flash while maintaining a copy on the card. **SD** prefers the card for downloads. Removing the card switches back to a valid internal copy when available. Your choice survives a restart.
+
+Updating an older installation over Wi-Fi keeps its partition table. Version 1.5.1 can use previously provisioned internal storage or a completely erased legacy data partition. Use a writable card if the old partition contains unrelated data. The internal map area is 5.75 MiB.
 
 [microSD card and partition guide · capacity, formatting and free space](docs/microsd.md#english)
 

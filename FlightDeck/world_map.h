@@ -6,11 +6,25 @@
 namespace world {
 constexpr int detailCount=180*90, hungaryKey=detailCount+36*18, tileCount=hungaryKey+2;
 constexpr size_t tileLimit=256*1024, cacheLimit=1024*1024;
-// Optional installation on a specifically provisioned board, within its data partition.
-constexpr size_t flashBase=0xc0000,flashCapacity=0x5c0000;
+// Keep the same data range across USB installs and OTA upgrades.
+constexpr size_t legacyBase=0xc0000,flashCapacity=0x5c0000;
+constexpr auto mapSubtype=static_cast<esp_partition_subtype_t>(0x40);
+static size_t flashBase(const esp_partition_t *p){return p->subtype==mapSubtype?0:legacyBase;}
 static const esp_partition_t *partition(){
+  auto dedicated=esp_partition_find_first(ESP_PARTITION_TYPE_DATA,mapSubtype,"fdworld");
+  if(dedicated && dedicated->size>=flashCapacity)return dedicated;
   auto p=esp_partition_find_first(ESP_PARTITION_TYPE_DATA,ESP_PARTITION_SUBTYPE_DATA_FAT,"ffat");
-  return p && p->size>=flashBase+flashCapacity?p:nullptr;
+  return p && p->size>=legacyBase+flashCapacity?p:nullptr;
+}
+static bool erased(const esp_partition_t *part,size_t start,size_t end){
+  uint8_t block[1024];
+  for(size_t pos=start;pos<end;pos+=sizeof(block)){
+    size_t n=std::min(sizeof(block),end-pos);
+    if(esp_partition_read(part,pos,block,n)!=ESP_OK)return false;
+    for(size_t i=0;i<n;i++)if(block[i]!=0xff)return false;
+    if(pos%65536<sizeof(block))delay(1);
+  }
+  return true;
 }
 constexpr char filename[]="/WORLD.FDM";
 static uint32_t *offsets;
@@ -25,7 +39,7 @@ static void discard(Entry &item){
   free(item.map);cacheBytes-=item.size;item=Entry{};
 }
 static bool readAt(uint32_t start,void *dest,size_t size){
-  if(flash)return esp_partition_read(flash,flashBase+start,dest,size)==ESP_OK;
+  if(flash)return esp_partition_read(flash,flashBase(flash)+start,dest,size)==ESP_OK;
   FsFile file=card.open(filename,O_RDONLY);
   return file && file.seekSet(start) && file.read(dest,size)==int(size);
 }
