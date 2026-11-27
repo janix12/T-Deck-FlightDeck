@@ -18,6 +18,8 @@
 py maps/build_world.py map-input maps/WORLD.FDM
 ```
 
+**Publishing updates · Térképfrissítés közzététele** — The builder also writes `world.json`. Changed map bytes increment the map revision. Publish the manifest and `WORLD.FDM` in the same Git commit. A generátor változó tartalomnál növeli a térkép verzióját. A verziófájlt és a térképet azonos Git-commitban tedd közzé. A kliens induláskor, majd 24 óránként ellenőrzi a verziófájlt.
+
 **EN** · `hungary.fdm` contains simplified Hungarian municipal boundaries, settlement names, water and country borders. `central-europe.fdm` is the weather overview, covering 5–33° E and 39–57° N. Both are built into the firmware. On a writable card the firmware can install and verify a copy of the detailed map. The weather frames are downloaded separately.
 
 **HU** · A `hungary.fdm` egyszerűsített magyar településhatárokat, helységneveket, vízrajzot és országhatárokat tartalmaz. A `central-europe.fdm` az időjárási áttekintőtérkép, az 5–33° keleti hosszúság és 39–57° északi szélesség közötti területre. Mindkettő beépül a firmware-be. Írható kártyára a részletes térkép másolatát a készülék telepíti és ellenőrzi. Az időjárási képkockákat külön tölti le.

@@ -1,6 +1,7 @@
 """Build WORLD.FDM for the SD card. Requires Shapely 2 and the inputs in README.md."""
 import argparse
 from collections import defaultdict
+import hashlib
 import json
 import math
 from pathlib import Path
@@ -162,7 +163,14 @@ def build(source, output):
     offsets.append(base+len(content))
     index=struct.pack(f"<{len(offsets)}I",*offsets)
     header=struct.pack("<4sIII",b"FDW2",offsets[-1],count,zlib.crc32(index))
-    output.write_bytes(header+index+content)
+    pack=header+index+content
+    digest=hashlib.sha256(pack).hexdigest()
+    manifest=output.with_name("world.json")
+    previous=json.loads(manifest.read_bytes()) if manifest.exists() else {}
+    revision=previous.get("revision",0)+int(digest!=previous.get("sha256"))
+    output.write_bytes(pack)
+    manifest.write_text(json.dumps(dict(format="FDW2",revision=revision,size=len(pack),sha256=digest),
+                                   indent=2)+"\n",encoding="utf-8")
     print(f"{total} settlements, {urban} urban centres, {offsets[-1]} bytes")
 
 
