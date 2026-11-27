@@ -17,10 +17,10 @@ See which town an aircraft is flying over. FlightDeck turns the 320 × 240 displ
 | ![The Follow and Solo aircraft switches are both on in the aircraft details.](docs/images/wifi131-controls-en.png) | ![The icon and callsign of the tracked flight DLH6CH in the centre of the map.](docs/images/wifi131-map-en.png) |
 | **Rain radar over Central Europe** | **Surface air temperature** |
 | ![The RainViewer precipitation layer with the active Wi-Fi icon.](docs/images/wifi131-rain-en.png) | ![Temperature map around Budapest.](docs/images/wifi131-heat-en.png) |
-| **Instruments · v1.4.0** | **Settings · v1.4.0** |
-| ![Separate cards for temperature, relative humidity and air pressure.](docs/images/v140-instruments-en.png) | ![Action icons on the Display and device settings page.](docs/images/v140-settings-en.png) |
+| **Instruments · v1.4.1** | **Settings · v1.4.0** |
+| ![RAM and PSRAM usage and CPU 0 and CPU 1 load appear below the sensor cards.](docs/images/v141-instruments-en.png) | ![Action icons on the Display and device settings page.](docs/images/v140-settings-en.png) |
 
-The traffic and weather screens were captured on v1.3.1. The Instruments and Settings screens were captured on v1.4.0. The three waves beside the page title show an active Wi-Fi connection. The radar recorded 29 aircraft in one live ADS-B update, with DLH6CH selected for tracking. Choose **Beállítások → Nyelv → English** for the English interface. [Earlier example of the API limit notice](docs/images/airspace.png)
+The traffic and weather screens were captured on v1.3.1. The Instruments screen was captured on v1.4.1 and Settings on v1.4.0. The three waves beside the page title show an active Wi-Fi connection. The radar recorded 29 aircraft in one live ADS-B update, with DLH6CH selected for tracking. Choose **Beállítások → Nyelv → English** for the English interface. [Earlier example of the API limit notice](docs/images/airspace.png)
 
 | Using the trackball | Using the touchscreen |
 |:---:|:---:|
@@ -49,7 +49,9 @@ The labels show modelled air temperatures two metres above the ground. Tap **+**
 
 ### Instruments
 
-![The hamburger menu opens from Airspace. The Instruments screen then shows temperature, relative humidity and air pressure.](docs/images/instruments-en.gif)
+![The menu opens Instruments. The RAM, PSRAM and both CPU readings update beneath the sensor cards.](docs/images/instruments-en.gif)
+
+**RAM** and **PSRAM** show the used and total heap capacity and the percentage in use. **CPU 0** and **CPU 1** show each core’s estimated load from samples taken over the last second.
 
 Open **☰ → Instruments** to see separate cards for temperature (°C), relative humidity (%) and air pressure (hPa). Choose **Hardware details** for device and network status. [The v1.4.0 main menu](docs/images/v140-menu-en.png)
 

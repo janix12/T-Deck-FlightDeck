@@ -1,14 +1,14 @@
 import { installFirmware } from "./flash.js?v=versions-2";
 
 const en = {
-  instrumentCardsCaption: "Instruments · three sensor cards",
-  instrumentCardsAlt: "The v1.4.0 Instruments screen shows separate cards for temperature, humidity and air pressure.",
+  instrumentCardsCaption: "Instruments · sensors, memory and CPU load",
+  instrumentCardsAlt: "The v1.4.1 Instruments screen shows RAM, PSRAM, CPU 0 and CPU 1 below the sensor cards.",
   settingsPanelCaption: "Settings · Display and device",
   settingsPanelAlt: "The Display and device settings. Icons at the end of each row indicate cycling, editing or toggling a value.",
   saverDemoCaption: "Screen saver · clock and tap to wake",
   saverDemoAlt: "Choosing Sleep now from the ☰ menu shows the clock. A single tap returns to Airspace.",
-  instrumentsDemoCaption: "Instruments · temperature, humidity and air pressure",
-  instrumentsDemoAlt: "The hamburger menu opens the Instruments screen. The T-Deck sensors show temperature (°C), relative humidity (%) and air pressure (hPa).",
+  instrumentsDemoCaption: "Opening Instruments and reading live system load",
+  instrumentsDemoAlt: "The menu opens Instruments, where RAM, PSRAM and the load on both CPU cores update.",
   heatDemoCaption: "Temperature map · regional temperatures and a closer look at Budapest",
   heatDemoAlt: "Open-Meteo temperatures and a colour scale. Three taps on + zoom in on Budapest, where the map shows 2.9 °C.",
   rainDemoCaption: "Rain radar · zoom in on Budapest and pause playback",

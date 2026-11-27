@@ -17,10 +17,10 @@ Nézd meg, melyik település fölött jár egy repülő. A FlightDeck a LilyGO 
 | ![A gépadatlapon bekapcsolt Követés és Csak ez a gép kapcsolók.](docs/images/wifi131-controls-hu.png) | ![A térkép közepén a követett DLH6CH járat ikonja és hívójele.](docs/images/wifi131-map-hu.png) |
 | **Közép-európai esőradar** | **Felszínközeli léghőmérséklet** |
 | ![A RainViewer csapadékrétege és az aktív Wi-Fi jele.](docs/images/wifi131-rain-hu.png) | ![Hőmérsékleti térkép Budapest körül.](docs/images/wifi131-heat-hu.png) |
-| **Műszerek · v1.4.0** | **Beállítások · v1.4.0** |
-| ![Hőmérséklet, páratartalom és légnyomás külön kártyákon.](docs/images/v140-instruments-hu.png) | ![A Kijelző és eszköz lap műveletikonjai.](docs/images/v140-settings-hu.png) |
+| **Műszerek · v1.4.1** | **Beállítások · v1.4.0** |
+| ![A szenzorkártyák alatt látszik a RAM és a PSRAM foglaltsága, valamint a CPU 0 és CPU 1 terhelése.](docs/images/v141-instruments-hu.png) | ![A Kijelző és eszköz lap műveletikonjai.](docs/images/v140-settings-hu.png) |
 
-A repülőforgalmi és időjárási képek a v1.3.1, a Műszerek és a Beállítások képei a v1.4.0 kijelzőjéről származnak. A lapcím melletti három ív az aktív Wi-Fi-kapcsolatot mutatja. A radaron az ADS-B-lekéréskor észlelt 29 gép és a követésre kiválasztott DLH6CH járat látszik. A felület nyelve a **Beállítások → Nyelv** sorban váltható. [Korábbi példa az API-korlát jelzésére](docs/images/airspace.png)
+A repülőforgalmi és időjárási képek a v1.3.1, a Műszerek képe a v1.4.1, a Beállítások képe a v1.4.0 kijelzőjéről származnak. A lapcím melletti három ív az aktív Wi-Fi-kapcsolatot mutatja. A radaron az ADS-B-lekéréskor észlelt 29 gép és a követésre kiválasztott DLH6CH járat látszik. A felület nyelve a **Beállítások → Nyelv** sorban váltható. [Korábbi példa az API-korlát jelzésére](docs/images/airspace.png)
 
 | Térkép és géplista a trackballal | Térkép mozgatása érintéssel |
 |:---:|:---:|
@@ -49,7 +49,9 @@ A címkék a felszín felett két méterrel számított léghőmérsékletet mut
 
 ### Műszerek
 
-![A Légtér képernyőn megnyílik a hamburger menü, majd a Műszerek lapon megjelenik a hőmérséklet, a relatív páratartalom és a légnyomás.](docs/images/instruments-hu.gif)
+![A menüből megnyílik a Műszerek lap. A szenzorok alatt frissül a RAM, a PSRAM és a két CPU-mag kijelzése.](docs/images/instruments-hu.gif)
+
+A **RAM** és a **PSRAM** mezőben a foglalt és a teljes heapmemória mérete, valamint a foglaltság százaléka látható. A **CPU 0** és a **CPU 1** külön mutatja a két mag becsült terhelését az utolsó egy másodperc mintái alapján.
 
 A **☰ → Műszerek** lapon külön kártyán látható a hőmérséklet (°C), a relatív páratartalom (%) és a légnyomás (hPa). A **Hardveradatok** alatt találod az eszközök és a hálózat állapotát. [A v1.4.0 főmenüje](docs/images/v140-menu-hu.png)
 

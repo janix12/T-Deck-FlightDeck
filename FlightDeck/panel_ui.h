@@ -1,4 +1,5 @@
 #pragma once
+#include "resource_usage.h"
 
 static void chevron(int x,int y,uint16_t color,int direction=1){
   for(int i=0;i<=5;++i) {
@@ -53,6 +54,19 @@ static void hardwareRow(int y,const char *title,const String &value){
   label(74,y-1,fitText(value,2,233),ink);
 }
 
+static void usageGauge(int index,const char *title,int percent,const String &detail){
+  const int x=5+(index*313)/4,y=126,w=76;
+  screen.fillRoundRect(x,y,w,40,5,land);
+  label(x+4,y+3,title,ink,1);
+  String value=percent<0?"--":String(percent)+"%";
+  label(x+w-4-labelWidth(value,1),y+3,value,mint,1);
+  screen.fillRect(x+4,y+16,w-8,3,grid);
+  if(percent>0)screen.fillRect(x+4,y+16,max(1,(w-8)*percent/100),3,mint);
+  centeredLabel(x,y+21,w,15,detail,muted,1);
+}
+
+static constexpr int hardwareButtonY=169,hardwareButtonHeight=31;
+
 static void diagnostics(){
   String gpsState=hasFix()?"FIX":lastSentence?tr("NMEA / fixre vár","NMEA / waiting for fix"):tr("Jelet keres","Searching");
   String storage=sdOK?String(volumeMiB)+" MiB":cardMiB?tr("FS hiba","FS error"):"--";
@@ -74,12 +88,17 @@ static void diagnostics(){
   sensorCard(2,tr("Légnyomás","Pressure"),pressure,1,"hPa");
   String sensors=sensor;
   if(ahtOK || shtOK){if(sensors=="--")sensors="";else sensors+="  /  ";sensors+=ahtOK?"AHT2x":"SHT3x";}
-  label(10,128,tr("Szenzorok","Sensors"),muted,1);
-  label(80,128,sensors,ink,1);
-  framedBox(5,148,310,46,8,land,instrumentFocus==0?mint:grid);
-  label(15,151,tr("Hardveradatok","Hardware details"),ink);
-  label(15,174,"GPS "+gpsState+"   /   SD "+storage,muted,1);
-  chevron(298,171,mint);
+  auto ram=sampleHeap(MALLOC_CAP_INTERNAL),psram=sampleHeap(MALLOC_CAP_SPIRAM);
+  usageGauge(0,"RAM",ram.percent(),String(ram.used/1024)+"/"+String(ram.total/1024)+" KiB");
+  usageGauge(1,"PSRAM",psram.percent(),psram.total?String(psram.used/1048576.f,1)+"/"+String(psram.total/1048576.f,1)+" MiB":"--");
+  for(unsigned i=0;i<2;i++){
+    int percent=i<portNUM_PROCESSORS?coreLoad[i].percent.load(std::memory_order_relaxed):-1;
+    usageGauge(2+i,i?"CPU 1":"CPU 0",percent,tr("1 mp átlag","1 s avg"));
+  }
+  framedBox(5,hardwareButtonY,310,hardwareButtonHeight,7,land,instrumentFocus==0?mint:grid);
+  label(13,hardwareButtonY+6,tr("Hardveradatok","Hardware details"),ink);
+  label(132,hardwareButtonY+10,fitText(sensors,1,157),muted,1);
+  chevron(298,hardwareButtonY+15,mint);
   actionButton(5,203,151,tr("Hangpróba [B]","Speaker [B]"),instrumentFocus==1);
   actionButton(162,203,153,tr("SD újra [R]","Retry SD [R]"),instrumentFocus==2);
 }

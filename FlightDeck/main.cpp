@@ -751,7 +751,7 @@ static void touchInput(bool down,int x,int y){
     }
     else if(page==1 && x>=5 && x<315){
       if(hardwareDetails){if(y>=203 && y<235)instrumentAction(0);}
-      else if(y>=148 && y<194){instrumentFocus=0;instrumentAction(0);}
+      else if(y>=hardwareButtonY && y<hardwareButtonY+hardwareButtonHeight){instrumentFocus=0;instrumentAction(0);}
       else if(y>=203 && y<235 && (x<156 || x>=162)){
         instrumentFocus=x<156?1:2;instrumentAction(instrumentFocus);
       }
@@ -872,6 +872,12 @@ static void verifyCardWrite(){
   Serial.printf("SDTEST write=%d close=%d remount=%d verified=%u removed=%d\n",ok,closed,sdOK,match?512u:0u,removed);
 }
 static void status(){
+  if(page==1){
+    auto ram=sampleHeap(MALLOC_CAP_INTERNAL),psram=sampleHeap(MALLOC_CAP_SPIRAM);
+    Serial.printf("RES ram=%u/%u psram=%u/%u",(unsigned)ram.used,(unsigned)ram.total,(unsigned)psram.used,(unsigned)psram.total);
+    for(unsigned i=0;i<portNUM_PROCESSORS;i++)Serial.printf(" cpu%u=%d",i,coreLoad[i].percent.load(std::memory_order_relaxed));
+    Serial.println();
+  }
   Serial.printf("GUI page=%d menu=%d card=%d sleep=%d minutes=%ld theme=%ld lang=%s wxBusy=%d rain=%d heat=%d follow=%d solo=%d\n",page,int(menuOpen.load()),cardOpen,sleeping,cfg[SAVER].toInt(),cfg[THEME].toInt(),cfg[LANG].c_str(),wxBusy,wxCache[0].frames,wxCache[1].frames,followPlane,onlyPlane);
   MapView v=mapView();
   Serial.printf("MapIO source=%s fat=%d wp=%d install=%d written=%u probe=%d reopenSize=%u read=%d err=%u/%u sdfat=%s fatfs=%s diff=%d actual=%d expected=%d\n",
@@ -898,6 +904,7 @@ static void status(){
 }
 void setup(){
   Serial.begin(115200);
+  startCoreSampling();
   prefs.begin("flightdeck",false);
   for(int i=0;i<FIELDS;i++){String k="v"+String(i); cfg[i]=prefs.getString(k.c_str(),defaults[i]);}
   loadWifi();
